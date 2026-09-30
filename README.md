@@ -146,14 +146,14 @@ Esta es la columna vertebral. Paso a paso, con el botón exacto:
 |---|---|---|---|
 | 1 | **Ventas / Prospectos (CRM) → Agregar** | Prospecto | Consentimiento (Ley 29733); documento no duplicado |
 | 2 | *(opcional)* **Ventas / Pipeline → Nueva oportunidad** | Tarjeta en el kanban | Solo seguimiento; no crea nada más |
-| 3 | *(si es persona jurídica o la plantilla imprime dirección)* **Contratos / Titulares → Agregar** con **el mismo documento**, dirección y representante legal | Titular completo | Ver ⚠️ más abajo |
-| 4 | **Ventas / Cotización → Agregar → "Emitir en firme"** | Cotización ISSUED (15 días de vigencia) | Espacio AVAILABLE con precio. Si el descuento supera el límite del rol, lo aprueba **otro usuario**. Crear no es emitir. |
+| 3 | *(opcional)* **Contratos / Titulares → Agregar** con **el mismo documento** | Titular ya registrado; la venta se vinculará a él | Ya no hace falta: «Generar contrato» pide lo que falte. Ver ⚠️ más abajo |
+| 4 | **Ventas / Cotización → Agregar → "Emitir en firme"** | Cotización ISSUED (15 días de vigencia) | Espacio AVAILABLE con precio. Si el descuento supera el límite del rol, la cotización queda «Descuento por aprobar» y hay que aprobarla antes de emitir (puede hacerlo el mismo usuario que la creó). Crear no es emitir. |
 | 5 | **Ventas / Reserva → Nueva reserva** (desde la cotización) | Reserva ACTIVE, espacio RESERVED, reloj de 72 h | Cotización vigente en firme |
 | 6 | **Reserva → Registrar pago inicial** | Reserva CONFIRMED (el reloj se detiene) | Monto ≥ mínimo (10 % o cuota inicial del plan simulado). **No pasa por Caja.** |
 | 7 | **Reserva → Validar pago** | Pago VALIDATED | Sin esto no se puede abrir la venta |
 | 8 | **Ventas / Proceso de Venta → Nuevo expediente** | Venta; reserva CONVERTED | Reserva CONFIRMED + pago validado |
 | 9 | **Checklist → Vincular/Subir → Verificar** cada documento | Checklist completo | Si no configuraste requisitos (botón "Requisitos"), cuenta como completo |
-| 10 | **"Generar contrato"** | Crea el **titular** (desde el prospecto) y el **contrato en PENDING_SIGNATURE** | Serie CONTRACT, una plantilla publicada |
+| 10 | **"Generar contrato"** (tenencia/plazo) → si al titular le falta algo, formulario **«Completar datos del titular»** | Crea o vincula el **titular** (desde el prospecto), le guarda los datos completados y crea el **contrato en PENDING_SIGNATURE** | Serie CONTRACT, una plantilla publicada |
 | 11 | **Contratos / Contratos de Titularidad → detalle → Firmar** (cada firmante) | Contrato **ACTIVE**, espacio **OCCUPIED**, escritura en Gestión Documental | El último firmante es el usuario que envió a firma (representante del cementerio) |
 | 12 | **Proceso de Venta → "Asignar definitivamente"** | Venta ASSIGNED, comisión, oportunidad Ganada | Contrato ACTIVE |
 
@@ -162,9 +162,15 @@ Esta es la columna vertebral. Paso a paso, con el botón exacto:
 - **El contrato sale directo a firma.** Después ya no se pueden añadir cotitulares ni beneficiarios,
   porque eso solo se permite en borrador. Si los necesitas, usa el contrato directo (abajo).
 - El titular promovido desde el prospecto solo copia teléfono y email. Si la plantilla usa
-  `{{titular.direccion}}` o el titular es persona jurídica (necesita representante con poder
-  vigente), **crea antes el titular** en Titulares con el mismo documento; la venta se vinculará a él.
-- El plan simulado en la cotización **no** es el plan de pagos real.
+  `{{titular.direccion}}`, `{{titular.telefono}}` o `{{titular.email}}` y ese dato falta, o el titular
+  es persona jurídica (necesita representante con poder vigente), **«Generar contrato» abre el
+  formulario «Completar datos del titular»** con solo lo que falta (dirección, email/teléfono,
+  representante legal: nombre, documento y vigencia del poder) y lo guarda en la ficha del titular
+  al generar. Crear antes el titular en Contratos → Titulares con el mismo documento es **opcional**
+  (la venta se vincula a él). Si no hay plantilla publicada o hay varias, el mismo modal lo avisa.
+- El plan simulado en la cotización **no** se convierte solo en el plan de pagos real: la cotización guarda
+  lo pactado (cuota inicial, n.º de cuotas, tasa), pero la deuda con cuotas y mora se crea aparte, en la
+  Fase 4 (Pagos → Planes de Pago), volviendo a ingresar esos datos.
 
 **Atajo — contrato directo sin venta:** `Contratos / Titulares → Agregar` → `Contratos de Titularidad
 → Agregar` (espacio no reservado, titular, tenencia, precio, moneda, plantilla; aquí sí puedes añadir
@@ -184,7 +190,23 @@ ni pipeline. Es la forma más rápida de tener un contrato ACTIVE para probar la
 
 **Camino feliz: cobrar una cuota**
 
-1. *(Antes de crear el plan)* configurar la **mora** por sede. Se congela al crear el plan; si no existe, la mora es 0.
+1. *(Antes de crear el plan)* configurar la **mora** por sede en **Pagos → Planes de Pago → botón «Tasas de mora»**
+   (en la cabecera del módulo). Se congela al crear el plan; si no existe, la mora es 0.
+
+   | Campo | Qué significa | Ejemplo |
+   |---|---|---|
+   | Sede | A qué sede aplica; «Todas las sedes» sirve de valor general. | Todas las sedes |
+   | Concepto | A qué deuda aplica (venta de espacio, servicio, mantenimiento perpetuo, otro) o «Todos los conceptos». | Todos los conceptos |
+   | Tipo de tasa | Si la tasa es **por día** o **por mes** de atraso. La mensual se divide entre 30 al congelarla. | diaria |
+   | Tasa | % que se cobra sobre el **saldo vencido** por cada día (o mes) de atraso. | 0.05 (= 0,05 % diario) |
+   | Máximo legal | Techo de la tasa según la ley o el contrato; la tasa no puede superarlo (lo valida la BD). | 0.10 |
+   | Días de gracia | Días después del vencimiento en que todavía **no** corre mora (0 a 90). | 5 |
+   | Tope de mora | La mora acumulada de una cuota nunca pasa de este % de su saldo vencido. Vacío = sin tope. | 20 |
+   | Mora primero tras | Días de atraso a partir de los cuales un pago cubre **primero la mora** y luego el capital (antes, primero capital). | 60 |
+   | Vigente desde / hasta | Periodo de validez; «hasta» vacío = sin fin. No puede haber dos periodos solapados para la misma sede y concepto. | 01/10/2026 – vacío |
+
+   Ejemplo: cuota de S/ 100 vencida hace 15 días con tasa 0.05 % diaria y 5 días de gracia → corre mora 10 días
+   → 100 × 0,05 % × 10 = S/ 0.50.
 2. **Pagos / Planes de Pago → simular → crear.** Plan de 2 a 60 cuotas sobre un contrato ACTIVE. Es **manual**: no se crea solo al vender.
 3. **Pagos / Caja y Pagos:**
    - Crear el **punto de cobro** de la sede.
@@ -333,9 +355,7 @@ El titular y su representante pueden pagar y solicitar; cotitulares y beneficiar
 
 Para probarlas necesitas al menos **dos usuarios** con permisos:
 
-- Descuento de cotización por encima del límite del rol.
-- 2.ª extensión de una reserva (Gerencia).
-- Anulación de venta (dos aprobadores distintos) y saltar etapas en el pipeline.
+- Anulación de venta (dos aprobadores distintos).
 - Refinanciación de un plan de pagos, anulación de un pago, NC/ND > 1 UIT.
 - Excepción de cobranza, revisión de incobrable.
 - Anulación del expediente de un difunto.
@@ -370,8 +390,8 @@ Sin segundo usuario: aprobar tarifas, publicar paquetes y plantillas, y validar 
 | `ETN_SEQUENCE_MISSING` | Falta la serie de ese tipo en esa sede | Configuración / Series y Correlativos |
 | `ETN_QUOTE_NO_PRICE` | Sin tarifa **aprobada** vigente ni precio en el espacio | Tarifas (aprobar) o Parámetros de sede (moneda) |
 | `ETN_CONTRACT_NO_TEMPLATE` / `…TEMPLATE_AMBIGUOUS` | Cero o varias plantillas de contrato publicadas | Plantillas de Documentos |
-| `ETN_TPL_UNRESOLVED_VARS` | La plantilla usa un dato vacío (representante, dirección del titular…) | Config. General / Titulares |
-| `ETN_POWER_EXPIRED` | Titular persona jurídica sin representante con poder vigente | Titulares → representantes |
+| `ETN_TPL_UNRESOLVED_VARS` | La plantilla usa un dato vacío (representante del cementerio, dirección del titular…) | Config. General (datos del cementerio). Los del titular los pide «Generar contrato» en «Completar datos del titular» |
+| `ETN_POWER_EXPIRED` | Titular persona jurídica sin representante con poder vigente | «Completar datos del titular» al generar el contrato, o Titulares → representantes |
 | `ETN_PAY_NO_SESSION` | Cobro en caja sin sesión abierta | Caja y Pagos → abrir sesión |
 | `ETN_GRID_TYPE_REQUIRED` | Generar espacios sin tipo por defecto en el sector | Pabellones y Sectores |
 | `ETN_RATE_PAVILION` | Tarifa por pabellón con un pabellón no asignado al tipo | Tipos de Espacio → asignar pabellón |

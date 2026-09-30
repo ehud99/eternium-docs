@@ -267,3 +267,37 @@ padrón RUC.
 - **Alternativa B — Mantener solo la validación de formato** (como hoy).
 
 Decidir: proveedor · general o por empresa · quién paga las consultas.
+
+---
+
+## 7. Límites de descuento por rol en cotizaciones
+
+**Situación hoy.** Al crear una cotización con cualquier descuento aparece «El descuento supera el límite de tu rol:
+la cotización quedará pendiente de aprobación», **incluso con SUPERADMIN**. No es un error del rol: el límite se
+configura por rol, y **un rol sin límite configurado solo puede descontar 0 %** (regla RN-002 del doc 14). Todo
+descuento mayor deja la cotización en «Descuento por aprobar» y hay que aprobarla antes de emitir. **Puede
+aprobarla el mismo usuario que la creó** (una empresa con un solo usuario no tendría a nadie más); queda registrado
+quién aprobó.
+
+El backend ya tiene la API para configurar los límites (`GET/POST/PUT/DELETE
+/api/eternium/quotations/discount-limits`: rol, % máximo y vigencia desde/hasta), pero **no existe ninguna pantalla**
+para usarla: el frontend solo la consulta al validar el paso 2 del asistente.
+
+**Dónde se ve en la aplicación (módulo Ventas):**
+- **Dónde aparece el aviso:** Ventas → **Cotización y Propuesta** → botón «Agregar» (modal «Nueva cotización»)
+  → paso **2 «Descuento»**, campo «Descuento (%)».
+- **Dónde se aprueba:** Ventas → Cotización y Propuesta → cotización en estado «Descuento por aprobar» → aprobar o
+  rechazar (puede hacerlo el mismo usuario que la creó).
+- **Dónde se configuraría el límite:** en ninguna pantalla hoy. Lo natural sería un botón **«Límites de
+  descuento»** en la cabecera de Ventas → Cotización y Propuesta (como «Requisitos» en Proceso de Venta).
+
+- **Recomendada — Pantalla «Límites de descuento»** en Ventas → Cotización y Propuesta: tabla de roles con su %
+  máximo y vigencia (crear, editar, eliminar). Cada empresa decide cuánto puede descontar cada rol; lo que supere
+  el límite sigue pidiendo aprobación.
+- **Alternativa A — Además, sin límite para SUPERADMIN y el dueño de la empresa (OWNR):** pueden descontar
+  cualquier porcentaje sin aprobación. Más ágil, pero el dueño pierde el control de doble firma sobre sus propios
+  descuentos.
+- **Alternativa B — Un límite por defecto para todos los roles** (p. ej. 5 %) configurable por empresa, sin
+  detalle por rol. Más simple, pero no distingue vendedor de gerente.
+
+Decidir: ¿se hace la pantalla? · ¿SUPERADMIN/OWNR quedan exentos? · ¿hace falta un límite por defecto?
