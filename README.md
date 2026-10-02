@@ -239,9 +239,9 @@ ni pipeline. Es la forma más rápida de tener un contrato ACTIVE para probar la
 | # | Pantalla → acción | Resultado | Requisito clave |
 |---|---|---|---|
 | 1 | **Difuntos → Agregar** (borrador) → subir **certificado de defunción** → agregar **familiar principal** → **Confirmar** | Difunto CONFIRMED | El borrador **vence a las 72 h**: confirma el mismo día |
-| 2 | **Órdenes de Servicio → nueva solicitud** (tipo INHUMATION, difunto, contrato) | Solicitud RECEIVED | Mora o falta de contrato solo **avisan**, no bloquean |
+| 2 | **Órdenes de Servicio → nueva solicitud** (tipo INHUMATION, difunto, contrato). El **contrato elige el espacio** (se ve como «CON-… · titular · espacio (ocupados/capacidad)»); con vínculo Titular o Beneficiario los datos del solicitante se completan solos | Solicitud RECEIVED | Cuotas vencidas o falta de contrato solo **avisan**, no bloquean. Saldo sin atraso = «Al día con saldo» |
 | 3 | → **crear cotización → aprobarla** | Solicitud PENDING_APPROVAL | Cotización vigente (15 días) |
-| 4 | → **aprobar la solicitud** | Solicitud APPROVED | Difunto CONFIRMED con certificado válido |
+| 4 | → en el detalle de la solicitud, paso **«Aprobación» → Aprobar** (también Observar / Rechazar) | Solicitud APPROVED | Difunto CONFIRMED con certificado válido. Sin este paso **no** se puede crear la OS |
 | 5 | → **generar OS** desde la cotización → completar checklist → **Emitir** | OS ISSUED | Eximir un requisito lo hace otro usuario; OS mayor a S/ 15 000 exige un segundo aprobador |
 | 6 | *(si hay sepelio)* otra solicitud + OS de tipo **CEREMONY** → **Agenda de Ceremonias → Sepelio → confirmar con sala** | Evento CONFIRMED | La sala debe existir en **Capillas y Salas** con horario |
 | 7 | **Inhumaciones y Exhumaciones → Ejecutar inhumación** | **Acta** con correlativo y hash; ocupación +1; difunto INTERRED; OS EXECUTED; evento en el historial; aviso al titular | Contrato ACTIVE en **ese** espacio, capacidad libre |
