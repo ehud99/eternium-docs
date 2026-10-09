@@ -282,7 +282,11 @@ Orden: **Configuración → Programación → Tareas → Ejecución → Supervis
    - **Umbrales:** solo lectura; muestra los valores que rigen para la empresa.
    - Las frecuencias se crean solas.
 2. **Programación de Mantenimiento:** plan sobre espacios o infraestructura común, con frecuencia, turno, fechas y **checklist obligatorio**.
-3. **Tareas:** las genera un job a las **00:30**, o a demanda con "generar".
+   - Un plan de espacios crea **una tarea por espacio y por periodo**, por eso exige un **pabellón** (o un sector); dentro de él, sector y tipo «Todos» cubren todo el pabellón. La limpieza general del predio va como Infraestructura común.
+   - «Frecuencia del plan seleccionado» es un **simulador**: elige un plan en la tabla y prueba frecuencias para ver cuántas tareas al año generaría, sin cambiar el plan.
+3. **Tareas:** las genera un job a las **00:30**, o a demanda con **«Ejecutar generación ahora»** (Programación → Planes preventivos).
+   - Aparecen en la pestaña **«Asignación del día»** (por fecha), donde se asignan a un operario.
+   - **«Calendario»** muestra el mes con cuántas tareas hay cada día por estado; al hacer clic en un día se listan sus tareas.
    - ⚠️ Un espacio **sin contrato ACTIVE no genera tarea**.
    - Luego el capataz asigna cada tarea a un operario de la misma sede con capacidad.
 4. **Ejecución en Campo:** entrar **con el usuario del operario asignado**; si otro usuario intenta ejecutarla, recibe "no es tuya". Se inicia la tarea y se suben fotos, GPS y checklist.

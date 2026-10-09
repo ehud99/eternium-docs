@@ -38,6 +38,7 @@ Errores que aparecieron en varios módulos. Antes de dar un módulo por bueno, p
 | P18 | **No tocar partner-core** (lo mantiene otro equipo). | Cambios en paquetes `partnercore`. | Revertir y documentar para ese equipo (B bf34b7b → `partner-core-fix-system-alerts-details.md`). |
 | P20 | **Claves técnicas visibles al usuario** (`maintenance.overdue_hours.REWORK`, `eternium_settings`, «RN-04», tipos con su código). | Buscar en plantillas `font-mono` o textos con `_`/`.` en minúscula; referencias a documentos de requisitos («RN-», «RF-»). | Nombre y descripción traducidos por un `code` estable; la clave nunca sale al navegador (Umbrales, sesión 2026-10-09; Documentos, F 60fbb6c). |
 | P21 | **Valores de configuración copiados a mano en el frontend** (umbrales, defaults, «(15)» en un hint). Se desincronizan: 3 de 11 claves ya no existían. | Buscar constantes con valores de negocio en `models/*.ts` y números fijos en textos i18n. | Endpoint que devuelva lo que **rige** para la empresa, leído con las mismas claves y defaults que los servicios, centralizados en una sola clase (`common/settings/MaintenanceSettings`). |
+| P22 | **Un selector ofrece una opción que la validación rechaza** («Todos» en el pabellón de un plan que exige pabellón). | Comparar las opciones de cada select con las reglas del back y los CHECK de la BD. | Quitar la opción, explicar la regla junto al campo y marcarlo en rojo (plan preventivo, sesión 2026-10-09). |
 | P19 | **Un módulo inyecta el repositorio (`infrastructure.persistence`) de otro módulo.** Lo rechaza `EterniumArchitectureTest.modulo_no_importa_persistencia_ajena_nueva`. | Correr la suite **completa** (`mvnw test`), no solo los tests de la clase tocada. | Puerto en `<módulo>/domain/port` con un record de solo lo necesario, implementado por el servicio dueño del repositorio (`BranchBusinessHoursPort` en `BranchScheduleService`, sesión 2026-10-09). |
 
 **Reglas de trabajo** (del montaje local, ver `CLAUDE.md` global):
@@ -220,5 +221,20 @@ Commits: B 79e7ef3 (pabellón), 36f99d5 (umbrales); F 113b3b3. Verificado: backe
 - **Causa (peor):** los valores estaban **fijos en el frontend** (`MAINTENANCE_SETTINGS`), no se leían de la empresa, y 3 de las 11 claves no coincidían con las que leen los servicios (`sector_alert_threshold`, `unassigned_hours`, `rejections_per_month` en vez de `sector_overdue_threshold`, `unassigned_alert_hours`, `rejections_per_month_alert`).
 - **Corrección:** `common/settings/MaintenanceSettings` centraliza claves y defaults (los servicios y el dominio los toman de ahí); `GET /api/eternium/maintenance/thresholds` devuelve el valor vigente, el de fábrica, la unidad y si está personalizado; la pantalla muestra nombre, descripción y valor, sin claves. Se agregó «Historial mínimo para comparar costos», que existía y no se mostraba. Ver P20, P21.
 - **Lección:** una pantalla «informativa» que copia valores del backend miente en cuanto alguien cambia un valor; si hay que mostrarlo, se lee.
+
+### 7.2 Paso 2 · Programación de Mantenimiento (sesión 2026-10-09)
+
+Commit: F a8c64dd. Verificado: `ng build` en verde.
+
+**Plan preventivo: «Todos» en pabellón y luego «Elige al menos un pabellón o un sector»**
+- **Causa:** la regla es deliberada (`ck_etn_mplan_scope`): el plan crea **una tarea por espacio y por periodo**; sobre toda la sede y a diario serían cientos de tareas al día. El selector ofrecía «Todos» y el error salía al guardar.
+- **Decisión (2026-10-09):** se mantiene la regla. El pabellón ya no ofrece «Todos» («Elige un pabellón»), se marca en rojo si falta y un texto explica el porqué; sector y tipo «Todos» siguen cubriendo todo el pabellón. La limpieza general del predio va como Infraestructura común.
+- **Lección:** no ofrecer en un selector una opción que la validación rechaza (P22).
+
+**«Frecuencia del plan seleccionado»: hacer clic en «Mensual» no hacía nada**
+- **Causa:** es un **simulador** de carga anual del plan elegido en la tabla; sin plan elegido los botones respondían sin mostrar nada, y el subtítulo era una nota de desarrollo («Parametrizable sin desplegar código»).
+- **Corrección:** botones desactivados hasta elegir un plan, marca «actual» en la frecuencia del plan y textos que explican qué hace («Simula cuántas tareas generaría el plan elegido con cada frecuencia, sin cambiar el plan»). Ver P20.
+
+**Pestañas (respuesta):** «Asignación del día» es donde están las **tareas** generadas (por fecha), para asignarlas a un operario; «Calendario» es la vista mensual con cuántas tareas hay cada día por estado, y al hacer clic en un día lista sus tareas. Las tareas aparecen tras «Ejecutar generación ahora» (o el job de las 00:30).
 
 **Incidente de herramientas (para no repetirlo):** al editar los `i18n/*.json` con `json.dump` se reescribía el archivo entero: la indentación del repo es **mixta** y hay `\r` sueltos dentro de algunos valores (no es CRLF). Se editan con parcheo quirúrgico por nodo, partiendo de `git show HEAD:…`, y se comprueba que `git diff --stat` solo toque las líneas esperadas.
