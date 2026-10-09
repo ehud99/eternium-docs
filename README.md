@@ -273,9 +273,13 @@ ni pipeline. Es la forma más rápida de tener un contrato ACTIVE para probar la
 Orden: **Configuración → Programación → Tareas → Ejecución → Supervisión → Historial**.
 
 1. **Configuración de Mantenimiento:**
-   - **Personal:** vincula usuarios de la empresa con el rol interno OPERATOR, FOREMAN o DIRECTOR. No es un rol de seguridad de partner-core.
+   - **Personal:** vincula usuarios de la empresa con el rol interno Operario, Capataz o Director. No es un rol de seguridad de partner-core.
+     - **Para probar basta tu usuario como Operario:** solo el operario asignado ejecuta la tarea; asignar y aprobar en Supervisión piden permiso del módulo, no rol. Capataz y Director corrigen ejecuciones enviadas y reciben alertas.
+     - Un usuario tiene un solo rol por sede; si te equivocaste, edita la ficha.
    - **Plantillas de checklist.**
-   - **Geocerca por sede** (valida el GPS de las fotos).
+   - **Geocerca por sede:** círculo (centro + radio) que rodea el predio. Las fotos tomadas fuera no se bloquean, pero quedan marcadas. Centro: cópialo de Google Maps o usa «Usar mi ubicación»; radio: hasta el borde más lejano (300–500 m es habitual).
+   - **Infraestructura común:** lo que se mantiene y no se vende (jardines, vías, rejas). El tipo «Pabellón» es la estructura de un pabellón que ya existe: se elige de la lista, no se crea otro.
+   - **Umbrales:** solo lectura; muestra los valores que rigen para la empresa.
    - Las frecuencias se crean solas.
 2. **Programación de Mantenimiento:** plan sobre espacios o infraestructura común, con frecuencia, turno, fechas y **checklist obligatorio**.
 3. **Tareas:** las genera un job a las **00:30**, o a demanda con "generar".

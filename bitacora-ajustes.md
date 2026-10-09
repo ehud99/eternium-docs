@@ -36,6 +36,8 @@ Errores que aparecieron en varios módulos. Antes de dar un módulo por bueno, p
 | P16 | **Acciones de fila solo con iconos**. | Tablas. | `app-etn-row-actions` / `row-action` / `row-menu`: ver/editar/descargar con texto de ayuda; lo que cambia estado, en «Más acciones» (F fd5a9cb). |
 | P17 | **Checklist del front evalúa una cosa y se publica otra** (cuerpo en edición vs. borrador guardado). | Publicar sin guardar antes. | Publicar guarda primero el cuerpo en edición (F 6e8984e, test B 50a5060). |
 | P18 | **No tocar partner-core** (lo mantiene otro equipo). | Cambios en paquetes `partnercore`. | Revertir y documentar para ese equipo (B bf34b7b → `partner-core-fix-system-alerts-details.md`). |
+| P20 | **Claves técnicas visibles al usuario** (`maintenance.overdue_hours.REWORK`, `eternium_settings`, «RN-04», tipos con su código). | Buscar en plantillas `font-mono` o textos con `_`/`.` en minúscula; referencias a documentos de requisitos («RN-», «RF-»). | Nombre y descripción traducidos por un `code` estable; la clave nunca sale al navegador (Umbrales, sesión 2026-10-09; Documentos, F 60fbb6c). |
+| P21 | **Valores de configuración copiados a mano en el frontend** (umbrales, defaults, «(15)» en un hint). Se desincronizan: 3 de 11 claves ya no existían. | Buscar constantes con valores de negocio en `models/*.ts` y números fijos en textos i18n. | Endpoint que devuelva lo que **rige** para la empresa, leído con las mismas claves y defaults que los servicios, centralizados en una sola clase (`common/settings/MaintenanceSettings`). |
 | P19 | **Un módulo inyecta el repositorio (`infrastructure.persistence`) de otro módulo.** Lo rechaza `EterniumArchitectureTest.modulo_no_importa_persistencia_ajena_nueva`. | Correr la suite **completa** (`mvnw test`), no solo los tests de la clase tocada. | Puerto en `<módulo>/domain/port` con un record de solo lo necesario, implementado por el servicio dueño del repositorio (`BranchBusinessHoursPort` en `BranchScheduleService`, sesión 2026-10-09). |
 
 **Reglas de trabajo** (del montaje local, ver `CLAUDE.md` global):
@@ -196,4 +198,27 @@ Contenido:
 
 ## 7. FASE 6 — Mantenimiento
 
-_(siguiente fase a revisar)_
+### 7.1 Paso 1 · Configuración de Mantenimiento (sesión 2026-10-09)
+
+Commits: B 79e7ef3 (pabellón), 36f99d5 (umbrales); F 113b3b3. Verificado: backend 1572 tests en verde
+(incluye `EterniumArchitectureTest`), `ng build` en verde.
+
+**Personal: «¿hacen falta 3 usuarios con los 3 roles?»**
+- **Respuesta:** no. Solo el **Operario** ejecuta (y solo el asignado a la tarea); asignar y aprobar en Supervisión no exigen rol de mantenimiento, solo permiso del módulo. Capataz y Director corrigen ejecuciones enviadas y reciben alertas y el resumen diario. Un usuario tiene **un rol por sede** (`uq_etn_mstaff_user`); el rol se edita, no hace falta otra ficha.
+- **Corrección:** el modal explica bajo «Rol» qué hace cada uno; el hint de capacidad muestra la capacidad vigente de la empresa en vez de un «(15)» fijo.
+
+**Geocerca: «¿es lo que ocupa la sede?»**
+- **Respuesta:** es un círculo (centro + radio) que rodea el predio para marcar las fotos de evidencia tomadas fuera; no bloquea. Con centro `1, 1` (océano Atlántico) todas las fotos saldrían marcadas.
+- **Corrección:** ayuda de cómo obtener el centro, botón «Usar mi ubicación» (geolocalización del navegador), enlace «Ver en el mapa» (Google Maps) y hint del radio; textos sin «RN-04» ni «polígono» (es un círculo).
+
+**Infraestructura común: el tipo «Pabellón» obligaba a recrear el pabellón**
+- **Causa:** el tipo PABELLÓN representa la estructura del pabellón (techo, muros), pero el formulario pedía código y nombre nuevos y el pabellón era opcional: se podía duplicar el mismo pabellón.
+- **Corrección:** con tipo Pabellón se elige el pabellón de Espacios y se proponen código (`PAB-SAN-JOSE`) y nombre; el back exige el pabellón, de la misma sede, y uno solo vivo por pabellón (`ETN_MAINTENANCE_ELEMENT_PAVILION_REQUIRED` / `_BRANCH` / `_DUPLICATE`). Un jardín dentro de un pabellón sigue permitido.
+
+**Umbrales: claves técnicas y valores falsos**
+- **Síntoma:** cada tarjeta mostraba la clave (`maintenance.overdue_hours.REWORK`) y el aviso hablaba de `eternium_settings`.
+- **Causa (peor):** los valores estaban **fijos en el frontend** (`MAINTENANCE_SETTINGS`), no se leían de la empresa, y 3 de las 11 claves no coincidían con las que leen los servicios (`sector_alert_threshold`, `unassigned_hours`, `rejections_per_month` en vez de `sector_overdue_threshold`, `unassigned_alert_hours`, `rejections_per_month_alert`).
+- **Corrección:** `common/settings/MaintenanceSettings` centraliza claves y defaults (los servicios y el dominio los toman de ahí); `GET /api/eternium/maintenance/thresholds` devuelve el valor vigente, el de fábrica, la unidad y si está personalizado; la pantalla muestra nombre, descripción y valor, sin claves. Se agregó «Historial mínimo para comparar costos», que existía y no se mostraba. Ver P20, P21.
+- **Lección:** una pantalla «informativa» que copia valores del backend miente en cuanto alguien cambia un valor; si hay que mostrarlo, se lee.
+
+**Incidente de herramientas (para no repetirlo):** al editar los `i18n/*.json` con `json.dump` se reescribía el archivo entero: la indentación del repo es **mixta** y hay `\r` sueltos dentro de algunos valores (no es CRLF). Se editan con parcheo quirúrgico por nodo, partiendo de `git show HEAD:…`, y se comprueba que `git diff --stat` solo toque las líneas esperadas.
