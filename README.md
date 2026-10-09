@@ -8,6 +8,8 @@
 >
 > Complemento: [`modulos-excel-vs-aplicacion.md`](modulos-excel-vs-aplicacion.md) explica por qué
 > el menú no coincide 1 a 1 con el Excel.
+> [`bitacora-ajustes.md`](bitacora-ajustes.md) registra las correcciones hechas al recorrer este flujo
+> y los patrones de error que conviene revisar en otros módulos.
 
 ---
 
