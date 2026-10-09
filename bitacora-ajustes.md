@@ -39,6 +39,7 @@ Errores que aparecieron en varios módulos. Antes de dar un módulo por bueno, p
 | P20 | **Claves técnicas visibles al usuario** (`maintenance.overdue_hours.REWORK`, `eternium_settings`, «RN-04», tipos con su código). | Buscar en plantillas `font-mono` o textos con `_`/`.` en minúscula; referencias a documentos de requisitos («RN-», «RF-»). | Nombre y descripción traducidos por un `code` estable; la clave nunca sale al navegador (Umbrales, sesión 2026-10-09; Documentos, F 60fbb6c). |
 | P21 | **Valores de configuración copiados a mano en el frontend** (umbrales, defaults, «(15)» en un hint). Se desincronizan: 3 de 11 claves ya no existían. | Buscar constantes con valores de negocio en `models/*.ts` y números fijos en textos i18n. | Endpoint que devuelva lo que **rige** para la empresa, leído con las mismas claves y defaults que los servicios, centralizados en una sola clase (`common/settings/MaintenanceSettings`). |
 | P22 | **Un selector ofrece una opción que la validación rechaza** («Todos» en el pabellón de un plan que exige pabellón). | Comparar las opciones de cada select con las reglas del back y los CHECK de la BD. | Quitar la opción, explicar la regla junto al campo y marcarlo en rojo (plan preventivo, sesión 2026-10-09). |
+| P23 | **Una cifra que se lee como otra** («Duración 56 ms» del job leída como duración de las tareas; promedio redondeado hacia arriba que da «1 tarea diaria» con 3 al año; «Sin contrato vigente» que suma también a los que sí tienen contrato pero no perpetuo). | Revisar cada contador de un panel: ¿de qué es (job, tarea, espacio)?, ¿qué redondeo usa?, ¿mezcla motivos distintos? | Etiqueta con el sujeto («Tiempo de proceso del job»), decimales en promedios y un contador por motivo de exclusión (Programación, sesión 2026-10-09). |
 | P19 | **Un módulo inyecta el repositorio (`infrastructure.persistence`) de otro módulo.** Lo rechaza `EterniumArchitectureTest.modulo_no_importa_persistencia_ajena_nueva`. | Correr la suite **completa** (`mvnw test`), no solo los tests de la clase tocada. | Puerto en `<módulo>/domain/port` con un record de solo lo necesario, implementado por el servicio dueño del repositorio (`BranchBusinessHoursPort` en `BranchScheduleService`, sesión 2026-10-09). |
 
 **Reglas de trabajo** (del montaje local, ver `CLAUDE.md` global):
@@ -238,3 +239,22 @@ Commit: F a8c64dd. Verificado: `ng build` en verde.
 **Pestañas (respuesta):** «Asignación del día» es donde están las **tareas** generadas (por fecha), para asignarlas a un operario; «Calendario» es la vista mensual con cuántas tareas hay cada día por estado, y al hacer clic en un día lista sus tareas. Las tareas aparecen tras «Ejecutar generación ahora» (o el job de las 00:30).
 
 **Incidente de herramientas (para no repetirlo):** al editar los `i18n/*.json` con `json.dump` se reescribía el archivo entero: la indentación del repo es **mixta** y hay `\r` sueltos dentro de algunos valores (no es CRLF). Se editan con parcheo quirúrgico por nodo, partiendo de `git show HEAD:…`, y se comprueba que `git diff --stat` solo toque las líneas esperadas.
+
+### 7.3 Paso 3 · Generación de tareas: 0 tareas y simulador confuso (sesión 2026-10-09)
+
+Commits: B a109a46, F 1b89f2b. Verificado: suite completa 1599 tests, 0 fallos; `ng build` en verde.
+
+**«Tengo una tarea diaria activa y no puedo asignarla»**
+- **Causa:** no era un error de asignación: la generación produjo **0 tareas**. El plan «limpieza gral» tiene activado «Exigir mantenimiento perpetuo vigente» y en el pabellón hay 3 espacios: NICHO01 con contrato en **borrador**, LOTE001 con contrato activo pero **solo plan de pago de venta**, y LOTE004 **sin vender**. Ninguno cumple.
+- **Respuesta:** no se crea un contrato por tarea. El contrato es la **venta del espacio** a una familia, y la regla (RN-01) es: solo se mantiene lo vendido con contrato activo, y si el plan exige perpetuo, además un plan de pago de concepto «Mantenimiento perpetuo» (Pagos → Planes de pago → Nuevo, sobre el contrato del espacio; nace ACTIVO). El operario no necesita contrato: es personal de Mantenimiento. Para probar sin perpetuo basta desactivar el interruptor en el plan (LOTE001 generaría tarea).
+- **Corrección:** el panel «Cobertura contractual» decía «Con mantenimiento perpetuo 0 / Sin contrato vigente 3» aunque LOTE001 sí tiene contrato. Ahora `PlanScopeResolver.coverage()` da el motivo y el panel muestra «Generan tarea», «Sin contrato activo» y, si el plan lo exige, «Con contrato, sin mantenimiento perpetuo», con una nota que dice dónde se crea ese plan de pago.
+
+**«Duración 56 ms, pero las tareas suman 5 minutos»**
+- **Causa:** es lo que tardó el **proceso** de generación, no la duración de las tareas (los minutos del checklist son la estimación de trabajo del operario).
+- **Corrección:** «Tiempo de proceso del job» y «Espacios omitidos (sin cobertura)». Ver P23.
+
+**Simulador: «Anual» daba 3 tareas al año y «1 tarea» diaria frente a 15 de capacidad**
+- **Respuesta:** tareas al año = espacios del alcance × veces por año (anual: 3 × 1 = 3; diaria: 3 × 365 = 1095). La capacidad (15) es lo que la cuadrilla **puede** hacer por día, no lo que se genera.
+- **Causa del «1»:** el promedio se redondeaba **hacia arriba** (3 / 260 = 0,01 → 1) y repartía sobre 260 días aunque el calendario solo salta domingos y feriados.
+- **Corrección:** 2 decimales y 313 días laborables (igual que `MaintenanceBusinessCalendar`); el mensaje dice «El plan generaría N tareas al año, unas X por día laborable, y la cuadrilla absorbe C por día». El simulador cuenta todos los espacios del alcance, tengan o no cobertura: mide la carga si todos estuvieran contratados.
+- **Lección:** en promedios de carga, nunca `CEILING` a entero (P23).

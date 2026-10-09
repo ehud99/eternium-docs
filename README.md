@@ -287,7 +287,7 @@ Orden: **Configuración → Programación → Tareas → Ejecución → Supervis
 3. **Tareas:** las genera un job a las **00:30**, o a demanda con **«Ejecutar generación ahora»** (Programación → Planes preventivos).
    - Aparecen en la pestaña **«Asignación del día»** (por fecha), donde se asignan a un operario.
    - **«Calendario»** muestra el mes con cuántas tareas hay cada día por estado; al hacer clic en un día se listan sus tareas.
-   - ⚠️ Un espacio **sin contrato ACTIVE no genera tarea**.
+   - ⚠️ Solo genera tarea un espacio **vendido con contrato ACTIVE**; si el plan tiene «Exigir mantenimiento perpetuo», además un plan de pago de concepto **«Mantenimiento perpetuo»** (Pagos → Planes de pago → Nuevo). El panel «Cobertura contractual» del plan dice cuántos espacios generan tarea y por qué quedan fuera los demás; si la corrida da «0 tareas generadas», mira ahí.
    - Luego el capataz asigna cada tarea a un operario de la misma sede con capacidad.
 4. **Ejecución en Campo:** entrar **con el usuario del operario asignado**; si otro usuario intenta ejecutarla, recibe "no es tuya". Se inicia la tarea y se suben fotos, GPS y checklist.
 5. **Supervisión y Control:**
