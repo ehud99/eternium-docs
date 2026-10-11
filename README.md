@@ -282,18 +282,24 @@ Orden: **Configuración → Programación → Tareas → Ejecución → Supervis
    - **Infraestructura común:** lo que se mantiene y no se vende (jardines, vías, rejas). El tipo «Pabellón» es la estructura de un pabellón que ya existe: se elige de la lista, no se crea otro.
    - **Umbrales:** solo lectura; muestra los valores que rigen para la empresa.
    - Las frecuencias se crean solas.
+   - **Días de trabajo de la cuadrilla** (pestaña Umbrales): si se trabaja domingos y/o feriados. En un día no laborable un plan diario no genera tarea; uno semanal o mayor pasa al siguiente día hábil.
 2. **Programación de Mantenimiento:** plan sobre espacios o infraestructura común, con frecuencia, turno, fechas y **checklist obligatorio**.
    - Un plan de espacios crea **una tarea por espacio y por periodo**, por eso exige un **pabellón** (o un sector); dentro de él, sector y tipo «Todos» cubren todo el pabellón. La limpieza general del predio va como Infraestructura común.
    - «Frecuencia del plan seleccionado» es un **simulador**: elige un plan en la tabla y prueba frecuencias para ver cuántas tareas al año generaría, sin cambiar el plan.
 3. **Tareas:** las genera un job a las **00:30**, o a demanda con **«Ejecutar generación ahora»** (Programación → Planes preventivos).
    - Aparecen en la pestaña **«Asignación del día»** (por fecha), donde se asignan a un operario.
-   - **«Calendario»** muestra el mes con cuántas tareas hay cada día por estado; al hacer clic en un día se listan sus tareas.
+   - **«Calendario»** muestra el mes con cuántas tareas hay cada día por estado; al hacer clic en un día se listan sus tareas. Las tareas **previstas** de los planes (aún no generadas) se ven con borde punteado.
+   - Si el servidor no corrió algún día a las 00:30, «Ejecutar generación ahora» recupera los días perdidos (hasta 7).
    - ⚠️ Solo genera tarea un espacio **vendido con contrato ACTIVE**; si el plan tiene «Exigir mantenimiento perpetuo», además un plan de pago de concepto **«Mantenimiento perpetuo»** (Pagos → Planes de pago → Nuevo). El panel «Cobertura contractual» del plan dice cuántos espacios generan tarea y por qué quedan fuera los demás; si la corrida da «0 tareas generadas», mira ahí.
    - Luego el capataz asigna cada tarea a un operario de la misma sede con capacidad.
-4. **Ejecución en Campo:** entrar **con el usuario del operario asignado**; si otro usuario intenta ejecutarla, recibe "no es tuya". Se inicia la tarea y se suben fotos, GPS y checklist.
+4. **Ejecución en Campo → Registrar ejecución:** solo se listan tareas **ya asignadas** a un operario (asignadas, en curso o vencidas).
+   - Paso 1 datos y checklist; paso 2 evidencia (foto ANTES y DESPUÉS obligatorias, hasta 5 adicionales y notas de voz ≤ 60 s, cuya duración se lee del archivo); paso 3 revisar el checklist y enviar.
+   - Los ítems **obligatorios** del checklist se exigen al enviar. Una foto o un audio subido por error se quita con la ✕ mientras el registro sea borrador.
+   - «Guardar borrador» cierra sin enviar; se retoma con **«Continuar registro»** en la ficha (o al volver a registrar la misma tarea).
 5. **Supervisión y Control:**
    - **Aprobar:** crea una intervención en el Historial, añade un evento al historial del espacio y la muestra en el portal.
    - **Rechazar:** crea una tarea de retrabajo.
+   - **Cumplimiento por pabellón:** tareas hechas a tiempo sobre las del mes ya vencidas o terminadas (las que aún no vencen no cuentan). Al hacer clic en un pabellón se ve el rendimiento de su cuadrilla.
 6. **Historial de Infraestructura:** intervenciones, órdenes correctivas e índice de conservación.
 
 ---

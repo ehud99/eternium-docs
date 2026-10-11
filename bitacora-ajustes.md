@@ -258,3 +258,36 @@ Commits: B a109a46, F 1b89f2b. Verificado: suite completa 1599 tests, 0 fallos; 
 - **Causa del «1»:** el promedio se redondeaba **hacia arriba** (3 / 260 = 0,01 → 1) y repartía sobre 260 días aunque el calendario solo salta domingos y feriados.
 - **Corrección:** 2 decimales y 313 días laborables (igual que `MaintenanceBusinessCalendar`); el mensaje dice «El plan generaría N tareas al año, unas X por día laborable, y la cuadrilla absorbe C por día». El simulador cuenta todos los espacios del alcance, tengan o no cobertura: mide la carga si todos estuvieran contratados.
 - **Lección:** en promedios de carga, nunca `CEILING` a entero (P23).
+
+### 7.4 Pasos 3–5 · Ejecución en campo, calendario y supervisión (sesión 2026-10-11)
+
+Commits: B 4e51152, 5a25537, 5bc73e4 · F 61f60cc, 762f529. Verificado: suite completa 1612 tests, 0 fallos; `ng build` en verde.
+Incidencias cerradas: F6-01/02/03/07/11/32/37–43 (ver `incidencias.md`).
+
+**Registrar ejecución ofrecía tareas sin asignar (F6-01)**
+- **Causa:** el buscador listaba PENDING_ASSIGNMENT y el back, al iniciar la tarea, exigía ASSIGNED y revertía el alta.
+- **Corrección:** solo tareas con operario y abiertas (ASSIGNED, IN_PROGRESS, OVERDUE), en el front y en el back (`requireRegistrable`). Ver P22.
+
+**Un borrador no se podía retomar (F6-02, F6-43)**
+- **Causa:** cerrar el asistente dejaba la ejecución en DRAFT sin acción para seguir, y registrar otra vez creaba otra (en QA, 4 borradores de la tarea 1).
+- **Corrección:** el alta devuelve el borrador existente (`resumed=true`) y el modal lo carga con su evidencia; la ficha de un borrador tiene «Continuar registro». Los 4 de QA se descartaron con `status = 0` (la tabla no admite DELETE).
+
+**Los ítems obligatorios del checklist no se exigían (F6-03)**
+- **Corrección:** el checklist se puede marcar hasta el envío (paso 3) y el back rechaza el envío con `ETN_MAINTENANCE_CHECKLIST_INCOMPLETE` si falta uno obligatorio. Ver P11.
+
+**No se podía quitar una foto o un audio subido por error (F6-39) y la duración del audio se tecleaba (F6-40)**
+- **Causa:** la evidencia es inmutable en el motor (triggers que bloquean DELETE) y el formulario pedía la duración a mano (29 s quedaba como «5 s»).
+- **Corrección:** mientras el registro es borrador, la evidencia se DESCARTA (V140: `discarded_at/discarded_by`, `@SQLRestriction`, el trigger de topes deja de contarla); la fila se conserva. La duración se lee del archivo en el navegador.
+- **Lección:** cuando el motor prohíbe borrar, la corrección de un error del usuario es un estado («descartado»), no un DELETE.
+
+**Alertas que no se cerraban (F6-07)**
+- **Corrección:** el auto-cierre cubre todo tipo con entidad tarea (vencida, escalada, sin asignar al asignarse, reprogramaciones, sync) y el motivo traduce el estado. Las 80 abiertas de QA son de 26 tareas vencidas sin operario: siguen abiertas con razón (que sean tres por tarea es F6-16, pendiente).
+
+**Plan diario: lunes doble, calendario vacío y días perdidos (F6-37, F6-38)**
+- **Decisión (2026-10-11):** domingos y feriados son **configurables por empresa** (Configuración → Umbrales → «Días de trabajo de la cuadrilla»). En un día no laborable el plan diario se salta; uno de periodo mayor pasa al siguiente día hábil.
+- **Corrección:** «Ejecutar generación ahora» y el job recuperan los días sin corrida exitosa (tope 7); el calendario muestra con borde punteado las tareas previstas de los planes (`GET /calendar/projection`).
+
+**Cumplimiento por pabellón en rojo sin atrasos (F6-41) y badge descuadrado (F6-42)**
+- **Corrección:** solo cuentan tareas terminadas, vencidas o con el plazo cumplido; una completada a la espera de veredicto cuenta como cumplida (decisión 2026-10-11). El texto lo explica. Ver P23.
+
+**Textos:** «polígono» → «geocerca» (F6-11) y la ficha ya no promete «correctiva en menos de 10 segundos».
