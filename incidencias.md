@@ -22,11 +22,11 @@
 | 3 · Ventas → Contrato | 8 | 26 | 4 | 38 |
 | 4 · Pagos | 6 | 22 | 9 | 37 |
 | 5 · Servicios Funerarios | 6 | 14 | 4 | 24 |
-| 6 · Mantenimiento | 8 | 18 | 10 | 36 |
+| 6 · Mantenimiento | 8 | 20 | 10 | 38 |
 | 7 · Portal de Familias | 2 | 6 | 5 | 13 |
 | 8 · Análisis | 1 | 3 | 0 | 4 |
 | G · Guía (secciones 10–12) | 0 | 5 | 3 | 8 |
-| **Total** | **46** | **129** | **41** | **216** |
+| **Total** | **46** | **131** | **41** | **218** |
 
 **Prioridad sugerida (las A que rompen dinero o datos):** F4-01, F4-02, F4-03 (moneda y doble facturación) ·
 F5-02/03/04 (difunto ≠ el de la OS) · F2-01, F2-02 (espacios que quedan RESERVED/AVAILABLE mal) ·
@@ -275,6 +275,8 @@ F3-06 (transferencia con deuda en 0) · F6-01, F6-02, F6-03 (ejecución en campo
 - [ ] **F6-34 · B · P11** — «Costo final» requisito de cierre de OT solo en el front.
 - [ ] **F6-35 · B · P28** — «{{n}} tareas en el checklist» (son ítems), «1 tareas vencidas», «1 seleccionadas».
 - [ ] **F6-36 · B** — «sincronizado {{hora}}» aunque el estado sea PENDING/ERROR; `novedadEstado.TRIAGED` = «Triada».
+- [ ] **F6-37 · M** *(reportada por el usuario 2026-10-11)* — Un plan **diario** duplica la carga del lunes: la tarea del domingo (periodo `2026-10-11`) se corre al lunes 12/10 y el lunes además genera la suya (periodo `2026-10-12`) ⇒ 2 tareas por espacio ese día. En QA: tareas 30–34 con `period_key 2026-10-11` y `scheduled_date 2026-10-12`. `MaintenanceBusinessCalendar` + `MaintenanceTaskGenerationService`. → Para frecuencia diaria, saltar el domingo/feriado en vez de correrlo (decidir la regla de negocio).
+- [ ] **F6-38 · M** *(reportada por el usuario 2026-10-11)* — El Calendario solo muestra tareas **ya generadas**: un plan diario no aparece en los días siguientes, y el usuario espera verlo cada día. Además, si el servidor no corre a las 00:30, ese día queda sin tareas y no se recupera («Ejecutar generación ahora» solo genera el día actual; en QA no hay tareas del 09 y 10/10). → Proyectar en el calendario las tareas previstas de los planes (atenuadas, «se generará el día X»), y que la generación recupere los días perdidos dentro de la vigencia o avisarlo.
 
 ---
 
