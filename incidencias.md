@@ -28,7 +28,7 @@
 | G · Guía (secciones 10–12) | 0 | 5 | 3 | 8 |
 | **Total** | **47** | **134** | **42** | **223** |
 
-**Progreso:** 2026-10-11 — 13 corregidas en Mantenimiento (F6-01/02/03/07/11/32/37–43), marcadas con [x].
+**Progreso:** 2026-10-11 — 20 corregidas en Mantenimiento (F6-01/02/03/05/06/07/08/09/11/13/16/24/32/37–43), marcadas con [x].
 
 **Prioridad sugerida (las A que rompen dinero o datos):** F4-01, F4-02, F4-03 (moneda y doble facturación) ·
 F5-02/03/04 (difunto ≠ el de la OS) · F2-01, F2-02 (espacios que quedan RESERVED/AVAILABLE mal) ·
@@ -245,18 +245,18 @@ F3-06 (transferencia con deuda en 0) · F6-01, F6-02, F6-03 (ejecución en campo
 - [x] **F6-02 · A** — Un borrador de ejecución no se puede retomar: no hay «Continuar»; la tarea IN_PROGRESS sigue listada y se crea otra ejecución (sin índice único). En QA la tarea 1 tiene 4 DRAFT + 1 APPROVED. `ejecucion.component.html:378-399`; `TaskExecutionService.java:153-190`. — ✅ **Corregida 2026-10-11** (B 4e51152, 5bc73e4 · F 61f60cc (4 borradores QA descartados con status=0)).
 - [x] **F6-03 · A** — Los ítems «Obligatorio» del checklist no se exigen (el modal descarta `isRequired`; `submit()` solo valida fotos). `registro-modal.component.ts:296-305`; `TaskExecutionService.java:319-354`. — ✅ **Corregida 2026-10-11** (B 4e51152 · F 61f60cc).
 - [ ] **F6-04 · A · P22** — Unidad de capacidad «Minutos» se ofrece pero se cuenta en tareas: «480 minutos» = 480 tareas/día. `personal-modal.component.ts:208`; `MaintenanceStaffService.java:275-288`.
-- [ ] **F6-05 · A** — «Pendientes de revisión»: la columna «Operario» muestra la cuadrilla (o «—»); el DTO no trae el operario. `supervision.component.html:377`; `PendingReviewDTO`.
-- [ ] **F6-06 · A** — Toda intervención de una tarea preventiva queda marcada «Mantenimiento perpetuo» (se pasa `preventive` como `perpetualCareCovered`). `InterventionService.java:500,517,660`.
+- [x] **F6-05 · A** — «Pendientes de revisión»: la columna «Operario» muestra la cuadrilla (o «—»); el DTO no trae el operario. `supervision.component.html:377`; `PendingReviewDTO`. — ✅ **Corregida 2026-10-11** (B ecf97c5 · F 90dc0c9).
+- [x] **F6-06 · A** — Toda intervención de una tarea preventiva queda marcada «Mantenimiento perpetuo» (se pasa `preventive` como `perpetualCareCovered`). `InterventionService.java:500,517,660`. — ✅ **Corregida 2026-10-11** (B de3550c).
 - [x] **F6-07 · A** — Las alertas no se cierran al resolverse: solo `TASK_OVERDUE` se auto-cierra; quedan vivas ESC48, UNASSIGNED y RESCHEDULED de tareas asignadas, aprobadas o canceladas (QA: 26 + 22 + 26 abiertas). `MaintenanceAlertEngineService.java` (autoResolveTaskOverdue). — ✅ **Corregida 2026-10-11** (B 4e51152).
-- [ ] **F6-08 · A** — Doble alerta por reprogramaciones: `RESCHED-` al Director (TaskService) y `RESCH-` al Capataz (motor). → Una sola regla.
-- [ ] **F6-09 · M · guía** — Cualquier usuario registra en nombre del operario: el selector «Operario» ofrece capataces y directores, y «no es tuya» compara el `staffId` enviado, no el usuario conectado. `registro-modal.component.ts:295,323-336`; `TaskExecutionService.java:621-627`. → Decidir la regla.
+- [x] **F6-08 · A** — Doble alerta por reprogramaciones: `RESCHED-` al Director (TaskService) y `RESCH-` al Capataz (motor). → Una sola regla. — ✅ **Corregida 2026-10-11** (B 030e579).
+- [x] **F6-09 · M · guía** — Cualquier usuario registra en nombre del operario: el selector «Operario» ofrece capataces y directores, y «no es tuya» compara el `staffId` enviado, no el usuario conectado. `registro-modal.component.ts:295,323-336`; `TaskExecutionService.java:621-627`. → Decidir la regla. — ✅ **Corregida 2026-10-11** (B 4bc0860 · F 470ee13 (siempre a nombre del asignado)).
 - [ ] **F6-10 · M** — Las coordenadas tecleadas pisan el GPS (EXIF) de cada foto y la geocerca se evalúa una vez; no hay «Usar mi ubicación». `registro-modal.component.ts:384-389`; `TaskExecutionService.java:232-254,668-675`.
 - [x] **F6-11 · M · P20** — Se sigue diciendo «polígono» (la geocerca es un círculo): `etnMtoEjecucion.tabla.gpsFuera`, `ficha.gpsFuera`, `ficha.gps`, `envio.fueraGeocerca`, `envio.confirmarFuera`. — ✅ **Corregida 2026-10-11** (F 61f60cc).
 - [ ] **F6-12 · M · P21** — Límites de foto/evidencia copiados en el front (`ejecucion.model.ts:50-52`); el back lee `maintenance.photo_max_bytes` y `task_max_evidence_bytes`, que no están en `MaintenanceSettings`.
-- [ ] **F6-13 · M · guía** — «Rechazar» se describe como «tarea correctiva»; el back crea REWORK. Terminología mezclada (Retrabajo / Reproceso / rework). i18n ≈11919/11986/12197; `msg:2752,2756,2962,2970`.
+- [x] **F6-13 · M · guía** — «Rechazar» se describe como «tarea correctiva»; el back crea REWORK. Terminología mezclada (Retrabajo / Reproceso / rework). i18n ≈11919/11986/12197; `msg:2752,2756,2962,2970`. — ✅ **Corregida 2026-10-11** (B 030e579 · F 470ee13 («retrabajo»)).
 - [ ] **F6-14 · M** — Regla de vencidas: Umbrales dice «en un mismo pabellón… alerta al capataz»; Supervisión dice «Sobre 5 vencidas en un sector se avisa al Director». Real: **más de N** en un **pabellón**, al capataz **y** escalada al Director. `MaintenanceAlertEngineService.java` (sectorThresholdRule). → Un solo texto con N del umbral.
 - [ ] **F6-15 · M · P22** — «Conectividad» y «Reasignar» aparecen en cualquier alerta de tarea (solo valen para OVERDUE / tareas vivas). `supervision.component.ts:800-802`.
-- [ ] **F6-16 · M** — Una tarea vencida y sin asignar genera tres alertas (OVERDUE «sin completarse», ESC48, UNASSIGNED). → Solo UNASSIGNED si no tiene operario.
+- [x] **F6-16 · M** — Una tarea vencida y sin asignar genera tres alertas (OVERDUE «sin completarse», ESC48, UNASSIGNED). → Solo UNASSIGNED si no tiene operario. — ✅ **Corregida 2026-10-11** (B 030e579).
 - [ ] **F6-17 · M · P22** — Asignar/Reprogramar/Cancelar visibles en tareas CANCELLED/COMPLETED/APPROVED (el back rechaza); también en Calendario. `programacion.component.html:578,600,621,855-877`.
 - [ ] **F6-18 · M · P23** — «sin asignar +24 h» marca toda tarea de fecha pasada sin operario (incluidas canceladas), sin mirar `createdAt` ni el umbral. `programacion.component.ts:1359-1363`.
 - [ ] **F6-19 · M** — Cuadrilla «asignadas hoy» muestra el día elegido. `programacion.component.ts:801`.
@@ -264,7 +264,7 @@ F3-06 (transferencia con deuda en 0) · F6-01, F6-02, F6-03 (ejecución en campo
 - [ ] **F6-21 · M · P20** — El panel de la corrida muestra `e.getMessage()` crudo (SQL/Java en inglés). `programacion.component.html:333-336`.
 - [ ] **F6-22 · M · P20** — Códigos crudos en mensajes del back: estado («APPROVED») en `autoResolvedTask`, `verification.notSubmitted`, `workOrders.notOpen`; severidad «HIGH» en `alerts.emailBody`; «Novedad de campo (STRUCTURAL)» en el título de la OT.
 - [ ] **F6-23 · M** — Supervisión: «Espacio» vacío en tareas de infraestructura común (no se resuelve el elemento). `supervision.component.html:383`.
-- [ ] **F6-24 · M · P23** — Latencia «0 s» cuando no hay dato (el DTO pide «—»), y es de hoy aunque el tablero tenga otra fecha. `supervision.component.ts:292-295`.
+- [x] **F6-24 · M · P23** — Latencia «0 s» cuando no hay dato (el DTO pide «—»), y es de hoy aunque el tablero tenga otra fecha. `supervision.component.ts:292-295`. — ✅ **Corregida 2026-10-11** (F 90dc0c9).
 - [ ] **F6-25 · M** — La intervención atribuye el trabajo al asignado, no a quien ejecutó; un retrabajo aprobado queda CORRECTIVE. `InterventionService.java:500,517`.
 - [ ] **F6-26 · M · P23** — KPI «Registros del día… de N tareas asignadas» cuenta también las no asignadas; «Pendientes de sync»/«En error» no filtran fecha. `TaskExecutionService.java:565-586`.
 - [ ] **F6-27 · B** — Columna «Generada» muestra la fecha programada. `programacion.component.ts:348`.

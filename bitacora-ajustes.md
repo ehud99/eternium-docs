@@ -291,3 +291,30 @@ Incidencias cerradas: F6-01/02/03/07/11/32/37–43 (ver `incidencias.md`).
 - **Corrección:** solo cuentan tareas terminadas, vencidas o con el plazo cumplido; una completada a la espera de veredicto cuenta como cumplida (decisión 2026-10-11). El texto lo explica. Ver P23.
 
 **Textos:** «polígono» → «geocerca» (F6-11) y la ficha ya no promete «correctiva en menos de 10 segundos».
+
+### 7.5 Supervisión, alertas y autoría de la ejecución (sesión 2026-10-11, tarde)
+
+Commits: B ecf97c5, de3550c, 030e579, 4bc0860 · F 90dc0c9, 470ee13. Verificado: suite completa 1616 tests, 0 fallos; `ng build` en verde.
+Incidencias cerradas: F6-05/06/08/09/13/16/24.
+
+**«Operario» mostraba la cuadrilla en «Por revisar» (F6-05)**
+- **Corrección:** el DTO trae `operatorName`; la columna muestra el nombre y, debajo en gris, la cuadrilla (igual que «Rendimiento de la cuadrilla»).
+
+**Toda preventiva quedaba «cubierta por mantenimiento perpetuo» (F6-06)**
+- **Causa:** al aprobar se pasaba «viene de un plan» como `perpetualCareCovered`.
+- **Corrección:** solo se marca cubierta si el plan exige plan de mantenimiento perpetuo (RN-01). Un plan de limpieza general es preventivo pero no se carga a ningún contrato.
+
+**Alertas duplicadas (F6-08, F6-16)**
+- **Reprogramaciones:** la reprogramación (al Director, clave `RESCHED-`) y el motor (al Capataz, `RESCH-`) levantaban dos alertas con el mismo umbral. **Decisión (2026-10-11):** una sola, al **Capataz**; la reprogramación la adelanta con la misma clave.
+- **Vencida sin operario:** daba tres alertas (vencida, escalada 48 h, sin asignar). Ahora solo «sin asignar», que además se levanta en cuanto vence (antes esperaba 24 h desde la creación y, si ya estaba vencida, nunca llegaba). Las vencidas/escaladas abiertas de tareas sin operario se cierran solas con el motivo «la cubre la alerta sin asignar».
+- **Lección:** dos reglas que miden lo mismo deben compartir clave de deduplicación; si no, la bandeja cuenta el problema dos veces.
+
+**Cualquiera registraba a nombre de cualquiera (F6-09)**
+- **Decisión (2026-10-11):** la ejecución queda **siempre a nombre del operario asignado**. La registra él o alguien de la oficina (capataz, director) en su nombre; otro operario recibe «La tarea está asignada a otro operario». Quién la cargó queda en `created_by`.
+- **Corrección:** el selector «Operario» del modal se reemplazó por el nombre del asignado (solo lectura) y el campo `staffId` salió de la petición. Ver P22.
+
+**Terminología del rechazo (F6-13)**
+- **Decisión (2026-10-11):** lo que nace de un rechazo es un **retrabajo**; «correctiva» queda para las tareas ad-hoc y las órdenes correctivas. Se cambiaron los textos del rechazo, la bandeja y los mensajes del back («Reproceso», «rework»).
+
+**Latencia «0 s» sin dato (F6-24)**
+- **Corrección:** sin ejecuciones de campo ese día se muestra «—»; el texto aclara que es el promedio del día elegido (el back ya usaba esa fecha). Ver P23.
