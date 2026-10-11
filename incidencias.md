@@ -22,11 +22,11 @@
 | 3 · Ventas → Contrato | 8 | 26 | 4 | 38 |
 | 4 · Pagos | 6 | 22 | 9 | 37 |
 | 5 · Servicios Funerarios | 6 | 14 | 4 | 24 |
-| 6 · Mantenimiento | 8 | 20 | 10 | 38 |
+| 6 · Mantenimiento | 9 | 23 | 11 | 43 |
 | 7 · Portal de Familias | 2 | 6 | 5 | 13 |
 | 8 · Análisis | 1 | 3 | 0 | 4 |
 | G · Guía (secciones 10–12) | 0 | 5 | 3 | 8 |
-| **Total** | **46** | **131** | **41** | **218** |
+| **Total** | **47** | **134** | **42** | **223** |
 
 **Prioridad sugerida (las A que rompen dinero o datos):** F4-01, F4-02, F4-03 (moneda y doble facturación) ·
 F5-02/03/04 (difunto ≠ el de la OS) · F2-01, F2-02 (espacios que quedan RESERVED/AVAILABLE mal) ·
