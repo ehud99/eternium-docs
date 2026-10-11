@@ -10,6 +10,7 @@
 > el menú no coincide 1 a 1 con el Excel.
 > [`bitacora-ajustes.md`](bitacora-ajustes.md) registra las correcciones hechas al recorrer este flujo
 > y los patrones de error que conviene revisar en otros módulos.
+> [`incidencias.md`](incidencias.md) lista lo pendiente tras la evaluación completa del 2026-10-11.
 
 ---
 
