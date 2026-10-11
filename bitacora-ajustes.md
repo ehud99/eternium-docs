@@ -318,3 +318,33 @@ Incidencias cerradas: F6-05/06/08/09/13/16/24.
 
 **Latencia «0 s» sin dato (F6-24)**
 - **Corrección:** sin ejecuciones de campo ese día se muestra «—»; el texto aclara que es el promedio del día elegido (el back ya usaba esa fecha). Ver P23.
+
+### 7.6 Resto de la Fase 6 (sesión 2026-10-11, noche)
+
+Commits: B 4f296d7, 87122bb, 8a752f9 · F a472ca9, 6094a22, c793786. Verificado: suite completa 1619 tests, 0 fallos; `ng build` en verde; arranque real del backend (puerto temporal) para validar las JPQL nuevas.
+Incidencias cerradas: F6-04/10/12/14/15/17–31/33–36. Con esto la Fase 6 queda sin pendientes.
+
+**Capacidad en «Minutos» (F6-04)**
+- **Causa:** el cupo se compara con un conteo de tareas y las tareas no llevan duración: «480 minutos» eran 480 tareas por día.
+- **Corrección:** solo «tareas por día» (se quitó el selector; el back rechaza MINUTES en altas y cambios).
+
+**GPS y geocerca (F6-10)**
+- El GPS propio de la foto (EXIF) manda sobre lo tecleado; una foto con GPS real reevalúa la geocerca mientras la ejecución no conste dentro. Botón «Usar mi ubicación» (geolocalización del navegador).
+
+**Reglas copiadas en el front (F6-12, F6-33, F6-34)** — Ver P11/P21.
+- Topes de evidencia: `GET /executions/limits` con los valores de la empresa (claves ahora en `MaintenanceSettings`).
+- Reprogramar a una fecha pasada y cerrar una OT sin costo final: ahora los rechaza también el back.
+
+**Fallos del job que nadie veía (F6-20)** — Ver P24.
+- La generación capturaba la excepción y `job_runs` registraba éxito. Ahora el job queda FALLIDO si alguna sede falló y, con dos fallos seguidos de una sede, los administradores de la empresa reciben campana y correo.
+
+**Intervención aprobada (F6-25)**
+- Se atribuye a quien ejecutó (la ejecución) y un retrabajo se clasifica como su tarea de origen (preventivo si venía de un plan).
+
+**Acciones y avisos que no aplican (F6-15, F6-17, F6-18)** — Ver P22/P23.
+- «Conectividad» solo en alertas de vencida; Asignar/Reprogramar/Cancelar solo en tareas abiertas; «sin asignar +N h» con el umbral de la empresa y la hora de generación (nuevo `createdAt` en la tarea).
+
+**Textos y códigos (F6-14, F6-19, F6-21, F6-22, F6-23, F6-26–F6-31, F6-35, F6-36)** — Ver P20/P23/P25/P28.
+- Una sola descripción de la regla de vencidas por pabellón; «asignadas para el día elegido»; error de la corrida legible con el detalle técnico plegado; estados, severidad y categoría traducidos en los mensajes del back; fechas dd/MM/yyyy en avisos; elemento de infraestructura en «Espacio»; «Generada» con la fecha real; sin promesas de nivel de servicio («menos de 30 segundos», «5 años», «meta 15 s»); tipo de tarea en vez de «TSK-id»; folio OT-0000001 en vez de «#id»; «Triada» → «Revisada»; «sincronizado HH:mm» solo si sincronizó.
+- **Plurales (F6-35):** sin soporte ICU todavía, se usó redacción neutra («Tareas vencidas: 1»). El arreglo global sigue en T-03.
+- KPI «de N tareas asignadas» sin las que no tienen operario; «Pendientes»/«En error» aclaran que son la cola actual.
