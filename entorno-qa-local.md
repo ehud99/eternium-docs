@@ -35,9 +35,9 @@ Variables (además de las de tu configuración habitual de IntelliJ):
 DB_URL=jdbc:postgresql://localhost:5432/eternium_qa
 SPRING_PROFILES_ACTIVE=qa
 ETERNIUM_SUNAT_STUB=true          # nunca emitir ante SUNAT real con estos datos
-MAIL_TRANSPORT=smtp
-MAIL_HOST=127.0.0.1               # sin salida real de correo (los datos tienen correos ficticios)
-MAIL_PORT=9
+# MAIL_TRANSPORT=smtp             # desde 2026-10-12 comentadas: correo REAL por el transporte API de .env
+# MAIL_HOST=127.0.0.1             # (pruebas del portal). Descomentar para volver a cortar la salida;
+# MAIL_PORT=9                     # los avisos automáticos también escriben a los correos ficticios de QA
 STORAGE_TRANSPORT=filesystem      # o rustfs con eternium-bucket y un prefijo propio (p. ej. qa-local-e2e/)
 STORAGE_FS_ROOT=<carpeta local>
 STORAGE_FS_SIGNING_SECRET=<cualquier texto>
