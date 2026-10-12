@@ -28,7 +28,7 @@
 | G · Guía (secciones 10–12) | 0 | 5 | 3 | 8 |
 | **Total** | **47** | **134** | **42** | **223** |
 
-**Progreso:** 2026-10-11 — Fase 6 (Mantenimiento) completa: las 43 F6 corregidas y marcadas con [x].
+**Progreso:** 2026-10-11 — Fase 6 (Mantenimiento) completa: las 43 F6 corregidas y marcadas con [x]. 2026-10-12 — Fase 7 (Portal de Familias) completa: las 13 F7 corregidas.
 
 **Prioridad sugerida (las A que rompen dinero o datos):** F4-01, F4-02, F4-03 (moneda y doble facturación) ·
 F5-02/03/04 (difunto ≠ el de la OS) · F2-01, F2-02 (espacios que quedan RESERVED/AVAILABLE mal) ·
@@ -289,19 +289,19 @@ F3-06 (transferencia con deuda en 0) · F6-01, F6-02, F6-03 (ejecución en campo
 
 ## Fase 7 · Portal de Familias
 
-- [ ] **F7-01 · A · P20** — Cabecera del portal (público): «HOLDER · DNI ***», «LEGAL_REPRESENTATIVE · PASSPORT». `F/feature-portal/src/layout/portal-layout.component.ts:107`, `.html:84`.
-- [ ] **F7-02 · M · P20** — «Mi cuenta» muestra «PASSPORT». `portal-cuenta.component.html:22`. También `e.spaceType` y `s.estado`/`c.estado` en inicio y solicitudes (verificar que lleguen traducidos).
-- [ ] **F7-03 · A · guía** — El portal solo cobra cuotas ya vencidas (`PortalCheckoutService.java:318,331`): con un plan recién creado no se puede probar el pago. La guía (§8.1, §13 paso 7) no lo dice.
-- [ ] **F7-04 · M · P21** — «20 minutos» fijo; el back lee `portal.session_minutes`. i18n ≈13071/13100.
-- [ ] **F7-05 · M · P23** — «Intentos restantes» baja 1 ante cualquier error (código vencido, bloqueo, red). `portal-acceso.component.ts:337-342`.
-- [ ] **F7-06 · B · P28** — «Te quedan 1 intentos». `msg:3055`.
-- [ ] **F7-101 · M · P20** — Cuentas del Portal: 5 plantillas de notificación sin traducir ni filtro (`CONTRACT_EXPIRING`, `CONTRACT_TRANSFERRED`, `INTERMENT_EXECUTED`, `EXHUMATION_EXECUTED`, `INVOICE_ISSUED`). `atencion-comun.model.ts:109-113`.
-- [ ] **F7-102 · M · P24** — «Si vence el SLA, la solicitud escala al jefe de atención»: solo si existe `portal.requests.escalation_user_id` (sin pantalla, 0 por defecto). `PortalRequestSlaService.java:111-113`.
-- [ ] **F7-103 · M · guía** — Culqi exige el NOMBRE de variables de entorno del servidor: lo debe definir sistemas; la guía no lo dice.
-- [ ] **F7-104 · B** — «Invitar titular»: «Le enviaremos un correo para activar su cuenta»; el correo no activa nada.
-- [ ] **F7-105 · B · guía** — El «costo» del tipo de solicitud es texto libre, no un monto.
-- [ ] **F7-106 · B · P11** — Plazo 0 o > 90 responde con el mensaje «no negativo».
-- [ ] **F7-107 · B** — Ambiente de pasarela desconocido responde «proveedor desconocido».
+- [x] **F7-01 · A · P20** — Cabecera del portal (público): «HOLDER · DNI ***», «LEGAL_REPRESENTATIVE · PASSPORT». `F/feature-portal/src/layout/portal-layout.component.ts:107`, `.html:84`. → Relación y tipo de documento traducidos en la cabecera. — ✅ **Corregida 2026-10-12** (F 87d29f5).
+- [x] **F7-02 · M · P20** — «Mi cuenta» muestra «PASSPORT». `portal-cuenta.component.html:22`. También `e.spaceType` y `s.estado`/`c.estado` en inicio y solicitudes (verificar que lleguen traducidos). → «Pasaporte»/«C.E.» en Mi cuenta; espacio y estados ya llegaban traducidos. — ✅ **Corregida 2026-10-12** (F 87d29f5).
+- [x] **F7-03 · A · guía** — El portal solo cobra cuotas ya vencidas (`PortalCheckoutService.java:318,331`): con un plan recién creado no se puede probar el pago. La guía (§8.1, §13 paso 7) no lo dice. → Guía §8.1/§13: solo cuotas vencidas o que vencen hoy; primera cuota con fecha de hoy para probar. — ✅ **Corregida 2026-10-12** (docs).
+- [x] **F7-04 · M · P21** — «20 minutos» fijo; el back lee `portal.session_minutes`. i18n ≈13071/13100. → La marca pública trae `sessionMinutes`; los dos textos lo usan. — ✅ **Corregida 2026-10-12** (B 4bbe9c5 · F 87d29f5).
+- [x] **F7-05 · M · P23** — «Intentos restantes» baja 1 ante cualquier error (código vencido, bloqueo, red). `portal-acceso.component.ts:337-342`. → Solo baja con PORTAL_OTP_INVALID; bloqueo → 0; vencido/red no lo tocan. — ✅ **Corregida 2026-10-12** (F 87d29f5).
+- [x] **F7-06 · B · P28** — «Te quedan 1 intentos». `msg:3055`. → «Intentos restantes: {0}». — ✅ **Corregida 2026-10-12** (B 4bbe9c5).
+- [x] **F7-101 · M · P20** — Cuentas del Portal: 5 plantillas de notificación sin traducir ni filtro (`CONTRACT_EXPIRING`, `CONTRACT_TRANSFERRED`, `INTERMENT_EXECUTED`, `EXHUMATION_EXECUTED`, `INVOICE_ISSUED`). `atencion-comun.model.ts:109-113`. → Las 5 plantillas traducidas (es/en/pt) y en el filtro. — ✅ **Corregida 2026-10-12** (F 87d29f5).
+- [x] **F7-102 · M · P24** — «Si vence el SLA, la solicitud escala al jefe de atención»: solo si existe `portal.requests.escalation_user_id` (sin pantalla, 0 por defecto). `PortalRequestSlaService.java:111-113`. → Sin jefe configurado avisa a los administradores (respaldo: propietarios); textos alineados. — ✅ **Corregida 2026-10-12** (B 4bbe9c5 · F 87d29f5).
+- [x] **F7-103 · M · guía** — Culqi exige el NOMBRE de variables de entorno del servidor: lo debe definir sistemas; la guía no lo dice. → Guía §8.2: nombre de variable de entorno que define sistemas; probar con el simulador. — ✅ **Corregida 2026-10-12** (docs).
+- [x] **F7-104 · B** — «Invitar titular»: «Le enviaremos un correo para activar su cuenta»; el correo no activa nada. → Subtítulo: «avisándole que ya puede entrar con su documento»; guía aclarada. — ✅ **Corregida 2026-10-12** (F 87d29f5).
+- [x] **F7-105 · B · guía** — El «costo» del tipo de solicitud es texto libre, no un monto. → Guía §8.2: el costo es texto informativo, no genera cobro. — ✅ **Corregida 2026-10-12** (docs).
+- [x] **F7-106 · B · P11** — Plazo 0 o > 90 responde con el mensaje «no negativo». → Mensaje propio «entre 1 y 90 días hábiles». — ✅ **Corregida 2026-10-12** (B 4bbe9c5).
+- [x] **F7-107 · B** — Ambiente de pasarela desconocido responde «proveedor desconocido». → Mensaje propio de ambiente desconocido. — ✅ **Corregida 2026-10-12** (B 4bbe9c5).
 
 ---
 

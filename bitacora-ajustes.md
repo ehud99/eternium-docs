@@ -348,3 +348,34 @@ Incidencias cerradas: F6-04/10/12/14/15/17–31/33–36. Con esto la Fase 6 qued
 - Una sola descripción de la regla de vencidas por pabellón; «asignadas para el día elegido»; error de la corrida legible con el detalle técnico plegado; estados, severidad y categoría traducidos en los mensajes del back; fechas dd/MM/yyyy en avisos; elemento de infraestructura en «Espacio»; «Generada» con la fecha real; sin promesas de nivel de servicio («menos de 30 segundos», «5 años», «meta 15 s»); tipo de tarea en vez de «TSK-id»; folio OT-0000001 en vez de «#id»; «Triada» → «Revisada»; «sincronizado HH:mm» solo si sincronizó.
 - **Plurales (F6-35):** sin soporte ICU todavía, se usó redacción neutra («Tareas vencidas: 1»). El arreglo global sigue en T-03.
 - KPI «de N tareas asignadas» sin las que no tienen operario; «Pendientes»/«En error» aclaran que son la cola actual.
+
+---
+
+## 8. FASE 7 — Portal de Familias (sesión 2026-10-12)
+
+Commits: B 4bbe9c5 · F 87d29f5. Verificado: suite completa del backend en verde (0 fallos); `ng build` en verde.
+Incidencias cerradas: F7-01–06, F7-101–107. Con esto la Fase 7 queda sin pendientes.
+
+**«No encontramos un cementerio con ese RUC» con el RUC 20523799623 (no era un error)**
+- **Causa:** ese RUC es de Partner Tech E.I.R.L., que en `core.company` es `PROVIDER` (el dueño de la plataforma). El portal solo abre empresas `TENANT` activas (`PortalProvisioningService.tenantByRuc`). En QA el cementerio es Jardines del Recuerdo (20603058934).
+- **Lección:** para probar el portal hay que estar en la empresa cementerio, no en la del proveedor, aunque la Configuración General deje editar a ambas.
+- **Enlace con el nombre en vez del RUC:** el `/portal/{ruc}` venía del código importado el 2026-09-10 (decisión «Q-8.4»); el Excel solo pide «un portal de autoservicio». Se consultó y el usuario decidió **mantener el RUC**.
+
+**Códigos en crudo (F7-01, F7-02)** — Ver P20.
+- «HOLDER · DNI», «PASSPORT»: helpers compartidos `etiquetaRelacion`/`etiquetaDocumento` en `portal-comun.model.ts` (un código nuevo se muestra tal cual).
+
+**Números fijos que el back configura (F7-04)** — Ver P21.
+- «20 minutos»: la marca pública (`GET /public/company/{ruc}`) ahora trae `sessionMinutes`.
+
+**Contador de intentos (F7-05, F7-06)** — Ver P23/P28.
+- Bajaba con cualquier error; ahora solo con `PORTAL_OTP_INVALID` y queda en 0 con `PORTAL_ACCOUNT_LOCKED`. Mensaje del back en redacción neutra.
+
+**Promesa de escalamiento sin destinatario (F7-102)** — Ver P24.
+- Sin `portal.requests.escalation_user_id` (no tiene pantalla) una solicitud sin asignar vencía sin avisar a nadie. Ahora avisa a los administradores (`StaffDirectoryPort.recipientsFor`, con respaldo en propietarios).
+
+**Mensajes de validación equivocados (F7-106, F7-107)** — Ver P11.
+- Plazo fuera de 1–90 decía «no negativo»; ambiente desconocido decía «proveedor desconocido». Cada uno con su mensaje.
+
+**Textos y guía (F7-03, F7-101, F7-103–105)**
+- 5 plantillas de aviso traducidas y en el filtro; «Invitar titular» ya no promete activar la cuenta; guía: cuotas pagables (vencidas o que vencen hoy), Culqi por nombre de variable de entorno, costo del tipo de solicitud informativo.
+

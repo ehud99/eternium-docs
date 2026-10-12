@@ -322,7 +322,7 @@ No aparece en el menú lateral porque es otra interfaz, para las familias.
 1. Un **titular** (o cotitular o beneficiario) con documento DNI, CE, pasaporte o RUC.
 2. **Un contacto EMAIL** en la ficha del titular. Sin correo, el portal responde "acércate a la oficina". Los beneficiarios que no son titulares no tienen correo, así que no pueden entrar.
 3. Un **contrato con espacio** en estado ACTIVE, PENDING_SIGNATURE o EXPIRED.
-4. **No hace falta crear la cuenta**: se crea sola la primera vez que la persona pide el código. Opcionalmente, **Cuentas del Portal → "Invitar titular"** le envía un correo; el correo no lleva enlace, dice "entra con tu documento y el RUC".
+4. **No hace falta crear la cuenta**: se crea sola la primera vez que la persona pide el código. Opcionalmente, **Cuentas del Portal → "Invitar titular"** le envía un correo; el correo no lleva enlace ni activa nada: solo avisa "entra con tu documento y el RUC".
 
 **Cómo entra la familia:**
 
@@ -333,7 +333,7 @@ No aparece en el menú lateral porque es otra interfaz, para las familias.
 5. Acepta el consentimiento, si la empresa publicó una política.
 6. Llega a Inicio.
 
-- **Límites:** reenvío cada 30 s; 5 intentos; bloqueo de 15 min; la sesión expira a los 20 min de inactividad.
+- **Límites (por defecto):** reenvío cada 30 s; 5 intentos; bloqueo de 15 min; la sesión expira a los 20 min de inactividad (`portal.session_minutes`; la pantalla de ingreso muestra el valor configurado).
 - ⚠️ **Para probarlo necesitas recibir el correo.** No hay código fijo de desarrollo ni se imprime en el log.
   - **En local**, el SMTP por defecto es MailHog (`mailhog:1025`): levanta MailHog y lee el correo en su interfaz web.
   - **En UAT/prod** el correo sale por SendGrid, así que el titular debe tener **un correo real al que tengas acceso**.
@@ -341,7 +341,7 @@ No aparece en el menú lateral porque es otra interfaz, para las familias.
 **Qué puede hacer dentro:**
 
 - **Ver sus espacios:** conservación, fotos de mantenimiento, inhumaciones.
-- **Pagar cuotas:** siempre las más antiguas primero. Usa la pasarela configurada; en dev es un simulador.
+- **Pagar cuotas:** siempre las más antiguas primero, y **solo las que ya vencieron o vencen hoy** (las futuras se ven, pero no se cobran en línea). Usa la pasarela configurada; en dev es un simulador. Para probar el pago con un plan recién creado, pon la **primera cuota con fecha de hoy**.
 - **Descargar documentos:** los sensibles solo los ve el titular.
 - **Crear solicitudes.**
 
@@ -353,8 +353,8 @@ El titular y su representante pueden pagar y solicitar; cotitulares y beneficiar
 |---|---|
 | **Atención al Titular** | Bandeja de solicitudes que llegan del portal: asignar, responder, resolver, cerrar (SLA vigilado cada 15 min) |
 | **Cuentas del Portal** | Ver cuentas (vacía hasta que alguien entra o se invita), vínculos, sesiones; bloquear; revocar acceso; **Invitar titular** |
-| **Tipos de Solicitud** | Catálogo con SLA y costo; se siembra solo la primera vez |
-| **Pasarelas de Pago** | Una pasarela habilitada por empresa (Culqi o el simulador) |
+| **Tipos de Solicitud** | Catálogo con plazo (1–90 días hábiles) y costo; se siembra solo la primera vez. El «costo» es un **texto informativo** para la familia (p. ej. «S/ 50 en caja»): no genera ningún cobro |
+| **Pasarelas de Pago** | Una pasarela habilitada por empresa (Culqi o el simulador). Para Culqi la llave secreta **no se escribe en pantalla**: se escribe el **nombre** de una variable de entorno del servidor (p. ej. `CULQI_SECRET_KEY`) que **sistemas debe definir** con el valor real; la pantalla solo indica si esa variable existe. Para probar sin sistemas, usa el simulador |
 | **Consentimientos** | Publicar la política; una versión nueva obliga a todos a re-aceptar |
 
 ---
@@ -416,6 +416,7 @@ Sin segundo usuario: aprobar tarifas, publicar paquetes y plantillas, y validar 
 | Espacios nacen DISABLED | Sector no está OPERATIONAL | Pabellones y Sectores |
 | No se generan tareas de mantenimiento | Espacios sin contrato ACTIVE, o plan sin checklist | Contratos / Programación |
 | El familiar no puede entrar al portal | Titular sin email o sin contrato vivo con espacio | Titulares / Contratos |
+| Portal: «No encontramos un cementerio con ese RUC» | El RUC es de la empresa proveedora (Partner Tech), no de un cementerio | Usar el RUC del tenant (demo: 20603058934) |
 | El pago no aparece en reportes | Aún no corre el refresco nocturno | Esperar al día siguiente |
 
 ---
@@ -428,7 +429,7 @@ Sin segundo usuario: aprobar tarifas, publicar paquetes y plantillas, y validar 
 4. **Prospecto** → **Cotización** (emitir en firme) → **Reserva** → pago inicial → validar → **Venta** → Generar contrato → **Firmar** → Asignar.
 5. En **Titulares**, poner al titular un **email real** que puedas leer.
 6. **Portal:** abrir `/portal/20603058934/acceso` y entrar con el DNI del titular y el código recibido.
-7. **Plan de Pagos** sobre ese contrato → **Caja** (punto de cobro, abrir sesión, cobrar) → ver la cuota pagada en el portal.
+7. **Plan de Pagos** sobre ese contrato (primera cuota **con fecha de hoy** si quieres pagarla desde el portal) → **Caja** (punto de cobro, abrir sesión, cobrar) → ver la cuota pagada en el portal.
 8. **Difunto** → **OS de inhumación** → **Ejecutar inhumación** → revisar el **Historial de Espacios** y el portal.
 9. **Mantenimiento:**
    - Vincular un usuario como operario.
