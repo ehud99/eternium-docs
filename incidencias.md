@@ -28,7 +28,7 @@
 | G · Guía (secciones 10–12) | 0 | 5 | 3 | 8 |
 | **Total** | **47** | **134** | **42** | **223** |
 
-**Progreso:** 2026-10-11 — Fase 6 (Mantenimiento) completa: las 43 F6 corregidas y marcadas con [x]. 2026-10-12 — Fase 7 (Portal de Familias) completa: las 13 F7 corregidas. 2026-10-13 — Fase 4 (Pagos) completa: las 37 F4 corregidas; T-01 corregida.
+**Progreso:** 2026-10-11 — Fase 6 (Mantenimiento) completa: las 43 F6 corregidas y marcadas con [x]. 2026-10-12 — Fase 7 (Portal de Familias) completa: las 13 F7 corregidas. 2026-10-13 — Fase 4 (Pagos) completa: las 37 F4 corregidas; T-01 corregida. 2026-10-13 — Fase 5 (Servicios Funerarios) completa: las 24 F5 corregidas.
 
 **Prioridad sugerida (las A que rompen dinero o datos):** F4-01, F4-02, F4-03 (moneda y doble facturación) ·
 F5-02/03/04 (difunto ≠ el de la OS) · F2-01, F2-02 (espacios que quedan RESERVED/AVAILABLE mal) ·
@@ -212,30 +212,30 @@ F3-06 (transferencia con deuda en 0) · F6-01, F6-02, F6-03 (ejecución en campo
 
 ## Fase 5 · Servicios Funerarios
 
-- [ ] **F5-01 · A · P11** — La solicitud se puede registrar sin difunto, pero aprobar lo exige y no hay forma de añadirlo (no hay PUT de `/requests/{id}`): queda bloqueada y otra nueva salta como duplicado. `ServiceRequestService.java:324-326`. → `PUT /requests/{id}/deceased` + «Vincular difunto».
-- [ ] **F5-02 · A · P14** — Cremación: se valida tipo y estado de la OS, no que el difunto sea el de la OS. `CremationService.java:140-148`.
-- [ ] **F5-03 · A · P14** — Exhumación: la OS no se compara con el difunto de la inhumación y el selector lista todas las OS de exhumación de la empresa. `ExhumationService.java:146-147`; `exhumacion-solicitud-modal.component.ts:274-283`.
-- [ ] **F5-04 · A · P14** — Traslado: `deceasedId` puede ser otro difunto distinto del de la OS. `RemainsTransferService.java:159-171`.
-- [ ] **F5-05 · A · P2** — «Registrar cumplimiento» de un requisito pide teclear «Id del documento», «Clave de almacenamiento» y «SHA-256»; no se puede subir el archivo. `orden-detalle-modal.component.html:241-255`. → Subir archivo o elegir del expediente.
-- [ ] **F5-06 · A · P27/P22** — Doble aprobación de OS > S/ 15 000 nominal: el emisor elige a otro y queda aprobado sin que esa persona actúe; el selector incluye al propio emisor (`ETN_SVCORD_APPROVER_SELF`). `ServiceOrderService.java:438-457`.
-- [ ] **F5-07 · M · P21** — `DRAFT_TTL_HOURS = 72` fijo en el front; el back lo lee por empresa (`deceased.draft_expiry_hours`). `difuntos.model.ts:81`.
-- [ ] **F5-08 · M · input redundante** — «Ejecutar inhumación» vuelve a pedir la fecha programada vacía aunque la OS la trae. `inhumacion-form-modal.component.ts:247,396`.
-- [ ] **F5-09 · M · input redundante** — Cremación pide difunto, luego OS y fecha (la OS ya trae difunto y fecha): patrón inverso a la inhumación corregida. `cremacion-form-modal.component.ts:47-125,229`.
-- [ ] **F5-10 · M · P25** — Selectores de OS (inhumación, cremación, traslado, exhumación) muestran solo número o «#id», aunque el DTO trae difunto y solicitante.
-- [ ] **F5-11 · M** — La tabla de OS no tiene columna difunto/solicitante; las no emitidas salen «#12». `ordenes-servicio.component.html:252-300`.
-- [ ] **F5-12 · M · P25** — Detalle de solicitud: difunto «#id»; contrato y espacio no aparecen (`ServiceRequestDTO` sin nombres).
-- [ ] **F5-13 · M · P25** — Listado de inhumaciones: difunto y OS «#id» (`IntermentDTO`, `ExhumationDTO`). `inhumaciones.component.html:96,99`.
-- [ ] **F5-14 · M · P25** — Detalle del evento de agenda: «OS #id», «Difunto #id». `evento-detalle-modal.component.html:67,73`.
-- [ ] **F5-15 · M · P25** — Traslados y cremaciones con OS/difunto «#id». `cremaciones.component.html:108,357,503,508,554`.
-- [ ] **F5-16 · M · P20** — Traza de estados cruda («RECEIVED → QUOTED», «PENDING_APPROVAL → ISSUED») y actor «#userId». `solicitud-detalle-modal.component.html:239,246`; `orden-detalle-modal.component.html:214`.
-- [ ] **F5-17 · M · P20** — Actas de cremación/traslado (`CREMATION`, `INTERNAL_TRANSFER`, `EXTERNAL_TRANSFER`) sin traducción ni filtro en Actas. `actas.model.ts:81-83`.
-- [ ] **F5-18 · M · P20** — Bitácora de rechazos con `CREMATION`, `TRANSFER`, `URN_DELIVERY` sin claves. `actas.model.ts:115-118`.
-- [ ] **F5-19 · M · P24** — «El acta se emite en PDF/A … firma digital del coordinador»: no hay render de actas en el back. i18n `etnCremaciones.interno.notaActa` y ≈2325/2329.
-- [ ] **F5-20 · M · guía** — «Aprobar» la solicitud no exige cotización aprobada (es solo una pista) y hay botón «Aprobar» directo en la fila. `ServiceRequestService.java:321-334`. → Decidir la regla.
-- [ ] **F5-21 · B** — «Vigencia» de la cotización en ISO crudo. `solicitud-detalle-modal.component.html:287`.
-- [ ] **F5-22 · B · P25** — «Sustituye a la cotización #id», «Posible duplicado de la solicitud #id», «Solicitada por el usuario #id», «#documentId», «Difunto #id», autorización «#id».
-- [ ] **F5-23 · B · P25** — Solicitud de ceremonia: contrato «#contractId» si no hay titular cargado. `solicitud-form-modal.component.ts:205`.
-- [ ] **F5-24 · B** — `sha256Hash` max 64 con mensaje de 255; «Snapshot del tarifario aplicado» (jerga).
+- [x] **F5-01 · A · P11** — La solicitud se puede registrar sin difunto, pero aprobar lo exige y no hay forma de añadirlo (no hay PUT de `/requests/{id}`): queda bloqueada y otra nueva salta como duplicado. `ServiceRequestService.java:324-326`. → `PUT /requests/{id}/deceased` + «Vincular difunto». → `PUT /requests/{id}/deceased` y «Vincular difunto» en el detalle de la solicitud. — ✅ **Corregida 2026-10-13** (B 8d3cadb · F bcb1747).
+- [x] **F5-02 · A · P14** — Cremación: se valida tipo y estado de la OS, no que el difunto sea el de la OS. `CremationService.java:140-148`. → Cremación rechaza un difunto distinto al de la OS (ETN_ACT_ORDER_OTHER_DECEASED); test. — ✅ **Corregida 2026-10-13** (B 8d3cadb).
+- [x] **F5-03 · A · P14** — Exhumación: la OS no se compara con el difunto de la inhumación y el selector lista todas las OS de exhumación de la empresa. `ExhumationService.java:146-147`; `exhumacion-solicitud-modal.component.ts:274-283`. → Exhumación exige OS del mismo difunto inhumado; el selector solo lista las OS de ese difunto. — ✅ **Corregida 2026-10-13** (B 8d3cadb · F bcb1747).
+- [x] **F5-04 · A · P14** — Traslado: `deceasedId` puede ser otro difunto distinto del de la OS. `RemainsTransferService.java:159-171`. → Traslado rechaza un difunto distinto al de la OS (ETN_TRANSFER_DECEASED_MISMATCH). — ✅ **Corregida 2026-10-13** (B 8d3cadb).
+- [x] **F5-05 · A · P2** — «Registrar cumplimiento» de un requisito pide teclear «Id del documento», «Clave de almacenamiento» y «SHA-256»; no se puede subir el archivo. `orden-detalle-modal.component.html:241-255`. → Subir archivo o elegir del expediente. → «Subir archivo» (PDF/imagen): el back lo guarda, calcula el SHA-256 y verifica el requisito. — ✅ **Corregida 2026-10-13** (B 8d3cadb · F bcb1747).
+- [x] **F5-06 · A · P27/P22** — Doble aprobación de OS > S/ 15 000 nominal: el emisor elige a otro y queda aprobado sin que esa persona actúe; el selector incluye al propio emisor (`ETN_SVCORD_APPROVER_SELF`). `ServiceOrderService.java:438-457`. → Doble aprobación real: el segundo aprobador (nunca el emisor) recibe aviso y aprueba/rechaza desde su sesión; recién entonces se emite (`POST /{id}/second-approval`). — ✅ **Corregida 2026-10-13** (B 8d3cadb · F bcb1747).
+- [x] **F5-07 · M · P21** — `DRAFT_TTL_HOURS = 72` fijo en el front; el back lo lee por empresa (`deceased.draft_expiry_hours`). `difuntos.model.ts:81`. → Horas del borrador desde el back (`meta.draftExpiryHours`); constante eliminada. — ✅ **Corregida 2026-10-13** (B 6385f14 · F fad09a6).
+- [x] **F5-08 · M · input redundante** — «Ejecutar inhumación» vuelve a pedir la fecha programada vacía aunque la OS la trae. `inhumacion-form-modal.component.ts:247,396`. → «Ejecutar inhumación» propone la fecha programada de la OS. — ✅ **Corregida 2026-10-13** (F bcb1747).
+- [x] **F5-09 · M · input redundante** — Cremación pide difunto, luego OS y fecha (la OS ya trae difunto y fecha): patrón inverso a la inhumación corregida. `cremacion-form-modal.component.ts:47-125,229`. → Cremación empieza por la OS: trae difunto y fecha (el buscador solo si la OS no tiene difunto). — ✅ **Corregida 2026-10-13** (F bcb1747).
+- [x] **F5-10 · M · P25** — Selectores de OS (inhumación, cremación, traslado, exhumación) muestran solo número o «#id», aunque el DTO trae difunto y solicitante. → Selectores de OS con «número · difunto · solicitante» (`etiquetaOrden`). — ✅ **Corregida 2026-10-13** (F bcb1747).
+- [x] **F5-11 · M** — La tabla de OS no tiene columna difunto/solicitante; las no emitidas salen «#12». `ordenes-servicio.component.html:252-300`. → Columna «Difunto / solicitante»; OS sin número = «Sin número (pendiente de emisión)». — ✅ **Corregida 2026-10-13** (F fad09a6).
+- [x] **F5-12 · M · P25** — Detalle de solicitud: difunto «#id»; contrato y espacio no aparecen (`ServiceRequestDTO` sin nombres). → Detalle de solicitud con nombre del difunto y n.º de contrato. — ✅ **Corregida 2026-10-13** (B 8d3cadb · F bcb1747).
+- [x] **F5-13 · M · P25** — Listado de inhumaciones: difunto y OS «#id» (`IntermentDTO`, `ExhumationDTO`). `inhumaciones.component.html:96,99`. → Inhumaciones/exhumaciones/rechazos con nombre del difunto, n.º de OS y referencia de la autorización. — ✅ **Corregida 2026-10-13** (B 6385f14 · F fad09a6).
+- [x] **F5-14 · M · P25** — Detalle del evento de agenda: «OS #id», «Difunto #id». `evento-detalle-modal.component.html:67,73`. → Agenda con n.º de OS y nombre del difunto. — ✅ **Corregida 2026-10-13** (B 6385f14 · F fad09a6).
+- [x] **F5-15 · M · P25** — Traslados y cremaciones con OS/difunto «#id». `cremaciones.component.html:108,357,503,508,554`. → Cremaciones y traslados con n.º de OS y difunto. — ✅ **Corregida 2026-10-13** (B 6385f14 · F fad09a6).
+- [x] **F5-16 · M · P20** — Traza de estados cruda («RECEIVED → QUOTED», «PENDING_APPROVAL → ISSUED») y actor «#userId». `solicitud-detalle-modal.component.html:239,246`; `orden-detalle-modal.component.html:214`. → Trazas con estados traducidos y actor por nombre. — ✅ **Corregida 2026-10-13** (F fad09a6).
+- [x] **F5-17 · M · P20** — Actas de cremación/traslado (`CREMATION`, `INTERNAL_TRANSFER`, `EXTERNAL_TRANSFER`) sin traducción ni filtro en Actas. `actas.model.ts:81-83`. → Actas CREMATION / INTERNAL_TRANSFER / EXTERNAL_TRANSFER traducidas y en el filtro. — ✅ **Corregida 2026-10-13** (F fad09a6).
+- [x] **F5-18 · M · P20** — Bitácora de rechazos con `CREMATION`, `TRANSFER`, `URN_DELIVERY` sin claves. `actas.model.ts:115-118`. → Operaciones y códigos de rechazo de cremación/traslado/urna traducidos. — ✅ **Corregida 2026-10-13** (F fad09a6).
+- [x] **F5-19 · M · P24** — «El acta se emite en PDF/A … firma digital del coordinador»: no hay render de actas en el back. i18n `etnCremaciones.interno.notaActa` y ≈2325/2329. → PDF del acta (todos los tipos) desde su detalle y al ejecutar cremación/traslado; textos sin «PDF/A con firma digital». — ✅ **Corregida 2026-10-13** (B 6385f14 · F fad09a6).
+- [x] **F5-20 · M · guía** — «Aprobar» la solicitud no exige cotización aprobada (es solo una pista) y hay botón «Aprobar» directo en la fila. `ServiceRequestService.java:321-334`. → Decidir la regla. → Decisión del usuario: sigue siendo opcional aprobar sin cotización; la guía lo aclara (la OS igual exige cotización aprobada). — ✅ **Corregida 2026-10-13** (docs).
+- [x] **F5-21 · B** — «Vigencia» de la cotización en ISO crudo. `solicitud-detalle-modal.component.html:287`. → Vigencia con formato de fecha. — ✅ **Corregida 2026-10-13** (F fad09a6).
+- [x] **F5-22 · B · P25** — «Sustituye a la cotización #id», «Posible duplicado de la solicitud #id», «Solicitada por el usuario #id», «#documentId», «Difunto #id», autorización «#id». → Folio/versión, folio de la solicitud duplicada, nombre de usuario y referencia de documento en vez de «#id». — ✅ **Corregida 2026-10-13** (B 6385f14 · F fad09a6).
+- [x] **F5-23 · B · P25** — Solicitud de ceremonia: contrato «#contractId» si no hay titular cargado. `solicitud-form-modal.component.ts:205`. → N.º de contrato vía caché de referencias. — ✅ **Corregida 2026-10-13** (F fad09a6).
+- [x] **F5-24 · B** — `sha256Hash` max 64 con mensaje de 255; «Snapshot del tarifario aplicado» (jerga). → Mensaje de 64 caracteres para el código; «Tarifas aplicadas al cotizar». — ✅ **Corregida 2026-10-13** (B 8d3cadb · F fad09a6).
 
 ---
 

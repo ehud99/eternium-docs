@@ -408,3 +408,30 @@ Incidencias cerradas: F4-01 a F4-37 y T-01. Con esto la Fase 4 queda sin pendien
 
 **Lección:** no recompilar (`mvnw compile`) mientras corre la suite completa: cambia `target/classes` a mitad de camino y da cientos de `NoClassDefFoundError` falsos.
 
+---
+
+## 10. FASE 5 — Servicios Funerarios (sesión 2026-10-13)
+
+Commits: B 8d3cadb, 6385f14 · F bcb1747, fad09a6. Verificado: suite completa del backend 1634 tests, 0 fallos; `ng build` en verde.
+Incidencias cerradas: F5-01 a F5-24. Decisiones del usuario: doble aprobación hecha por el propio aprobador; aprobar la solicitud sin cotización sigue siendo opcional; requisitos con subida de archivo; generar el PDF de las actas.
+
+**La OS no mandaba sobre el difunto (F5-02 a F5-04)** — Ver P14.
+- Cremación, exhumación y traslado validaban tipo y estado de la OS, no que el difunto fuera el de la orden. Ahora lo exigen (como ya hacía la inhumación) y la exhumación solo ofrece OS del difunto elegido.
+
+**Segundo aprobador nominal (F5-06)** — Ver P27.
+- El emisor elegía a otro y la OS se emitía al instante. Ahora queda pendiente, el designado recibe campana y correo y decide desde su sesión; el emisor no aparece en el selector. Sin migración: PENDING_APPROVAL ya admitía segundo aprobador sin fecha.
+
+**Registros sin salida (F5-01, F5-05)**
+- Solicitud sin difunto: no había forma de añadirlo. Requisito: había que teclear id, clave de almacenamiento y hash. Ahora «Vincular difunto» y «Subir archivo» (el hash lo calcula el sistema).
+
+**Pedir lo que la OS ya trae (F5-08, F5-09)**
+- Cremación pedía difunto y fecha; inhumación, la fecha. Ahora se elige la OS y propone lo demás.
+
+**Ids y estados crudos (F5-10 a F5-18, F5-21 a F5-23)** — Ver P20/P25.
+- Nombres de difunto, n.º de OS, folios y referencias resueltos en el back con una consulta por página (`fullNamesByIds`, `orderNumbersByIds`); estados traducidos y actor por nombre.
+
+**Promesa de PDF/A (F5-19)** — Ver P24.
+- No existía ningún PDF de actas. Se implementó un PDF legible para todos los tipos (contenido canónico con etiquetas, sin ids, con el código de integridad) y se corrigieron los textos que prometían «PDF/A con firma digital».
+
+**Lección:** en los tests con Mockito, `Messages.get(String, Object...)` es un solo método varargs: dos `when(...)` (con y sin argumentos) se pisan; basta un stub.
+

@@ -242,13 +242,13 @@ ni pipeline. Es la forma más rápida de tener un contrato ACTIVE para probar la
 
 | # | Pantalla → acción | Resultado | Requisito clave |
 |---|---|---|---|
-| 1 | **Difuntos → Agregar** (borrador) → subir **certificado de defunción** → agregar **familiar principal** → **Confirmar** | Difunto CONFIRMED | El borrador **vence a las 72 h**: confirma el mismo día |
+| 1 | **Difuntos → Agregar** (borrador) → subir **certificado de defunción** → agregar **familiar principal** → **Confirmar** | Difunto CONFIRMED | El borrador vence a las horas configuradas por la empresa (72 h por defecto): confirma el mismo día |
 | 2 | **Órdenes de Servicio → nueva solicitud** (tipo INHUMATION, difunto, contrato). El **contrato elige el espacio** (se ve como «CON-… · titular · espacio (ocupados/capacidad)»); con vínculo Titular o Beneficiario los datos del solicitante se completan solos | Solicitud RECEIVED | Cuotas vencidas o falta de contrato solo **avisan**, no bloquean. Saldo sin atraso = «Al día con saldo» |
 | 3 | → **crear cotización → aprobarla** | Solicitud PENDING_APPROVAL | Cotización vigente (15 días) |
-| 4 | → en el detalle de la solicitud, paso **«Aprobación» → Aprobar** (también Observar / Rechazar) | Solicitud APPROVED | Difunto CONFIRMED con certificado válido. Sin este paso **no** se puede crear la OS |
-| 5 | → **generar OS** desde la cotización → completar checklist → **Emitir** | OS ISSUED | Eximir un requisito lo hace otro usuario; OS mayor a S/ 15 000 exige un segundo aprobador |
+| 4 | → en el detalle de la solicitud, paso **«Aprobación» → Aprobar** (también Observar / Rechazar) | Solicitud APPROVED | Difunto CONFIRMED con certificado válido. Sin este paso **no** se puede crear la OS. Se **puede aprobar antes de cotizar**, pero la OS igual necesita una cotización aprobada. Si la solicitud se registró sin difunto, **«Vincular difunto»** en su detalle |
+| 5 | → **generar OS** desde la cotización → completar checklist (**subir** el documento de cada requisito) → **Emitir** | OS ISSUED | Eximir un requisito lo hace otro usuario. OS mayor a S/ 15 000: al emitir se elige al **segundo aprobador**, que recibe un aviso y **aprueba o rechaza desde su propia sesión**; hasta entonces la OS sigue pendiente (para probarlo necesitas dos usuarios) |
 | 6 | *(si hay sepelio)* otra solicitud + OS de tipo **CEREMONY** → **Agenda de Ceremonias → Sepelio → confirmar con sala** | Evento CONFIRMED | La sala debe existir en **Capillas y Salas** con horario |
-| 7 | **Inhumaciones y Exhumaciones → Ejecutar inhumación** | **Acta** con correlativo y hash; ocupación +1; difunto INTERRED; OS EXECUTED; evento en el historial; aviso al titular | Contrato ACTIVE en **ese** espacio, capacidad libre |
+| 7 | **Inhumaciones y Exhumaciones → Ejecutar inhumación** (se elige la OS: trae difunto, espacio y fecha) | **Acta** con correlativo y hash (descargable en PDF desde su detalle); ocupación +1; difunto INTERRED; OS EXECUTED; evento en el historial; aviso al titular | Contrato ACTIVE en **ese** espacio, capacidad libre |
 | 8 | **Agenda → cerrar sepelio** (con acta y certificado) | Evento CLOSED | |
 
 **Otras rutas:**
@@ -258,7 +258,7 @@ ni pipeline. Es la forma más rápida de tener un contrato ACTIVE para probar la
   - Requiere autorización legal validada.
   - Requiere **dos validaciones del director hechas por usuarios distintos**.
 - **Cremación:**
-  - OS de tipo CREMATION.
+  - OS de tipo CREMATION: se elige primero la OS y trae el difunto y la fecha. Cremación, exhumación y traslado rechazan un difunto distinto al de la OS.
   - Si la muerte fue violenta, oficio fiscal.
   - Luego se emite la urna, se asigna su destino y se entrega.
 - **Traslado:**
