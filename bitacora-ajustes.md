@@ -45,6 +45,7 @@ Errores que aparecieron en varios módulos. Antes de dar un módulo por bueno, p
 | P26 | **Moneda ignorada**: importes siempre en PEN o moneda elegida a mano distinta de la del contrato. | `formatMoney(x)` sin moneda; selectores de moneda en cobros/planes. | Formatear con la moneda del registro (`MonedaService`); cobrar y crear planes solo en la moneda del contrato, validado en el back (F4-01, F4-05, F4-22). |
 | P27 | **«Segundo aprobador» nominal**: el solicitante elige a otro y queda aprobado sin que esa persona actúe; el selector incluye al propio usuario. | Flujos de doble aprobación. | La aprobación queda pendiente hasta que el aprobador actúe en su sesión; excluir al solicitante (pendiente: F5-06, G-02, G-03). |
 | P28 | **Plurales fijos** («{{n}} tareas» → «1 tareas»). | Buscar `{{n}} ` seguido de una palabra en plural. | Redacción neutra («Tareas: 1») mientras no haya plural ICU global (T-03). |
+| P29 | **«No existe» cuando sí existe pero un filtro lo excluye** (plantilla «CONTRATO DE COMPRA» guardada con tipo «Acta de exhumación»: enviar a firma decía «no hay ninguna plantilla»). | Toda búsqueda que filtra por tipo, sede, idioma, estado o vigencia y responde «no hay». | El error nombra los casi-candidatos y qué cambiar (tipo, sede, publicar) y la ruta real del menú; probar con datos cargados «fuera del flujo» de la guía (B 9d9f23e). |
 | P19 | **Un módulo inyecta el repositorio (`infrastructure.persistence`) de otro módulo.** Lo rechaza `EterniumArchitectureTest.modulo_no_importa_persistencia_ajena_nueva`. | Correr la suite **completa** (`mvnw test`), no solo los tests de la clase tocada. | Puerto en `<módulo>/domain/port` con un record de solo lo necesario, implementado por el servicio dueño del repositorio (`BranchBusinessHoursPort` en `BranchScheduleService`, sesión 2026-10-09). |
 
 **Reglas de trabajo** (del montaje local, ver `CLAUDE.md` global):
@@ -434,4 +435,14 @@ Incidencias cerradas: F5-01 a F5-24. Decisiones del usuario: doble aprobación h
 - No existía ningún PDF de actas. Se implementó un PDF legible para todos los tipos (contenido canónico con etiquetas, sin ids, con el código de integridad) y se corrigieron los textos que prometían «PDF/A con firma digital».
 
 **Lección:** en los tests con Mockito, `Messages.get(String, Object...)` es un solo método varargs: dos `when(...)` (con y sin argumentos) se pisan; basta un stub.
+
+---
+
+## 11. UAT — «No hay plantilla de contrato publicada» teniendo una (sesión 2026-10-13)
+
+- **Síntoma:** en UAT (usuario Partner), «Enviar a firma» devolvía 409 «No hay ninguna plantilla de contrato publicada para esta sede. Publique una en Cementerio > Plantillas». En local, con demo y con Partner, funcionaba.
+- **Causa:** la plantilla de UAT se llamaba «CONTRATO DE COMPRA» pero su **Tipo de documento** era «Acta de exhumación» (QA la armó fuera del flujo de la guía; su cuerpo usa variables de autorización y difunto). El envío solo considera plantillas publicadas de tipo CONTRACT_PURCHASE / CONTRACT_LEASE / CONTRACT_ASSIGNMENT de la sede o de toda la empresa, así que la ignoraba. En local las plantillas de QA tienen el tipo correcto. El mensaje además indicaba un menú inexistente.
+- **Corrección (B 9d9f23e):** el 409 dice qué tipo se exige, da la ruta real (Configuración > Plantillas de Documentos) y nombra las plantillas publicadas con otro tipo («La plantilla «CONTRATO DE COMPRA» está publicada con el tipo «Acta de exhumación»: si es un contrato, cambie su Tipo de documento…») y las de contrato publicadas solo para otra sede. Test del caso.
+- **Para resolverlo en UAT:** en Plantillas de Documentos, abrir «CONTRATO DE COMPRA», cambiar Tipo de documento a «Contrato de compra», Guardar propiedades (y publicar si la versión vigente no lo está).
+- **Lección (P29):** cuando una búsqueda filtrada no encuentra nada, el error debe explicar qué existe y por qué no sirve. Probar también con datos creados fuera del recorrido de la guía.
 
