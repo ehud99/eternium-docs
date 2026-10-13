@@ -40,6 +40,11 @@ Errores que aparecieron en varios módulos. Antes de dar un módulo por bueno, p
 | P21 | **Valores de configuración copiados a mano en el frontend** (umbrales, defaults, «(15)» en un hint). Se desincronizan: 3 de 11 claves ya no existían. | Buscar constantes con valores de negocio en `models/*.ts` y números fijos en textos i18n. | Endpoint que devuelva lo que **rige** para la empresa, leído con las mismas claves y defaults que los servicios, centralizados en una sola clase (`common/settings/MaintenanceSettings`). |
 | P22 | **Un selector ofrece una opción que la validación rechaza** («Todos» en el pabellón de un plan que exige pabellón). | Comparar las opciones de cada select con las reglas del back y los CHECK de la BD. | Quitar la opción, explicar la regla junto al campo y marcarlo en rojo (plan preventivo, sesión 2026-10-09). |
 | P23 | **Una cifra que se lee como otra** («Duración 56 ms» del job leída como duración de las tareas; promedio redondeado hacia arriba que da «1 tarea diaria» con 3 al año; «Sin contrato vigente» que suma también a los que sí tienen contrato pero no perpetuo). | Revisar cada contador de un panel: ¿de qué es (job, tarea, espacio)?, ¿qué redondeo usa?, ¿mezcla motivos distintos? | Etiqueta con el sujeto («Tiempo de proceso del job»), decimales en promedios y un contador por motivo de exclusión (Programación, sesión 2026-10-09). |
+| P24 | **Texto que promete un comportamiento que no existe** («se reenvía por push a los 30 min», «escala al jefe de atención», «se enviará a Contratos»). | Por cada «se notifica / se reenvía / escala / se enviará», buscar en el back quién lo hace y a quién. | Quitar la promesa o implementarla; si el destinatario es configurable sin pantalla, respaldo a administradores (F7-102, F6-20). |
+| P25 | **Ids internos «#123» donde el usuario espera un nombre o un folio** (pago, plan, cuota, contrato, usuario, movimiento). | Buscar `#{{` y `'#' +` en plantillas. | El DTO trae el folio/nombre resuelto en una sola consulta por página, o el front usa la caché de referencias (F4-13, F4-26, F4-27). |
+| P26 | **Moneda ignorada**: importes siempre en PEN o moneda elegida a mano distinta de la del contrato. | `formatMoney(x)` sin moneda; selectores de moneda en cobros/planes. | Formatear con la moneda del registro (`MonedaService`); cobrar y crear planes solo en la moneda del contrato, validado en el back (F4-01, F4-05, F4-22). |
+| P27 | **«Segundo aprobador» nominal**: el solicitante elige a otro y queda aprobado sin que esa persona actúe; el selector incluye al propio usuario. | Flujos de doble aprobación. | La aprobación queda pendiente hasta que el aprobador actúe en su sesión; excluir al solicitante (pendiente: F5-06, G-02, G-03). |
+| P28 | **Plurales fijos** («{{n}} tareas» → «1 tareas»). | Buscar `{{n}} ` seguido de una palabra en plural. | Redacción neutra («Tareas: 1») mientras no haya plural ICU global (T-03). |
 | P19 | **Un módulo inyecta el repositorio (`infrastructure.persistence`) de otro módulo.** Lo rechaza `EterniumArchitectureTest.modulo_no_importa_persistencia_ajena_nueva`. | Correr la suite **completa** (`mvnw test`), no solo los tests de la clase tocada. | Puerto en `<módulo>/domain/port` con un record de solo lo necesario, implementado por el servicio dueño del repositorio (`BranchBusinessHoursPort` en `BranchScheduleService`, sesión 2026-10-09). |
 
 **Reglas de trabajo** (del montaje local, ver `CLAUDE.md` global):
@@ -378,4 +383,28 @@ Incidencias cerradas: F7-01–06, F7-101–107. Con esto la Fase 7 queda sin pen
 
 **Textos y guía (F7-03, F7-101, F7-103–105)**
 - 5 plantillas de aviso traducidas y en el filtro; «Invitar titular» ya no promete activar la cuenta; guía: cuotas pagables (vencidas o que vencen hoy), Culqi por nombre de variable de entorno, costo del tipo de solicitud informativo.
+
+---
+
+## 9. FASE 4 — Pagos (sesión 2026-10-13)
+
+Commits: B fa31021, a0acf11 · F ae2c003, d1e6c25, 79d3e85 (T-01: B ec15eaf · F e8da449). Verificado: suite completa del backend 1630 tests, 0 fallos; `ng build` en verde tras cada tanda.
+Incidencias cerradas: F4-01 a F4-37 y T-01. Con esto la Fase 4 queda sin pendientes. Decisiones del usuario: cobrar solo en la moneda del plan; importe vacío y obligatorio para conceptos que no son venta; punto «Portal» oculto en Caja.
+
+**Dinero mal aplicado (F4-01, F4-22, F4-05)** — Ver P26.
+- 100 USD se aplicaban como 100 PEN (`exchangeRate` nulo ⇒ 1). Ahora el cobro y el plan van en la moneda del contrato y el back rechaza otra; todos los importes se formatean con la moneda de su registro (`MonedaService`).
+
+**Doble facturación (F4-02, F4-03)**
+- La idempotencia era por tipo (`PAY:id:tipo`): el mismo pago podía llevar boleta y factura. Ahora un pago admite un comprobante vivo; el consumo de saldo a favor no se factura (ya se facturó el pago que lo generó).
+
+**Reglas que solo validaba el front (F4-06, F4-08, F4-10, F4-11, F4-30)** — Ver P11.
+- N.º de operación, plan del contrato, efectivo en el punto, punto del portal en caja e inicial = total: ahora también los rechaza el back.
+
+**Ids y códigos en pantalla (F4-13 a F4-16, F4-24 a F4-27)** — Ver P20/P25.
+- Detalle del pago con n.º de cuota, código del plan y punto; bitácoras traducidas; respuesta de SUNAT por clase; folio del pago y del movimiento en conciliación; contrato y usuario en reportes.
+
+**Valores copiados en el front (F4-17 a F4-21, F4-23, F4-29, F4-35, F4-37)** — Ver P21.
+- Nivel de refinanciación, umbral del Director, plazo de baja, meta de conciliación y horas de plazo los manda el back; «60 días», «S/ 0.10» y «5 días» salen de los textos.
+
+**Lección:** no recompilar (`mvnw compile`) mientras corre la suite completa: cambia `target/classes` a mitad de camino y da cientos de `NoClassDefFoundError` falsos.
 

@@ -28,7 +28,7 @@
 | G · Guía (secciones 10–12) | 0 | 5 | 3 | 8 |
 | **Total** | **47** | **134** | **42** | **223** |
 
-**Progreso:** 2026-10-11 — Fase 6 (Mantenimiento) completa: las 43 F6 corregidas y marcadas con [x]. 2026-10-12 — Fase 7 (Portal de Familias) completa: las 13 F7 corregidas.
+**Progreso:** 2026-10-11 — Fase 6 (Mantenimiento) completa: las 43 F6 corregidas y marcadas con [x]. 2026-10-12 — Fase 7 (Portal de Familias) completa: las 13 F7 corregidas. 2026-10-13 — Fase 4 (Pagos) completa: las 37 F4 corregidas; T-01 corregida.
 
 **Prioridad sugerida (las A que rompen dinero o datos):** F4-01, F4-02, F4-03 (moneda y doble facturación) ·
 F5-02/03/04 (difunto ≠ el de la OS) · F2-01, F2-02 (espacios que quedan RESERVED/AVAILABLE mal) ·
@@ -48,7 +48,7 @@ F3-06 (transferencia con deuda en 0) · F6-01, F6-02, F6-03 (ejecución en campo
 
 ## T · Transversal
 
-- [ ] **T-01 · A · P20** — **El portal público (lo ve la familia) usa jerga técnica:** «FIFO», «webhook firmado/idempotente registrado», «SLA», «hash SHA-256», «enlace firmado». i18n `etnPortalPagos.subtitulo`, `.aviso.pasarela`, `.espera.nota`, `.proceso.nota`, `.pie.webhook`, `.imputacion.valor`, `etnPortalSolicitudes.sla.*`, `.slaCard.*`, `etnPortalEspacios.docs.hashTitle`. → Redactar para la familia: «se aplica a la cuota más antigua», «plazo de atención», «código de verificación del documento».
+- [x] **T-01 · A · P20** — **El portal público (lo ve la familia) usa jerga técnica:** «FIFO», «webhook firmado/idempotente registrado», «SLA», «hash SHA-256», «enlace firmado». i18n `etnPortalPagos.subtitulo`, `.aviso.pasarela`, `.espera.nota`, `.proceso.nota`, `.pie.webhook`, `.imputacion.valor`, `etnPortalSolicitudes.sla.*`, `.slaCard.*`, `etnPortalEspacios.docs.hashTitle`. → Redactar para la familia: «se aplica a la cuota más antigua», «plazo de atención», «código de verificación del documento». → Textos del portal reescritos para la familia (es/en/pt): «cuota más antigua», «plazo de atención», «código de verificación», «enlace seguro»; historial de solicitud sin «SLA». — ✅ **Corregida 2026-10-13** (B ec15eaf · F e8da449).
 - [ ] **T-02 · A · P20** — **Referencias internas visibles:** «(M03)» en `etnDisponibilidad.confirmFormalizar.mensaje` y `.msg.formalizada`; «(RF-357/358)» en `etnCotizaciones.form.compararCuotaHint` (es/en/pt); «job KPI_SNAPSHOT (00:10)» y «job KPI_REFRESH» en `etnDashboard.grafico.sinSerieHint` / `.salud.vistasVacioHint`; «(doc 08)» y «append-only» en `msg` `etn.history.pdfAppendOnlyNote` (sale en el PDF del historial). → Quitar.
 - [ ] **T-03 · M · P28** — **178 textos con plural fijo** («{{n}} tareas», «{{n}} pagos», «Se reanudaron {{n}} transferencias»): con n=1 sale «1 tareas». También en el back: `msg:3055` «Te quedan {0} intentos». → Plural ICU de Transloco (`{n, plural, one {…} other {…}}`) o claves `_one/_other`; en el back `ChoiceFormat`.
 - [ ] **T-04 · A** — **Clave i18n inexistente:** `etnEspacios.sectores.msg.errorGuardar` (F/feature-catalogo-espacios/src/pabellones/components/sector-form-modal/sector-form-modal.component.ts:651 y sector-generate-modal.component.ts:142). Si el back no manda mensaje se muestra la clave cruda. → Crearla en es/en/pt.
@@ -170,43 +170,43 @@ F3-06 (transferencia con deuda en 0) · F6-01, F6-02, F6-03 (ejecución en campo
 
 ## Fase 4 · Pagos
 
-- [ ] **F4-01 · A · P26** — Caja: se puede cobrar en otra moneda y se aplica como si fuera la del plan (100 USD pagan 100 PEN); el front manda `exchangeRate: null` y el back usa 1. `pago-nuevo-modal.component.html:97-107`, `.ts:497-498`; `PaymentService.java:153,203,228-230`. → Moneda del plan; rechazar otra sin tipo de cambio.
-- [ ] **F4-02 · A · P11** — Un pago puede tener boleta **y** factura: la idempotencia es `PAY:{id}:{tipo}`; solo lo frena el front. `ElectronicDocumentService.java:303-309`. → Rechazar si ya hay comprobante vivo.
-- [ ] **F4-03 · A** — Doble facturación: los pagos con medio «Saldo a favor» salen como facturables y el pago original ya se facturó por el monto completo. `ElectronicDocumentService.java:93,297,316`. → Excluir `CREDIT_BALANCE`.
-- [ ] **F4-04 · A · P9** — El plan de «Mantenimiento perpetuo» propone como importe el precio de venta del espacio (`agreedPrice`) y no cambia al cambiar de concepto. `plan-nuevo-modal.component.ts:293-295,379-382`.
-- [ ] **F4-05 · A · P26** — Todos los importes del módulo se muestran en soles: `formatMoney(amount)` sin moneda en planes, caja, cierres, facturación, cobranza, conciliación y reportes. `F/feature-pagos/src/utils/format.util.ts:29`.
-- [ ] **F4-06 · A · P11** — N.º de operación obligatorio (transferencia, POS, Yape/Plin, en línea) solo en el front. `pago-nuevo-modal.component.ts:233-234,484`; `PaymentService.java:139-207`.
-- [ ] **F4-07 · M · P23** — Pista del plan «la imputación real la decide el FIFO»: con plan elegido el back imputa solo a ese plan. `etnCaja.pago.planHint`; `PaymentService.java:467-479`.
-- [ ] **F4-08 · M · P14** — El back no comprueba que el plan sea del contrato del pago. `PaymentService.java:467-477`.
-- [ ] **F4-09 · M** — Con plan de venta y de perpetuo en el mismo contrato no se distinguen («código · 1.ª cuota» sin concepto). `pago-nuevo-modal.component.ts:220-229`.
-- [ ] **F4-10 · M · P22** — «Acepta efectivo = No» no se respeta (ni back ni modal). `CollectionPoint.java:56`.
-- [ ] **F4-11 · M · P22** — El punto «Portal» aparece en Caja y permite abrir turno y cobrar en efectivo. `caja.component.ts:266-275`.
-- [ ] **F4-12 · M · P23** — «Cobrado en el turno» suma saldo a favor y pagos PENDING/FAILED/SUSPICIOUS. `caja.component.ts:246-258`.
-- [ ] **F4-13 · M · P20/P25** — Detalle del pago: canal «CASHIER», turno y plan «#id», cuota = id de BD (no el n.º), bitácora «PENDING → CONFIRMED». `pago-detalle-modal.component.html:67,72,78,163,199`.
-- [ ] **F4-14 · M** — El resultado del pago no dice qué cuota se pagó (`PaymentApplicationDTO` sin `installmentNumber`).
-- [ ] **F4-15 · M · P20** — Bitácora del plan: `plan_status`, `activated_at`, «CREDIT_BALANCE → PREPAY_NEXT», `PLAN_CREATED`, `LATE_FEE_ACCRUAL_BATCH`. `plan-detalle-modal.component.html:239-244`.
-- [ ] **F4-16 · M · P20** — «Parámetros de cálculo congelados»: `calcVersion`, `periodicRate`, `roundingMode=HALF_UP`, `lateFeeConfigId`. `plan-detalle-modal.component.ts:111-118`.
-- [ ] **F4-17 · M · P22** — «Refinanciar» se ofrece en el nivel máximo (`ETN_PLAN_REFI_LIMIT`). `planes-pago.component.ts:476-478`.
-- [ ] **F4-18 · M · P21** — Umbral de 12 cuotas para aprobación del Director copiado en el front. `plan-refinanciar-modal.component.ts:36`.
-- [ ] **F4-19 · M · P21** — «con 60 días o más… la mora antes que el capital»: es configurable por tasa (en QA vale 0). `etnCaja.detalle.imputacionesHint`.
-- [ ] **F4-20 · M** — «Mora primero tras» parece opcional y el back guarda 60 sin avisar; la tabla no muestra ese dato. `LateFeeConfigService.java:69`.
-- [ ] **F4-21 · M · P23** — «Tasa» de mora sin unidad (0.05 = 0,05 %); el tope dice «del capital» y se aplica sobre el saldo pendiente. `mora-configs-modal.component.html:52-58,94`.
-- [ ] **F4-22 · M · P26/P11** — La moneda del plan se elige a mano y el back no valida que sea la del contrato. `plan-nuevo-modal.component.html:81-92`.
-- [ ] **F4-23 · M · P22** — Baja de comprobantes: el checkbox se habilita fuera de los 7 días o mezclando sedes (el back rechaza). `facturacion.component.ts:444-447`.
-- [ ] **F4-24 · M · P20** — CDR de SUNAT como código («0», «2033») sin descripción; bitácora «GENERATED → SENT». `facturacion.component.html:162-165`.
-- [ ] **F4-25 · M · P20** — Cobranza «Servicios bloqueados: NEW_SERVICES»; `unblockType` crudo. `cuenta-detalle-modal.component.html:183,187`.
-- [ ] **F4-26 · M · P25** — Conciliación: pago cruzado «#id», `matchType` crudo, «Movimiento #id». `conciliacion.component.html:158-159,280`.
-- [ ] **F4-27 · M · P25** — Reportes financieros: usuario «#id», estado «COMPLETED», contrato «#id». `reportes.component.html:231,365-373`.
-- [ ] **F4-28 · M · P13** — Mensajes de validación con el límite equivocado (max 20/15 → «maxLength40», 60 → «120», 160 → «120»). `RegisterPaymentRequestDTO.java:49,52,55,66`.
-- [ ] **F4-29 · B · P21** — «(por defecto S/ 0.10)» fijo en `etnPlanesPago.nuevo.toleranciaHint`.
-- [ ] **F4-30 · B · P11** — Inicial = importe: front rechaza (`>=`), back acepta (`>`).
-- [ ] **F4-31 · B · P11** — «Días de gracia» max 90 solo como atributo HTML.
-- [ ] **F4-32 · B · P23** — «Mora congelada 0.10 %» sin decir «diaria».
-- [ ] **F4-33 · B · P28** — «1 pagos», «Se reanudaron 1 transferencias».
-- [ ] **F4-34 · B · P21** — Aviso manual «esperando 5 días» copiado de `ServiceBlock.PRE_NOTICE_DAYS`.
-- [ ] **F4-35 · B · P21** — Conciliación: meta 95 % y 48 h copiados en `conciliacion.model.ts:23,70`.
-- [ ] **F4-36 · B · guía** — La guía dice «registrar con canal Caja»; la pantalla no tiene ese campo (va `CASHIER` fijo).
-- [ ] **F4-37 · B · P21** — Rojo a partir de 90 días de atraso fijo en cobranza y reportes.
+- [x] **F4-01 · A · P26** — Caja: se puede cobrar en otra moneda y se aplica como si fuera la del plan (100 USD pagan 100 PEN); el front manda `exchangeRate: null` y el back usa 1. `pago-nuevo-modal.component.html:97-107`, `.ts:497-498`; `PaymentService.java:153,203,228-230`. → Moneda del plan; rechazar otra sin tipo de cambio. → Se cobra en la moneda del plan/contrato (selector fijo); el back rechaza otra (ETN_PAY_CURRENCY). — ✅ **Corregida 2026-10-13** (B fa31021 · F ae2c003).
+- [x] **F4-02 · A · P11** — Un pago puede tener boleta **y** factura: la idempotencia es `PAY:{id}:{tipo}`; solo lo frena el front. `ElectronicDocumentService.java:303-309`. → Rechazar si ya hay comprobante vivo. → Un solo comprobante vivo por pago (ETN_INV_PAY_DUPLICATE); anulado/rechazado permite otro. — ✅ **Corregida 2026-10-13** (B fa31021).
+- [x] **F4-03 · A** — Doble facturación: los pagos con medio «Saldo a favor» salen como facturables y el pago original ya se facturó por el monto completo. `ElectronicDocumentService.java:93,297,316`. → Excluir `CREDIT_BALANCE`. → El consumo de saldo a favor no se factura (back ETN_INV_PAY_CREDIT; la emisión ya no lo ofrece). — ✅ **Corregida 2026-10-13** (B fa31021 · F ae2c003).
+- [x] **F4-04 · A · P9** — El plan de «Mantenimiento perpetuo» propone como importe el precio de venta del espacio (`agreedPrice`) y no cambia al cambiar de concepto. `plan-nuevo-modal.component.ts:293-295,379-382`. → Solo «Venta de espacio» propone el precio pactado; los demás conceptos quedan vacíos y cambian con el concepto. — ✅ **Corregida 2026-10-13** (F ae2c003).
+- [x] **F4-05 · A · P26** — Todos los importes del módulo se muestran en soles: `formatMoney(amount)` sin moneda en planes, caja, cierres, facturación, cobranza, conciliación y reportes. `F/feature-pagos/src/utils/format.util.ts:29`. → MonedaService: cada importe con la moneda de su registro (agregados: la de la sede; UIT en PEN). — ✅ **Corregida 2026-10-13** (F d1e6c25).
+- [x] **F4-06 · A · P11** — N.º de operación obligatorio (transferencia, POS, Yape/Plin, en línea) solo en el front. `pago-nuevo-modal.component.ts:233-234,484`; `PaymentService.java:139-207`. → N.º de operación obligatorio en caja también en el back (ETN_PAY_OPERATION). — ✅ **Corregida 2026-10-13** (B fa31021).
+- [x] **F4-07 · M · P23** — Pista del plan «la imputación real la decide el FIFO»: con plan elegido el back imputa solo a ese plan. `etnCaja.pago.planHint`; `PaymentService.java:467-479`. → Pista: con plan elegido se aplica solo a ese plan; sin plan, entre los activos del contrato. — ✅ **Corregida 2026-10-13** (F ae2c003).
+- [x] **F4-08 · M · P14** — El back no comprueba que el plan sea del contrato del pago. `PaymentService.java:467-477`. → El back rechaza un plan de otro contrato (ETN_PAY_PLAN_CONTRACT). — ✅ **Corregida 2026-10-13** (B fa31021).
+- [x] **F4-09 · M** — Con plan de venta y de perpetuo en el mismo contrato no se distinguen («código · 1.ª cuota» sin concepto). `pago-nuevo-modal.component.ts:220-229`. → Opción del plan con su concepto («PLN-… · Mantenimiento perpetuo · fecha»). — ✅ **Corregida 2026-10-13** (F 79d3e85).
+- [x] **F4-10 · M · P22** — «Acepta efectivo = No» no se respeta (ni back ni modal). `CollectionPoint.java:56`. → Sin efectivo en el selector y rechazo en el back (ETN_PAY_POINT_CASH). — ✅ **Corregida 2026-10-13** (B fa31021 · F ae2c003).
+- [x] **F4-11 · M · P22** — El punto «Portal» aparece en Caja y permite abrir turno y cobrar en efectivo. `caja.component.ts:266-275`. → El punto Portal/pasarela no aparece en Caja; el back no abre turno ni cobra en caja con él. — ✅ **Corregida 2026-10-13** (B fa31021 · F ae2c003).
+- [x] **F4-12 · M · P23** — «Cobrado en el turno» suma saldo a favor y pagos PENDING/FAILED/SUSPICIOUS. `caja.component.ts:246-258`. → «Cobrado en el turno» solo suma confirmados y sin saldo a favor. — ✅ **Corregida 2026-10-13** (F ae2c003).
+- [x] **F4-13 · M · P20/P25** — Detalle del pago: canal «CASHIER», turno y plan «#id», cuota = id de BD (no el n.º), bitácora «PENDING → CONFIRMED». `pago-detalle-modal.component.html:67,72,78,163,199`. → Canal, turno (punto · fecha de caja), plan (código), cuota (n.º) y estados traducidos. — ✅ **Corregida 2026-10-13** (B a0acf11 · F 79d3e85).
+- [x] **F4-14 · M** — El resultado del pago no dice qué cuota se pagó (`PaymentApplicationDTO` sin `installmentNumber`). → `PaymentApplicationDTO.installmentNumber`; el resultado muestra «Cuota N». — ✅ **Corregida 2026-10-13** (B a0acf11 · F 79d3e85).
+- [x] **F4-15 · M · P20** — Bitácora del plan: `plan_status`, `activated_at`, «CREDIT_BALANCE → PREPAY_NEXT», `PLAN_CREATED`, `LATE_FEE_ACCRUAL_BATCH`. `plan-detalle-modal.component.html:239-244`. → Bitácora del plan: campo, valores (estado, política, fecha, mora) y motivo traducidos. — ✅ **Corregida 2026-10-13** (F 79d3e85).
+- [x] **F4-16 · M · P20** — «Parámetros de cálculo congelados»: `calcVersion`, `periodicRate`, `roundingMode=HALF_UP`, `lateFeeConfigId`. `plan-detalle-modal.component.ts:111-118`. → «Condiciones con las que se calculó el plan»: solo las legibles, con etiqueta y formato. — ✅ **Corregida 2026-10-13** (F 79d3e85).
+- [x] **F4-17 · M · P22** — «Refinanciar» se ofrece en el nivel máximo (`ETN_PLAN_REFI_LIMIT`). `planes-pago.component.ts:476-478`. → `GET /refinance-rules`; «Refinanciar» oculto en el nivel máximo. — ✅ **Corregida 2026-10-13** (B a0acf11 · F 79d3e85).
+- [x] **F4-18 · M · P21** — Umbral de 12 cuotas para aprobación del Director copiado en el front. `plan-refinanciar-modal.component.ts:36`. → El umbral del Director viene del back (sin constante en el front). — ✅ **Corregida 2026-10-13** (B a0acf11 · F 79d3e85).
+- [x] **F4-19 · M · P21** — «con 60 días o más… la mora antes que el capital»: es configurable por tasa (en QA vale 0). `etnCaja.detalle.imputacionesHint`. → Pista sin «FIFO» ni «60 días»: «días fijados en la tasa de mora». — ✅ **Corregida 2026-10-13** (F ae2c003).
+- [x] **F4-20 · M** — «Mora primero tras» parece opcional y el back guarda 60 sin avisar; la tabla no muestra ese dato. `LateFeeConfigService.java:69`. → «Mora primero tras» obligatorio, prellenado con 60 (lo que guardaba el back) y visible en la tabla. — ✅ **Corregida 2026-10-13** (F ae2c003).
+- [x] **F4-21 · M · P23** — «Tasa» de mora sin unidad (0.05 = 0,05 %); el tope dice «del capital» y se aplica sobre el saldo pendiente. `mora-configs-modal.component.html:52-58,94`. → Etiquetas con «(%)» y tope «sobre el saldo pendiente de la cuota». — ✅ **Corregida 2026-10-13** (F ae2c003).
+- [x] **F4-22 · M · P26/P11** — La moneda del plan se elige a mano y el back no valida que sea la del contrato. `plan-nuevo-modal.component.html:81-92`. → Moneda del plan = la del contrato (fija en el front; ETN_PLAN_CURRENCY en el back). — ✅ **Corregida 2026-10-13** (B fa31021 · F ae2c003).
+- [x] **F4-23 · M · P22** — Baja de comprobantes: el checkbox se habilita fuera de los 7 días o mezclando sedes (el back rechaza). `facturacion.component.ts:444-447`. → `voidableUntil` del back; la casilla solo en plazo y de la misma sede. — ✅ **Corregida 2026-10-13** (B a0acf11 · F 79d3e85).
+- [x] **F4-24 · M · P20** — CDR de SUNAT como código («0», «2033») sin descripción; bitácora «GENERATED → SENT». `facturacion.component.html:162-165`. → Respuesta SUNAT por clase (aceptado / con observaciones / rechazado / error de envío), código en el título; bitácora traducida. — ✅ **Corregida 2026-10-13** (F 79d3e85).
+- [x] **F4-25 · M · P20** — Cobranza «Servicios bloqueados: NEW_SERVICES»; `unblockType` crudo. `cuenta-detalle-modal.component.html:183,187`. → Alcance «Nuevos servicios» y desbloqueo automático/manual. — ✅ **Corregida 2026-10-13** (F 79d3e85).
+- [x] **F4-26 · M · P25** — Conciliación: pago cruzado «#id», `matchType` crudo, «Movimiento #id». `conciliacion.component.html:158-159,280`. → Folio del pago, tipo de cruce traducido y movimiento por n.º de operación/fecha. — ✅ **Corregida 2026-10-13** (B a0acf11 · F 79d3e85).
+- [x] **F4-27 · M · P25** — Reportes financieros: usuario «#id», estado «COMPLETED», contrato «#id». `reportes.component.html:231,365-373`. → N.º de contrato, nombre del usuario y estado del export traducidos. — ✅ **Corregida 2026-10-13** (F 79d3e85).
+- [x] **F4-28 · M · P13** — Mensajes de validación con el límite equivocado (max 20/15 → «maxLength40», 60 → «120», 160 → «120»). `RegisterPaymentRequestDTO.java:49,52,55,66`. → Mensajes maxLength20/15/60/160 según el límite real. — ✅ **Corregida 2026-10-13** (B fa31021).
+- [x] **F4-29 · B · P21** — «(por defecto S/ 0.10)» fijo en `etnPlanesPago.nuevo.toleranciaHint`. → Pista sin «S/ 0.10» fijo. — ✅ **Corregida 2026-10-13** (F ae2c003).
+- [x] **F4-30 · B · P11** — Inicial = importe: front rechaza (`>=`), back acepta (`>`). → El back también rechaza inicial = importe. — ✅ **Corregida 2026-10-13** (B fa31021).
+- [x] **F4-31 · B · P11** — «Días de gracia» max 90 solo como atributo HTML. → Gracia 0–90 validada en el formulario (el back ya tenía @Max). — ✅ **Corregida 2026-10-13** (F ae2c003).
+- [x] **F4-32 · B · P23** — «Mora congelada 0.10 %» sin decir «diaria». → «Tasa de mora diaria (fijada al crear el plan)». — ✅ **Corregida 2026-10-13** (F ae2c003).
+- [x] **F4-33 · B · P28** — «1 pagos», «Se reanudaron 1 transferencias». → Redacción neutra en Pagos («Pagos: 1», «Transferencias detenidas reanudadas: 1»). Global sigue en T-03. — ✅ **Corregida 2026-10-13** (F 79d3e85).
+- [x] **F4-34 · B · P21** — Aviso manual «esperando 5 días» copiado de `ServiceBlock.PRE_NOTICE_DAYS`. → «el plazo de aviso previo del bloqueo se cuenta desde la fecha indicada». — ✅ **Corregida 2026-10-13** (F 79d3e85).
+- [x] **F4-35 · B · P21** — Conciliación: meta 95 % y 48 h copiados en `conciliacion.model.ts:23,70`. → Meta y horas de plazo desde el back (`targetRate`, `exceptionSlaHours`); constantes del front eliminadas. — ✅ **Corregida 2026-10-13** (B a0acf11 · F 79d3e85).
+- [x] **F4-36 · B · guía** — La guía dice «registrar con canal Caja»; la pantalla no tiene ese campo (va `CASHIER` fijo). → Guía §5: el canal es siempre «Caja»; moneda del contrato, n.º de operación, un comprobante por pago. — ✅ **Corregida 2026-10-13** (docs).
+- [x] **F4-37 · B · P21** — Rojo a partir de 90 días de atraso fijo en cobranza y reportes. → Cobranza usa el tramo D90_PLUS; reportes, constante con nombre ligada a ese tramo fijo del back. — ✅ **Corregida 2026-10-13** (F 79d3e85).
 
 ---
 

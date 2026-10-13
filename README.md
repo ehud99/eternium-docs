@@ -212,11 +212,12 @@ ni pipeline. Es la forma más rápida de tener un contrato ACTIVE para probar la
    → 100 × 0,05 % × 10 = S/ 0.50.
 2. **Pagos / Planes de Pago → simular → crear.** Plan de 2 a 60 cuotas sobre un contrato ACTIVE. Es **manual**: no se crea solo al vender.
 3. **Pagos / Caja y Pagos:**
-   - Crear el **punto de cobro** de la sede.
+   - Crear el **punto de cobro** de la sede (el punto «Portal» es solo para pagos en línea y no aparece aquí).
    - **Abrir la sesión (turno)**. Sin sesión abierta el cobro falla (`ETN_PAY_NO_SESSION`).
-4. **Registrar el pago** con canal Caja y medio de pago. Se aplica a las cuotas y se emite el recibo interno; el excedente queda como crédito.
+4. **Registrar el pago** con el medio de pago (el canal es siempre «Caja»: no se elige). Se cobra en la **moneda del contrato**; transferencia, POS, Yape/Plin y en línea exigen el **n.º de operación**. Se aplica a las cuotas y se emite el recibo interno; el excedente queda como crédito.
 5. *(Opcional)* **Facturación Electrónica → "Emitir desde pago"** (boleta o factura).
    - **No es automático** en caja.
+   - **Un comprobante por pago**: para cambiar boleta por factura, primero se anula la emitida. Los pagos con «saldo a favor» no se facturan (ya se facturó el pago que lo generó).
    - Hoy está en **modo simulado** (`eternium.sunat.stub=true`): acepta con un CDR ficticio y no llega a SUNAT. El proveedor real previsto es el **facturador externo**.
 6. **Cerrar la sesión** con arqueo; si hay descuadre, justificarlo. El cierre diario se genera a las 02:00.
 7. *(Después)*
