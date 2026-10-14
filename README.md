@@ -100,18 +100,18 @@ Orden recomendado. Entre paréntesis, lo que falla si te lo saltas.
 
 | # | Pantalla | Qué registrar | Por qué importa |
 |---|---|---|---|
-| 1 | **Configuración General → Datos** | RUC, dirección fiscal, **representante legal** | Aparecen en contratos y actas. Sin representante, el contrato falla con `ETN_TPL_UNRESOLVED_VARS`. La validación SUNAT del RUC hoy es simulada: se marca a mano. |
-| 2 | **Sedes** | Cada sede (nombre, código, dirección) | Casi todo es por sede. |
-| 3 | **Configuración General → Parámetros** (por sede) | **Moneda**, zona horaria, sede operativa, nombres de niveles, **patrón de código de espacio** | Sin moneda guardada, los espacios generados salen sin moneda y sin tarifa la cotización falla. Una sede **no operativa** no puede emitir nada. |
+| 1 | **Configuración General → Datos** | RUC, dirección fiscal, **representante legal** | Aparecen en contratos y actas. Sin representante, el contrato falla con `ETN_TPL_UNRESOLVED_VARS`. «Verificar RUC» consulta un padrón **simulado** (no verifica nada): comprueba el RUC en el portal de SUNAT y usa «Marcar como validado». |
+| 2 | **Sedes** | Cada sede (nombre, código, dirección, RUC propio) y su **moneda** al crearla | Casi todo es por sede. «Editar» corrige los datos base; los parámetros se cambian en el paso 3. |
+| 3 | **Configuración General → Parámetros** (por sede) | **Moneda** (obligatoria), zona horaria, sede operativa, nombres de niveles, **patrón de código de espacio** (al menos un token) | Cambiar la moneda afecta a lo que se cree desde entonces; lo registrado conserva la suya. Una sede **no operativa** no puede emitir nada. |
 | 4 | **Series y Correlativos** | Una serie por **sede × tipo de documento** | Si falta, falla **al emitir** con `ETN_SEQUENCE_MISSING`. Mínimo: QUOTATION, RESERVATION, SALE, **CONTRACT**, PAYMENT, RECEIPT, PAYMENT_PLAN, SERVICE_REQUEST, SERVICE_QUOTATION, SERVICE_ORDER, **ACT_INTERMENT/EXHUMATION/CREMATION/TRANSFER**, CEREMONY_EVENT, WORK_ORDER, PORTAL_REQUEST. Tras emitir el primer número, la serie queda bloqueada para edición. |
-| 5 | **Tipos de Espacio** | Nombre, **familia física** (NICHE, GROUND, MAUSOLEUM…), capacidad máxima | La familia debe ser compatible con el tipo de sector (un nicho no va en un jardín de lotes). |
-| 6 | **Pabellones y Sectores** | Pabellón → sectores (tipo de sector, grilla filas×columnas, **tipo de espacio por defecto**, precio por defecto, estado **OPERATIONAL**) | Si el sector no está OPERATIONAL, sus espacios nacen DISABLED. Solo se generan espacios en sectores "hoja" (sin sub-sectores). |
-| 7 | **Tipos de Espacio** (otra vez) | Asignar los pabellones al tipo | Tipo y pabellón se referencian mutuamente; es necesario para tarifas por pabellón. |
-| 8 | **Tarifas → pestaña Espacios** | Precio por tipo (y opcionalmente por pabellón), vigencia → **Aprobar** | **Una tarifa no aprobada no se usa.** Es inmutable una vez aprobada; para cambiar precio se crea otra con nueva vigencia. |
-| 9 | **Servicios** | Inhumación, exhumación, cremación, mantenimiento… + requisitos + compatibilidad con tipos | El servicio **no lleva precio**: el precio va en Tarifas. |
+| 5 | **Tipos de Espacio** | Nombre, **familia física** (nicho, tierra, mausoleo…), capacidad máxima | La familia debe ser compatible con la tipología del sector (un nicho no va en un jardín de lotes). |
+| 6 | **Pabellones y Sectores** | Pabellón → sectores (tipología, grilla filas×columnas, **tipo de espacio por defecto**, precio por defecto, construcción **operativa**) → en el sector hoja, **«Generar espacios»** | Si el sector no está operativo, sus espacios nacen deshabilitados. Solo se generan espacios en sectores «hoja» (sin sub-sectores), con un tipo de familia compatible y como máximo 20 000 celdas. |
+| 7 | *(ya no hace falta)* | — | Al crear la tarifa por pabellón, el tipo queda vinculado a ese pabellón (si alguno de sus sectores admite la familia). |
+| 8 | **Tarifas → pestaña Espacios** | Precio por tipo (y opcionalmente por pabellón), vigencia → **Aprobar** | **Una tarifa no aprobada no se usa.** Va en la moneda de la sede. Es inmutable una vez aprobada; una rechazada se puede **corregir y reenviar**. |
+| 9 | **Servicios** | Inhumación, exhumación, cremación, mantenimiento… + requisitos (documento de referencia opcional) + compatibilidad con tipos (informativa) | El servicio **no lleva precio**: el precio va en Tarifas. |
 | 10 | **Tarifas → pestaña Servicios** | Precio por servicio y sede → **Aprobar** | Hazlo **antes** de los paquetes. |
-| 11 | **Paquetes** (opcional) | ≥ 2 servicios, precio, vigencia → Publicar | El precio de cada componente se congela desde la tarifa aprobada. Sin tarifas, publicar exige un motivo de excepción. |
-| 12 | **Plantillas de Documentos** | Publicar **una sola** plantilla de contrato por sede; opcional: propuesta, recibo, OS | Sin plantilla: `ETN_CONTRACT_NO_TEMPLATE`. Con **varias** publicadas, el botón de Ventas falla (`ETN_CONTRACT_TEMPLATE_AMBIGUOUS`) porque no deja elegir. |
+| 11 | **Paquetes** (opcional) | ≥ 2 servicios, precio, vigencia → Publicar | El precio de cada componente se toma **al publicar** desde la tarifa aprobada vigente. Sin tarifa de algún componente, o con precio mayor a la suma, publicar exige un motivo de excepción. |
+| 12 | **Plantillas de Documentos** | Publicar la plantilla de contrato | Solo puede haber **una publicada por tipo, idioma y alcance** (sede o toda la empresa): publicar otra igual se rechaza. La de la sede tapa a la de la empresa. Si quedan varias (compra, arrendamiento…), Ventas deja elegir. |
 
 Licencias y horarios (pestañas de Configuración General) son informativos: ningún otro módulo los exige.
 
@@ -413,8 +413,8 @@ Sin segundo usuario: aprobar tarifas, publicar paquetes y plantillas, y validar 
 | `ETN_POWER_EXPIRED` | Titular persona jurídica sin representante con poder vigente | «Completar datos del titular» al generar el contrato, o Titulares → representantes |
 | `ETN_PAY_NO_SESSION` | Cobro en caja sin sesión abierta | Caja y Pagos → abrir sesión |
 | `ETN_GRID_TYPE_REQUIRED` | Generar espacios sin tipo por defecto en el sector | Pabellones y Sectores |
-| `ETN_RATE_PAVILION` | Tarifa por pabellón con un pabellón no asignado al tipo | Tipos de Espacio → asignar pabellón |
-| Espacios nacen DISABLED | Sector no está OPERATIONAL | Pabellones y Sectores |
+| `ETN_STP_FAMILY` | Tarifa por pabellón cuyo pabellón no tiene sectores que admitan la familia del tipo | Pabellones y Sectores (tipología) o tarifa general |
+| Espacios nacen deshabilitados | El sector no está operativo | Pabellones y Sectores |
 | No se generan tareas de mantenimiento | Espacios sin contrato ACTIVE, o plan sin checklist | Contratos / Programación |
 | El familiar no puede entrar al portal | Titular sin email o sin contrato vivo con espacio | Titulares / Contratos |
 | Portal: «No encontramos un cementerio con ese RUC» | El RUC es de la empresa proveedora (Partner Tech), no de un cementerio | Usar el RUC del tenant (demo: 20603058934) |

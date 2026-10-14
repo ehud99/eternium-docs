@@ -507,3 +507,29 @@ Commits: B ada1126, 4a83e46, d871b67 · F 2eceb77, 0748322, cc3f334. Verificado:
 - Un text block Java (`"""`) dentro de un parche Python con `"""` rompe el script: usar `'''` en el parche.
 - `app-select-search` filtra solo lo cargado; para listas grandes, `(searchChange)` + búsqueda en servidor con debounce.
 - La suite de varios módulos con la arquitectura tarda varios minutos y puede caer por memoria si corre en segundo plano con los servidores encendidos: correrla en primer plano.
+
+## 14. FASE 1 — Configuración (sesión 2026-10-14)
+
+Commits: B 10cd0ba, de34c32, 1b1ba0e · F a57feb2, 57d1fbb, 8250ff9. Verificado: 467 + 80 + 253 tests (configuración, plantillas, catálogos, inventario, contratos y `EterniumArchitectureTest`) en verde; `ngc --noEmit` sin errores. Incidencias cerradas: F1-01 a F1-32. Decisiones del usuario: una sola plantilla publicada por tipo, idioma y alcance; paquetes con componentes sin tarifa se publican con motivo; compatibilidad servicio↔tipo informativa; los parámetros de la sede solo en Parámetros.
+
+**Lo que hacía fallar Ventas y Espacios (F1-01, F1-24, F1-25, F1-26)**
+- Plantillas: dos publicadas del mismo tipo, idioma y alcance se rechazan al publicar (`ETN_TPL_PUBLISHED_DUPLICATE`), y la de la sede tapa a la de la empresa al resolver la del contrato.
+- Paquetes: el precio de los componentes se toma al PUBLICAR (no al guardar el borrador) y una sola regla para los que no tienen tarifa (motivo obligatorio), igual en back, configurador y tarjeta.
+- Sede sin moneda ⇒ espacios no cotizables: la moneda es obligatoria en front y back.
+
+**Reglas que solo vivían en un lado (F1-03, F1-12, F1-17, F1-20, F1-27, F1-31)** — Ver P11/P22.
+- «Generar espacios» no validaba empresa/sede/familia del tipo ni la capacidad máxima del tipo; ahora sí, con la misma regla que el formulario del sector.
+- Patrón de código «al menos un token», familia del pabellón al vincular desde la tarifa, empresa del tipo en la compatibilidad y moneda de las tarifas del paquete: ahora en el back.
+
+**Pantallas que no dejaban corregir (F1-06, F1-07, F1-11, F1-16)**
+- «Editar sede» corrige los datos base (vía partner-core, conservando lo que no edita) y el RUC; los parámetros solo en Parámetros.
+- Horarios con varios rangos por día (antes se perdían al guardar); tarifas rechazadas «Corregir y reenviar».
+
+**Catálogos y textos (F1-08, F1-15, F1-19, F1-22, F1-23, F1-29, F1-30, F1-32)** — Ver P20/P21.
+- Matriz tipología→familia servida por el back; etiquetas de tipología/modo en los mensajes del back; tipo de documento traducido; moneda de la tarifa = la de la sede, en solo lectura.
+
+**Lecciones:**
+- Cuando dos módulos aplican la misma regla (formulario del sector y «Generar espacios»), ponerla en ambos caminos o en un solo servicio: el segundo camino suele olvidarse (P11).
+- Para editar algo que vive en partner-core desde Eternium, el adaptador debe partir de la entidad actual: un DTO incompleto borra lo que la pantalla no muestra (teléfono, responsable).
+- Un mensaje sin argumentos no pasa por MessageFormat: no escapar llaves ni comillas en él.
+- GateGuard (hook ECC) pide datos antes de cada archivo nuevo: con muchos archivos conviene declarar `GATEGUARD_EXEMPT_GLOBS` para los repos de trabajo.
