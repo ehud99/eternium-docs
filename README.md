@@ -123,7 +123,7 @@ Licencias y horarios (pestañas de Configuración General) son informativos: nin
 |---|---|---|
 | **Inventario de Espacios** | Alta individual, importación Excel, o el asistente **"Generar espacios"** desde un sector (crea toda la grilla de golpe) | Generar exige tipo por defecto en el sector y permiso **Inventario → Crear**. Cada espacio recibe código y QR. Si no lleva pabellón queda "huérfano": existe pero no sale en el plano. |
 | **Plano Interactivo** | Ver pabellón/sector con colores por estado; cambio de estado en lote | Solo dibuja espacios con posición (fila/columna o nodo SVG). |
-| **Disponibilidad y Bloqueos** | Búsqueda comercial (solo AVAILABLE) y bloqueo temporal de 72 h | Mientras dura el bloqueo, el espacio queda RESERVED. |
+| **Disponibilidad y Bloqueos** | Búsqueda comercial (solo AVAILABLE, con el precio que cotiza el contrato) y bloqueo temporal (72 h por defecto; la empresa lo configura) | Mientras dura el bloqueo, el espacio queda RESERVED; el bloqueo se cierra solo al crear el contrato o se libera a mano. |
 | **Historial de Espacios** | Línea de tiempo de solo lectura (auditoría) | Se llena solo; exporta a PDF con hash. |
 
 **Estados de un espacio:**

@@ -46,6 +46,7 @@ Errores que aparecieron en varios módulos. Antes de dar un módulo por bueno, p
 | P27 | **«Segundo aprobador» nominal**: el solicitante elige a otro y queda aprobado sin que esa persona actúe; el selector incluye al propio usuario. | Flujos de doble aprobación. | La aprobación queda pendiente hasta que el aprobador actúe en su sesión; excluir al solicitante (pendiente: F5-06, G-02, G-03). |
 | P28 | **Plurales fijos** («{{n}} tareas» → «1 tareas»). | Buscar `{{n}} ` seguido de una palabra en plural. | Redacción neutra («Tareas: 1») mientras no haya plural ICU global (T-03). |
 | P29 | **«No existe» cuando sí existe pero un filtro lo excluye** (plantilla «CONTRATO DE COMPRA» guardada con tipo «Acta de exhumación»: enviar a firma decía «no hay ninguna plantilla»). | Toda búsqueda que filtra por tipo, sede, idioma, estado o vigencia y responde «no hay». | El error nombra los casi-candidatos y qué cambiar (tipo, sede, publicar) y la ruta real del menú; probar con datos cargados «fuera del flujo» de la guía (B 9d9f23e). |
+| P30 | **La pantalla muestra un dato y el sistema cobra otro** (precio del espacio vs tarifa vigente que usa la cotización); la misma regla vive en dos sitios y diverge. | Comparar lo que ve el vendedor con lo que cotiza el contrato; buscar la misma regla (filtro, orden) escrita dos veces. | Una sola definición en el dominio (`SpaceTypeRate.currentFor`) que usan todos; el DTO trae el valor efectivo ya resuelto (B e4475db). |
 | P19 | **Un módulo inyecta el repositorio (`infrastructure.persistence`) de otro módulo.** Lo rechaza `EterniumArchitectureTest.modulo_no_importa_persistencia_ajena_nueva`. | Correr la suite **completa** (`mvnw test`), no solo los tests de la clase tocada. | Puerto en `<módulo>/domain/port` con un record de solo lo necesario, implementado por el servicio dueño del repositorio (`BranchBusinessHoursPort` en `BranchScheduleService`, sesión 2026-10-09). |
 
 **Reglas de trabajo** (del montaje local, ver `CLAUDE.md` global):
@@ -445,4 +446,33 @@ Incidencias cerradas: F5-01 a F5-24. Decisiones del usuario: doble aprobación h
 - **Corrección (B 9d9f23e):** el 409 dice qué tipo se exige, da la ruta real (Configuración > Plantillas de Documentos) y nombra las plantillas publicadas con otro tipo («La plantilla «CONTRATO DE COMPRA» está publicada con el tipo «Acta de exhumación»: si es un contrato, cambie su Tipo de documento…») y las de contrato publicadas solo para otra sede. Test del caso.
 - **Para resolverlo en UAT:** en Plantillas de Documentos, abrir «CONTRATO DE COMPRA», cambiar Tipo de documento a «Contrato de compra», Guardar propiedades (y publicar si la versión vigente no lo está).
 - **Lección (P29):** cuando una búsqueda filtrada no encuentra nada, el error debe explicar qué existe y por qué no sirve. Probar también con datos creados fuera del recorrido de la guía.
+
+---
+
+## 12. FASE 2 — Espacios (sesión 2026-10-13)
+
+Commits: B 27b7f1f, e4475db · F f164778, 6e4b9d8. Verificado: tests de espacios, catálogo, cotizaciones, contratos y `EterniumArchitectureTest` en verde; `ngc --noEmit` sin errores ni advertencias. Incidencias cerradas: F2-01 a F2-12. Decisiones del usuario: quitar «Formalizar» (el contrato ya formaliza el bloqueo); dejar DISPONIBLE solo si no hay ocupación ni contrato vivo.
+
+**Espacios que quedaban mal para siempre (F2-01, F2-02)**
+- «Formalizar» dejaba el espacio RESERVED sin bloqueo vivo y nada lo liberaba: se quitó botón, modal, método de servicio y endpoint. `SpaceHoldService.formalize` queda solo para el contrato (puerto `HoldFormalizationPort`).
+- OCCUPIED → MAINTENANCE → AVAILABLE saltaba la guarda y ponía a la venta un nicho con difunto o contrato. `requireFreeToRelease` mira `currentOccupancy` y `SpaceEngagementPort`; aplica también al cambio en lote, que no pasaba por `changeStatus`.
+
+**El precio que se ve no es el que se cobra (F2-08, F2-09)** — Ver P30.
+- Disponibilidad mostraba, filtraba y ordenaba por `space.price`; la cotización cobra primero la tarifa aprobada vigente. `SpaceTypeRate.currentFor` es ahora la única definición y la usan las dos. La búsqueda comercial filtra y ordena en BD por `coalesce(tarifa del pabellón, tarifa genérica, precio del espacio)` (una subconsulta por nivel; la BD garantiza una sola aprobada vigente por concepto, así que `max` es exacto).
+- Importes con la moneda del propio espacio (`money(monto, monedaId)`), no la de la sede.
+
+**Importación (F2-04 a F2-07)** — Ver P8/P9.
+- Moneda de la sede junto al precio; «900,50» ya no se guarda como 90 050 (coma o punto, ≤ 2 decimales, y un formato ambiguo se rechaza); sector no operativo ⇒ DISABLED también en alta e importación; la ayuda documenta la plantilla v2.
+
+**Textos y pantallas (F2-03, F2-10 a F2-12)** — Ver P20/P21/P25.
+- El lote solo ofrece estados que el back acepta; el error muestra estados traducidos. Sin «72 h» fijo. Historial con los 29 tipos de evento, módulo por nombre y payload sin ids. Tope de 500 en el lote.
+
+**Pendiente de decisión (F2-12):** `/legal-restrictions`, `/holds/reassign` y `/holds/active` siguen sin pantalla.
+
+**Pendiente de verificar en la app (no hay prueba contra base real):** Disponibilidad ordenada por precio (asc/desc) con paginación, y con filtro de precio mín./máx. La consulta usa subconsultas correlacionadas en un `Specification`; solo está probada la lógica de la tarifa vigente, no el SQL.
+
+**Lecciones:**
+- Con `Specification` + `Pageable`, un `ORDER BY` por expresión debe ir en la especificación (y el `Pageable` sin orden), y **nunca en la consulta de conteo** (`query.getResultType() == Long.class`): en PostgreSQL rompe el `count(*)`.
+- Una guarda de estado hay que ponerla en TODOS los caminos que cambian el estado (individual, lote, importación, alta), no solo en el primero que se vio.
+- Los specs de `libs/` no corren: `tsconfig.spec.json` apunta a un `src/` inexistente (ya era así).
 
