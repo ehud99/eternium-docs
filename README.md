@@ -147,18 +147,18 @@ Esta es la columna vertebral. Paso a paso, con el botón exacto:
 
 | # | Pantalla → acción | Resultado | Requisito clave |
 |---|---|---|---|
-| 1 | **Ventas / Prospectos (CRM) → Agregar** | Prospecto | Consentimiento (Ley 29733); documento no duplicado |
+| 1 | **Ventas / Prospectos (CRM) → Agregar** | Prospecto | Consentimiento (Ley 29733) con una **política de datos publicada** en Portal de Familias → Consentimientos (sin ella no se puede registrar ni prospecto ni titular); mayor de 18 años; documento no duplicado |
 | 2 | *(opcional)* **Ventas / Pipeline → Nueva oportunidad** | Tarjeta en el kanban | Solo seguimiento; no crea nada más |
 | 3 | *(opcional)* **Contratos / Titulares → Agregar** con **el mismo documento** | Titular ya registrado; la venta se vinculará a él | Ya no hace falta: «Generar contrato» pide lo que falte. Ver ⚠️ más abajo |
-| 4 | **Ventas / Cotización → Agregar → "Emitir en firme"** | Cotización ISSUED (15 días de vigencia) | Espacio AVAILABLE con precio. Si el descuento supera el límite del rol, la cotización queda «Descuento por aprobar» y hay que aprobarla antes de emitir (puede hacerlo el mismo usuario que la creó). Crear no es emitir. |
-| 5 | **Ventas / Reserva → Nueva reserva** (desde la cotización) | Reserva ACTIVE, espacio RESERVED, reloj de 72 h | Cotización vigente en firme |
+| 4 | **Ventas / Cotización → Agregar → "Emitir en firme"** | Cotización ISSUED (15 días de vigencia) | Espacio AVAILABLE con precio. El asistente muestra el total **con IGV** que se va a congelar. Si el descuento supera el límite del rol, la cotización queda «Descuento por aprobar» y hay que aprobarla antes de emitir (puede hacerlo el mismo usuario que la creó). Crear no es emitir. Si el espacio no estaba disponible, sale **«Referencial»**: sirve de precio pero no deja reservar (clónala en firme). |
+| 5 | **Ventas / Reserva → Nueva reserva** (desde la cotización) | Reserva ACTIVE, espacio RESERVED, reloj con el plazo configurado (72 h por defecto) | Cotización emitida o aceptada, vigente y **en firme** |
 | 6 | **Reserva → Registrar pago inicial** | Reserva CONFIRMED (el reloj se detiene) | Monto ≥ mínimo (10 % o cuota inicial del plan simulado). **No pasa por Caja.** |
-| 7 | **Reserva → Validar pago** | Pago VALIDATED | Sin esto no se puede abrir la venta |
-| 8 | **Ventas / Proceso de Venta → Nuevo expediente** | Venta; reserva CONVERTED | Reserva CONFIRMED + pago validado |
-| 9 | **Checklist → Vincular/Subir → Verificar** cada documento | Checklist completo | Si no configuraste requisitos (botón "Requisitos"), cuenta como completo |
-| 10 | **"Generar contrato"** (tenencia/plazo) → si al titular le falta algo, formulario **«Completar datos del titular»** | Crea o vincula el **titular** (desde el prospecto), le guarda los datos completados y crea el **contrato en PENDING_SIGNATURE** | Serie CONTRACT, una plantilla publicada |
+| 7 | **Reserva → Validar pago** | Pago VALIDATED | Sin esto no se puede abrir la venta. Una reserva con pago recibido (CONFIRMED) ya **no se libera**: sigue a la venta o a una anulación formal |
+| 8 | **Ventas / Proceso de Venta → Nuevo expediente** (o «Ir al proceso de venta» desde la reserva, que la deja elegida) | Venta; reserva CONVERTED | Reserva CONFIRMED + pago validado (solo esas aparecen en la lista) |
+| 9 | **Checklist → Vincular/Subir → Verificar** cada documento | Checklist completo | Si no configuraste requisitos (botón "Requisitos"), cuenta como completo. El tipo del requisito se elige del catálogo de Gestión Documental (el DNI es «Documento de identidad»). «Sincronizar avance» comprueba si ya se cumple el paso siguiente y avanza el expediente |
+| 10 | **"Generar contrato"** (tenencia, plazo en años o meses, plantilla si hay varias) → si al titular le falta algo, formulario **«Completar datos del titular»** | Crea o vincula el **titular** (desde el prospecto), le guarda los datos completados y crea el **contrato en PENDING_SIGNATURE** | Serie CONTRACT, una plantilla publicada. Temporal/Renovable exigen plazo (máx. 200 años) |
 | 11 | **Contratos / Contratos de Titularidad → detalle → Firmar** (cada firmante) | Contrato **ACTIVE**, espacio **OCCUPIED**, escritura en Gestión Documental | El último firmante es el usuario que envió a firma (representante del cementerio) |
-| 12 | **Proceso de Venta → "Asignar definitivamente"** | Venta ASSIGNED, comisión, oportunidad Ganada | Contrato ACTIVE |
+| 12 | **Proceso de Venta → "Asignar definitivamente"** | Venta ASSIGNED, comisión, oportunidad Ganada (es la única forma de marcarla Ganada) | Contrato ACTIVE |
 
 ⚠️ **Trampas de Ventas**
 
@@ -184,8 +184,8 @@ ni pipeline. Es la forma más rápida de tener un contrato ACTIVE para probar la
 
 - **Gestión Documental:** repositorio de documentos enlazados a contrato, espacio o titular, con versiones. Las escrituras llegan solas.
 - **Transferencias y Renovaciones:**
-  - **Transferencia:** contrato ACTIVE, nuevo titular ya creado, deuda en cero, checklist y firma de ambos titulares. Crea una copia ACTIVE del contrato a nombre del nuevo titular.
-  - **Renovación:** solo para contratos no perpetuos.
+  - **Transferencia:** contrato ACTIVE, nuevo titular ya creado (distinto del actual), **«Verificar deuda en Pagos»** en cero (la deuda ya no se teclea: se consulta en Pagos; con cuotas impagas o si Pagos no responde queda bloqueada), checklist y firma de ambos titulares. Crea una copia ACTIVE del contrato a nombre del nuevo titular.
+  - **Renovación:** solo para contratos vigentes o vencidos, no perpetuos y con fecha de vencimiento (la lista solo ofrece esos); plazo máximo 200 años / 2400 meses.
 
 ---
 

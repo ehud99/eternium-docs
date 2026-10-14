@@ -46,6 +46,7 @@ Errores que aparecieron en varios módulos. Antes de dar un módulo por bueno, p
 | P27 | **«Segundo aprobador» nominal**: el solicitante elige a otro y queda aprobado sin que esa persona actúe; el selector incluye al propio usuario. | Flujos de doble aprobación. | La aprobación queda pendiente hasta que el aprobador actúe en su sesión; excluir al solicitante (pendiente: F5-06, G-02, G-03). |
 | P28 | **Plurales fijos** («{{n}} tareas» → «1 tareas»). | Buscar `{{n}} ` seguido de una palabra en plural. | Redacción neutra («Tareas: 1») mientras no haya plural ICU global (T-03). |
 | P29 | **«No existe» cuando sí existe pero un filtro lo excluye** (plantilla «CONTRATO DE COMPRA» guardada con tipo «Acta de exhumación»: enviar a firma decía «no hay ninguna plantilla»). | Toda búsqueda que filtra por tipo, sede, idioma, estado o vigencia y responde «no hay». | El error nombra los casi-candidatos y qué cambiar (tipo, sede, publicar) y la ruta real del menú; probar con datos cargados «fuera del flujo» de la guía (B 9d9f23e). |
+| P31 | **KPI «de la empresa» calculado sobre la página cargada** («Por vencer ≤ 6 h», «Sin contacto ≥ 7 días»: cambiaban al paginar y con 25 filas nunca pasaban de 25). | KPIs que hacen `filter(...).length` sobre la lista paginada o sobre `totalElements` con filtros. | Contarlo en el back y servirlo en el `meta` del listado, junto con el umbral que usa (F3-16, F3-25). |
 | P30 | **La pantalla muestra un dato y el sistema cobra otro** (precio del espacio vs tarifa vigente que usa la cotización); la misma regla vive en dos sitios y diverge. | Comparar lo que ve el vendedor con lo que cotiza el contrato; buscar la misma regla (filtro, orden) escrita dos veces. | Una sola definición en el dominio (`SpaceTypeRate.currentFor`) que usan todos; el DTO trae el valor efectivo ya resuelto (B e4475db). |
 | P19 | **Un módulo inyecta el repositorio (`infrastructure.persistence`) de otro módulo.** Lo rechaza `EterniumArchitectureTest.modulo_no_importa_persistencia_ajena_nueva`. | Correr la suite **completa** (`mvnw test`), no solo los tests de la clase tocada. | Puerto en `<módulo>/domain/port` con un record de solo lo necesario, implementado por el servicio dueño del repositorio (`BranchBusinessHoursPort` en `BranchScheduleService`, sesión 2026-10-09). |
 
@@ -476,3 +477,33 @@ Commits: B 27b7f1f, e4475db · F f164778, 6e4b9d8. Verificado: tests de espacios
 - Una guarda de estado hay que ponerla en TODOS los caminos que cambian el estado (individual, lote, importación, alta), no solo en el primero que se vio.
 - Los specs de `libs/` no corren: `tsconfig.spec.json` apunta a un `src/` inexistente (ya era así).
 
+## 13. FASE 3 — Ventas → Contrato (sesión 2026-10-14)
+
+Commits: B ada1126, 4a83e46, d871b67 · F 2eceb77, 0748322, cc3f334. Verificado: 265 + 88 + 203 tests de cotizaciones, reservas, ventas, transferencias, documentos, titulares, prospectos, pipeline, contratos y `EterniumArchitectureTest` en verde; `ngc --noEmit` sin errores. Incidencias cerradas: F3-01 a F3-38. Decisiones del usuario: deuda de la transferencia solo desde Pagos (sin ingreso manual); una reserva CONFIRMED no se libera; «Ganada» solo al asignar definitivamente; nuevo tipo documental «Documento de identidad».
+
+**Lo que cobra la cotización (F3-01 a F3-03, F3-22)** — Ver P30.
+- El comparativo y el resumen calculaban con `space.price` y sin IGV. Ahora piden `GET /quotations/price-preview`, que usa `resolvePricing` + `amounts` (la misma cuenta que `create`).
+- El simulador aceptaba 1 cuota; el plan real exige 2–60. Constantes en `QuotationService` vigiladas por un test contra `PaymentPlanService`; el detalle sirve la inicial mínima y el rango.
+
+**Reglas que solo vivían en un lado (F3-04, F3-06, F3-11, F3-17, F3-26, F3-28, F3-32)** — Ver P11/P22.
+- Front que ofrecía lo que el back rechaza: reservas sin pago validado en «Nuevo expediente» (ahora `GET /sales/ready-reservations`), contratos no renovables, plazo sin tope.
+- Back que permitía lo que la pantalla negaba: liberar una CONFIRMED, mover a Ganada a mano, responsable de otra empresa, reservar desde una cotización referencial.
+- Transferencias: con un 0 tecleado la deuda quedaba CLEARED con cuotas vencidas. Ahora `debtCheck` siempre consulta `DebtStatusPort` y bloquea si Pagos no responde.
+
+**Datos de catálogo y configuración (F3-05, F3-07, F3-16, F3-25, F3-29, F3-38)** — Ver P21/P31.
+- Tipo documental libre: «DNI» ≠ «DNI_TITULAR» y el checklist nunca casaba. Catálogo `Document.USER_TYPES` (+ `IDENTITY`) validado en subida y requisitos; V141 normaliza lo guardado.
+- Versión de la política de consentimiento fija en «1.0». Ahora la pone el back desde la publicada (`ConsentPolicyPort`). **Sin política publicada no se registra ni prospecto ni titular** (lo dice la guía).
+- Umbrales (6 h crítico, 7 días sin contacto, 15 días en riesgo, 30/60/90 del semáforo) servidos por el back en vez de copiados en el front.
+
+**Moneda, folios y nombres (F3-12, F3-15, F3-19, F3-20, F3-27, F3-30, F3-34)** — Ver P25/P26.
+- La reserva trae número y moneda de su cotización (`QuotationPort.refsByIds`); importes de cotizaciones, reservas y oportunidades con `MonedaService`.
+- Comisiones con número de venta y vendedor (`SaleLookupPort.saleNumbersByIds` + `StaffDirectoryPort`); bitácora documental con nombre y detalle traducido (lo guardado se conserva para auditoría).
+- Monto de oportunidad sin moneda ⇒ moneda funcional (`CompanyCurrencyPort`, adaptador sobre `CompanyCurrencyResolver`: los servicios de partner-core no se usan desde `application`).
+
+**Lecciones:**
+- Cuando el front pinta un importe, que lo calcule el back con la misma función que lo congela; dos fórmulas acaban divergiendo.
+- Una «regla de pantalla» (texto que dice «no se puede») sin guarda en el back no es regla: probar el endpoint directo.
+- Un KPI que debe ser de la empresa no puede salir de la lista paginada (P31).
+- Un text block Java (`"""`) dentro de un parche Python con `"""` rompe el script: usar `'''` en el parche.
+- `app-select-search` filtra solo lo cargado; para listas grandes, `(searchChange)` + búsqueda en servidor con debounce.
+- La suite de varios módulos con la arquitectura tarda varios minutos y puede caer por memoria si corre en segundo plano con los servidores encendidos: correrla en primer plano.
