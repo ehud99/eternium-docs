@@ -28,7 +28,7 @@
 | G · Guía (secciones 10–12) | 0 | 5 | 3 | 8 |
 | **Total** | **47** | **134** | **42** | **223** |
 
-**Progreso:** 2026-10-11 — Fase 6 (Mantenimiento) completa: las 43 F6 corregidas y marcadas con [x]. 2026-10-12 — Fase 7 (Portal de Familias) completa: las 13 F7 corregidas. 2026-10-13 — Fase 4 (Pagos) completa: las 37 F4 corregidas; T-01 corregida. 2026-10-13 — Fase 5 (Servicios Funerarios) completa: las 24 F5 corregidas. 2026-10-13 — Fase 2 (Espacios) completa: las 12 F2 corregidas. 2026-10-14 — Fase 3 (Ventas → Contrato) completa: las 38 F3 corregidas. 2026-10-14 — Fase 1 (Configuración) completa: las 32 F1 corregidas. 2026-10-15 — Fase 8 (Análisis) completa: las 4 F8 corregidas. 2026-10-15 — T (Transversal) completa: las 12 T cerradas (T-10 revisada sin cambio).
+**Progreso:** 2026-10-11 — Fase 6 (Mantenimiento) completa: las 43 F6 corregidas y marcadas con [x]. 2026-10-12 — Fase 7 (Portal de Familias) completa: las 13 F7 corregidas. 2026-10-13 — Fase 4 (Pagos) completa: las 37 F4 corregidas; T-01 corregida. 2026-10-13 — Fase 5 (Servicios Funerarios) completa: las 24 F5 corregidas. 2026-10-13 — Fase 2 (Espacios) completa: las 12 F2 corregidas. 2026-10-14 — Fase 3 (Ventas → Contrato) completa: las 38 F3 corregidas. 2026-10-14 — Fase 1 (Configuración) completa: las 32 F1 corregidas. 2026-10-15 — Fase 8 (Análisis) completa: las 4 F8 corregidas. 2026-10-15 — T (Transversal) completa: las 12 T cerradas (T-10 revisada sin cambio). 2026-10-15 — G (Guía) completa: las 8 G cerradas; con esto no queda ninguna incidencia pendiente.
 
 **Prioridad sugerida (las A que rompen dinero o datos):** F4-01, F4-02, F4-03 (moneda y doble facturación) ·
 F5-02/03/04 (difunto ≠ el de la OS) · F2-01, F2-02 (espacios que quedan RESERVED/AVAILABLE mal) ·
@@ -316,14 +316,14 @@ F3-06 (transferencia con deuda en 0) · F6-01, F6-02, F6-03 (ejecución en campo
 
 ## G · Guía (`README.md`) y secciones 10–12
 
-- [ ] **G-01 · M** — §10 «Exhumación (doble validación del director)»: solo con autorización JUDICIAL. `ExhumationService.java:232-238`.
-- [ ] **G-02 · M · P27** — §10 «Excepción de cobranza»: el aprobador lo elige el solicitante y queda aprobada al instante; el selector incluye al usuario actual (`approverMustDiffer`). `CollectionExceptionService.java:77-97`; `excepcion-modal.component.ts:180`.
-- [ ] **G-03 · B · P27** — Desbloqueo manual de cobranza: aprobador sin validar (otra persona, misma empresa). `CollectionAccountService.java:213`.
-- [ ] **G-04 · B** — §11 «Cada 5–15 min … reservas y bloqueos»: reservas y bloqueos de espacio vencen cada 60 s; bloqueos de cobranza cada 10 min. Faltan en la tabla los jobs de 02:30, 03:00, 06:15–06:55 y 07:05/07:10.
-- [ ] **G-05 · M** — §12 «El pago no aparece en reportes → esperar al día siguiente»: hay «Actualizar datos» en Reportes Financieros; el refresco es a las 06:00 y el Dashboard cada 15 min.
-- [ ] **G-06 · M** — §12 fila `ETN_RATE_PAVILION`: el código ya no existe (ver F1-18).
-- [ ] **G-07 · M** — §12 «No se generan tareas… o plan sin checklist»: un plan sin checklist no se puede guardar. Causas reales: plan pausado, falta el plan de pago perpetuo que exige, espacio sin contrato ACTIVE, frecuencia que no toca ese día (bitácora §7.3).
-- [ ] **G-08 · B** — §13 paso 9 dice «Generar tareas»: el botón es «Ejecutar generación ahora».
+- [x] **G-01 · M** — §10 «Exhumación (doble validación del director)»: solo con autorización JUDICIAL. `ExhumationService.java:232-238`. — ✅ **Corregida 2026-10-15**: §5 y §10: la doble validación del director solo se exige con autorización judicial; con otra basta una (guía)
+- [x] **G-02 · M · P27** — §10 «Excepción de cobranza»: el aprobador lo elige el solicitante y queda aprobada al instante; el selector incluye al usuario actual (`approverMustDiffer`). `CollectionExceptionService.java:77-97`; `excepcion-modal.component.ts:180`. — ✅ **Corregida 2026-10-15**: decisión del usuario: quien registra la excepción puede ser el aprobador (cementerios que lleva una sola persona). El back exige que el aprobador sea un usuario activo de la empresa; V144 quita `ck_etn_collexc_distinct`; el aviso del modal ya no pide un aprobador distinto; la guía la pasa a «sin segundo usuario» (B 901bf4a · F 235eb0a · guía)
+- [x] **G-03 · B · P27** — Desbloqueo manual de cobranza: aprobador sin validar (otra persona, misma empresa). `CollectionAccountService.java:213`. — ✅ **Corregida 2026-10-15**: el desbloqueo manual valida que el aprobador sea un usuario activo de la empresa (puede ser quien desbloquea, como en G-02) (B 901bf4a · guía)
+- [x] **G-04 · B** — §11 «Cada 5–15 min … reservas y bloqueos»: reservas y bloqueos de espacio vencen cada 60 s; bloqueos de cobranza cada 10 min. Faltan en la tabla los jobs de 02:30, 03:00, 06:15–06:55 y 07:05/07:10. — ✅ **Corregida 2026-10-15**: §11 rehecha contra los `@Scheduled` del back: todos los procesos diarios (02:30, 03:00, 06:15–06:55, 07:05, 07:10) y los periódicos por frecuencia real (cada hora, 15, 10, 5 min y cada minuto) (guía)
+- [x] **G-05 · M** — §12 «El pago no aparece en reportes → esperar al día siguiente»: hay «Actualizar datos» en Reportes Financieros; el refresco es a las 06:00 y el Dashboard cada 15 min. — ✅ **Corregida 2026-10-15**: §12: los reportes se refrescan a las 06:00; se arregla con «Actualizar datos» en Reportes Financieros; el Dashboard se actualiza cada 15 min (guía)
+- [x] **G-06 · M** — §12 fila `ETN_RATE_PAVILION`: el código ya no existe (ver F1-18). — ✅ **Corregida 2026-10-15**: la fila `ETN_RATE_PAVILION` ya no estaba en §12 (se quitó con F1-18) (guía)
+- [x] **G-07 · M** — §12 «No se generan tareas… o plan sin checklist»: un plan sin checklist no se puede guardar. Causas reales: plan pausado, falta el plan de pago perpetuo que exige, espacio sin contrato ACTIVE, frecuencia que no toca ese día (bitácora §7.3). — ✅ **Corregida 2026-10-15**: §12: causas reales (plan pausado, espacio sin contrato ACTIVE, plan que exige perpetuo sin ese plan de pago, frecuencia que no toca ese día) (guía)
+- [x] **G-08 · B** — §13 paso 9 dice «Generar tareas»: el botón es «Ejecutar generación ahora». — ✅ **Corregida 2026-10-15**: §13 paso 9: «Ejecutar generación ahora» en Programación (guía)
 
 ---
 

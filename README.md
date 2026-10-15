@@ -256,7 +256,7 @@ ni pipeline. Es la forma más rápida de tener un contrato ACTIVE para probar la
 - **Exhumación:**
   - Requiere 365 días desde la inhumación, salvo excepción sanitaria.
   - Requiere autorización legal validada.
-  - Requiere **dos validaciones del director hechas por usuarios distintos**.
+  - Requiere la validación del director. Si la autorización es **judicial**, son **dos validaciones hechas por usuarios distintos**; con otra autorización basta una.
 - **Cremación:**
   - OS de tipo CREMATION: se elige primero la OS y trae el difunto y la fecha. Cremación, exhumación y traslado rechazan un difunto distinto al de la OS.
   - Si la muerte fue violenta, oficio fiscal.
@@ -376,12 +376,12 @@ Para probarlas necesitas al menos **dos usuarios** con permisos:
 
 - Anulación de venta (dos aprobadores distintos).
 - Refinanciación de un plan de pagos, anulación de un pago, NC/ND > 1 UIT.
-- Excepción de cobranza, revisión de incobrable.
+- Revisión de incobrable.
 - Anulación del expediente de un difunto.
 - Eximir un requisito de la OS, OS > S/ 15 000.
-- Exhumación (doble validación del director).
+- Exhumación con autorización judicial (doble validación del director).
 
-Sin segundo usuario: aprobar tarifas, publicar paquetes y plantillas, y validar el pago inicial de una reserva.
+Sin segundo usuario: aprobar tarifas, publicar paquetes y plantillas, validar el pago inicial de una reserva, y registrar una excepción de cobranza o un desbloqueo manual (el aprobador debe ser un usuario activo de la empresa, y puede ser quien la registra).
 
 ---
 
@@ -390,15 +390,29 @@ Sin segundo usuario: aprobar tarifas, publicar paquetes y plantillas, y validar 
 | Cuándo | Qué hace |
 |---|---|
 | 00:00 | Calcula la mora de las cuotas vencidas |
-| 00:10 | Snapshot diario de KPIs |
+| 00:10 | Foto diaria de indicadores (KPIs) |
 | 00:30 | Genera las tareas de mantenimiento |
 | 02:00 | Genera el cierre de caja del día anterior |
+| 02:30 | Actualiza el catálogo de variables de las plantillas |
+| 03:00 | Revisa los vínculos de las cuentas del portal con sus espacios |
 | 03:15 | Concilia facturas en contingencia |
-| 06:00 | Evalúa morosidad (alertas, bloqueos) y refresca reportes |
+| 06:00 | Evalúa morosidad (alertas, bloqueos) y refresca los reportes financieros |
+| 06:15 | Avisa de licencias por vencer |
+| 06:25 | Vence contratos y avisa de renovaciones |
 | 06:30 | Aviso de órdenes correctivas vencidas |
-| 06:45 | Vence los borradores de difunto de más de 72 h |
-| 07:00 | Escala excepciones de conciliación (> 48 h), refresco financiero, resumen de mantenimiento |
-| Cada 5–15 min | Reintentos de facturación, alertas, KPIs, SLA del portal, vencimiento de reservas y bloqueos |
+| 06:35 | Retención de documentos |
+| 06:40 | Borra los reportes generados que ya vencieron |
+| 06:45 | Vence los borradores de difunto de más de 72 h y cancela transferencias sin firma en plazo |
+| 06:50 | Renovación tácita de contratos renovables |
+| 06:55 | Vence las cotizaciones |
+| 07:00 | Escala excepciones de conciliación (> 48 h), respaldo del refresco financiero, resumen de mantenimiento, avisos de reservas por vencer |
+| 07:05 | Oportunidades en riesgo |
+| 07:10 | Plazo de las disputas de comisión |
+| Cada hora | Vence las solicitudes de pago del portal; envía el resumen ejecutivo a quien lo tenga a esa hora |
+| Cada 15 min | KPIs del dashboard, plazos de las solicitudes del portal |
+| Cada 10 min | Levanta los bloqueos de cobranza de cuentas ya pagadas |
+| Cada 5 min | Reintentos de facturación, alertas, tareas de mantenimiento vencidas, confirmación de ceremonias, índice de conservación |
+| Cada minuto | Vence reservas y bloqueos de espacio; lanza los reportes programados |
 
 ---
 
@@ -415,10 +429,10 @@ Sin segundo usuario: aprobar tarifas, publicar paquetes y plantillas, y validar 
 | `ETN_GRID_TYPE_REQUIRED` | Generar espacios sin tipo por defecto en el sector | Pabellones y Sectores |
 | `ETN_STP_FAMILY` | Tarifa por pabellón cuyo pabellón no tiene sectores que admitan la familia del tipo | Pabellones y Sectores (tipología) o tarifa general |
 | Espacios nacen deshabilitados | El sector no está operativo | Pabellones y Sectores |
-| No se generan tareas de mantenimiento | Espacios sin contrato ACTIVE, o plan sin checklist | Contratos / Programación |
+| No se generan tareas de mantenimiento | Plan pausado, espacio sin contrato ACTIVE, el plan exige mantenimiento perpetuo y el contrato no tiene ese plan de pago, o la frecuencia no toca ese día | Programación (plan) / Contratos / Plan de Pagos |
 | El familiar no puede entrar al portal | Titular sin email o sin contrato vivo con espacio | Titulares / Contratos |
 | Portal: «No encontramos un cementerio con ese RUC» | El RUC es de la empresa proveedora (Partner Tech), no de un cementerio | Usar el RUC del tenant (demo: 20603058934) |
-| El pago no aparece en reportes | Aún no corre el refresco nocturno | Esperar al día siguiente |
+| El pago no aparece en Reportes Financieros | Los reportes se refrescan a las 06:00 | Reportes Financieros → «Actualizar datos». El Dashboard se actualiza solo cada 15 min |
 
 ---
 
@@ -435,5 +449,5 @@ Sin segundo usuario: aprobar tarifas, publicar paquetes y plantillas, y validar 
 9. **Mantenimiento:**
    - Vincular un usuario como operario.
    - Crear un plan sobre ese espacio.
-   - "Generar tareas", asignar, ejecutar con el operario y aprobar en Supervisión.
+   - «Ejecutar generación ahora» en Programación, asignar, ejecutar con el operario y aprobar en Supervisión.
 10. **Análisis:** ver el dashboard (tras ~15 min) y la auditoría.

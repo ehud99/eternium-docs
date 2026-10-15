@@ -43,7 +43,7 @@ Errores que aparecieron en varios módulos. Antes de dar un módulo por bueno, p
 | P24 | **Texto que promete un comportamiento que no existe** («se reenvía por push a los 30 min», «escala al jefe de atención», «se enviará a Contratos»). | Por cada «se notifica / se reenvía / escala / se enviará», buscar en el back quién lo hace y a quién. | Quitar la promesa o implementarla; si el destinatario es configurable sin pantalla, respaldo a administradores (F7-102, F6-20). |
 | P25 | **Ids internos «#123» donde el usuario espera un nombre o un folio** (pago, plan, cuota, contrato, usuario, movimiento). | Buscar `#{{` y `'#' +` en plantillas. | El DTO trae el folio/nombre resuelto en una sola consulta por página, o el front usa la caché de referencias (F4-13, F4-26, F4-27). |
 | P26 | **Moneda ignorada**: importes siempre en PEN o moneda elegida a mano distinta de la del contrato. | `formatMoney(x)` sin moneda; selectores de moneda en cobros/planes. | Formatear con la moneda del registro (`MonedaService`); cobrar y crear planes solo en la moneda del contrato, validado en el back (F4-01, F4-05, F4-22). |
-| P27 | **«Segundo aprobador» nominal**: el solicitante elige a otro y queda aprobado sin que esa persona actúe; el selector incluye al propio usuario. | Flujos de doble aprobación. | La aprobación queda pendiente hasta que el aprobador actúe en su sesión; excluir al solicitante (pendiente: F5-06, G-02, G-03). |
+| P27 | **«Segundo aprobador» nominal**: el solicitante elige a otro y queda aprobado sin que esa persona actúe; el selector incluye al propio usuario. | Flujos de doble aprobación. | La aprobación queda pendiente hasta que el aprobador actúe en su sesión; excluir al solicitante (F5-06). Excepción: si el negocio acepta que lo apruebe la misma persona (cobranza, G-02/G-03), no se finge un segundo actor: se valida que el aprobador sea un usuario activo de la empresa y se dice así en la pantalla. |
 | P28 | **Plurales fijos** («{{n}} tareas» → «1 tareas»). | Buscar `{{n}} ` seguido de una palabra en plural. | Redacción neutra («Tareas: 1») mientras no haya plural ICU global (T-03). |
 | P29 | **«No existe» cuando sí existe pero un filtro lo excluye** (plantilla «CONTRATO DE COMPRA» guardada con tipo «Acta de exhumación»: enviar a firma decía «no hay ninguna plantilla»). | Toda búsqueda que filtra por tipo, sede, idioma, estado o vigencia y responde «no hay». | El error nombra los casi-candidatos y qué cambiar (tipo, sede, publicar) y la ruta real del menú; probar con datos cargados «fuera del flujo» de la guía (B 9d9f23e). |
 | P33 | **Fecha en ISO dentro de un mensaje** («vence el 2026-10-15T19:00:00Z»): se pasa el `Instant`/`LocalDate` tal cual a `messages.get`. | Buscar `messages.get(` con `.toString()`, `String.valueOf(` o un getter de fecha como argumento. | `ExportDates.format(fecha)` para calendario y `ExportDates.format(instante, zona)` con la zona de `UserZoneResolver` (del destinatario si va a otra persona) (T-12). |
@@ -580,3 +580,21 @@ Commits: B b0ef4e2 · F 41235e7. Verificado: 140 tests de los servicios tocados 
 - Antes de corregir una incidencia transversal, comprobar si una fase anterior ya la cerró (M03, RF-357, «Te quedan {0} intentos» y los umbrales de asignación ya no estaban).
 - Un valor que vive como constante del back (no como umbral) también se sirve en el DTO si un texto lo cita.
 - Para traducir enums, sacar los valores reales de la BD: evita claves faltantes que muestran la ruta de la clave.
+
+## 17. G — Guía (sesión 2026-10-15)
+
+Commits: B 901bf4a · F 235eb0a · guía `README.md`. Verificado: `CollectionExceptionServiceTest`, `CollectionAccountServiceUnblockTest` (nuevo), los demás tests de cobranza, `EterniumArchitectureTest` y `ExportLabelsTest` en verde; paridad es/en/pt. Incidencias cerradas: G-01 a G-08. Con esto `incidencias.md` queda sin pendientes.
+
+**Aprobador de cobranza (G-02, G-03)** — Ver P27.
+- La excepción de cobranza la aprobaba al instante a quien eligiera el solicitante, y el CHECK exigía otra persona: un segundo actor de nombre. Decisión del usuario: hay cementerios que lleva una sola persona, así que quien registra puede ser el aprobador. V144 quita `ck_etn_collexc_distinct`; el back valida que el aprobador sea un usuario activo de la empresa (`StaffDirectoryPort.activeMembers`, código `ETN_COLL_APPROVER`).
+- El desbloqueo manual no validaba nada del aprobador; ahora aplica la misma regla. El usuario eligió primero «otra persona» y se le señaló que contradecía G-02: dejaría sin desbloqueo manual a los cementerios de una persona. Se quedó en «puede ser él mismo».
+
+**Guía desalineada con el código (G-01, G-04 a G-08)**
+- Exhumación: la doble validación del director solo con autorización judicial.
+- Procesos automáticos: la tabla se rehízo leyendo los `@Scheduled`; «cada 5–15 min» escondía frecuencias de 1 min a 1 h y faltaban once procesos diarios.
+- Errores frecuentes: el refresco de reportes tiene botón; «plan sin checklist» no puede pasar (el plan no se guarda sin checklist); `ETN_RATE_PAVILION` ya se había quitado en F1-18.
+
+**Lecciones:**
+- Una regla de cuatro ojos que el negocio no puede cumplir (una sola persona) termina en aprobaciones de nombre: preguntar antes si la segunda persona existe siempre.
+- Si dos respuestas del usuario se contradicen, señalarlo antes de implementar.
+- La tabla de procesos de la guía se genera leyendo los `@Scheduled` (cron y `fixedDelay`), no de memoria.
