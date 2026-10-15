@@ -89,8 +89,8 @@ Si el backend arranca con perfil `dev`, ya existe el tenant **"Cementerio Jardin
 | Checklist de transferencias y política de consentimiento del portal | |
 
 > El seeder de espacios puede necesitar un **segundo arranque** del backend para completarse.
-> Una empresa nueva en producción **no recibe nada de esto** salvo la plantilla de propuesta:
-> hay que cargarlo todo con la fase 1.
+> Una empresa nueva en producción **no recibe nada de esto** salvo las plantillas de contrato y de propuesta
+> (de empresa, para todas las sedes) y las series, que se crean al emitir: lo demás se carga con la fase 1.
 
 ---
 
@@ -111,7 +111,7 @@ Orden recomendado. Entre paréntesis, lo que falla si te lo saltas.
 | 9 | **Servicios** | Inhumación, exhumación, cremación, mantenimiento… + requisitos (documento de referencia opcional) + compatibilidad con tipos (informativa) | El servicio **no lleva precio**: el precio va en Tarifas. |
 | 10 | **Tarifas → pestaña Servicios** | Precio por servicio y sede → **Aprobar** | Hazlo **antes** de los paquetes. |
 | 11 | **Paquetes** (opcional) | ≥ 2 servicios, precio, vigencia → Publicar | El precio de cada componente se toma **al publicar** desde la tarifa aprobada vigente. Sin tarifa de algún componente, o con precio mayor a la suma, publicar exige un motivo de excepción. |
-| 12 | **Plantillas de Documentos** | Publicar la plantilla de contrato | Solo puede haber **una publicada por tipo, idioma y alcance** (sede o toda la empresa): publicar otra igual se rechaza. La de la sede tapa a la de la empresa. Si quedan varias (compra, arrendamiento…), Ventas deja elegir. |
+| 12 | **Plantillas de Documentos** (opcional) | Ya vienen publicadas, de empresa (valen para todas las sedes), la de contrato («Contrato de cesión de derechos de uso - Estándar») y la de propuesta. Se editan con una versión nueva; si se borran, no se vuelven a crear | Solo puede haber **una publicada por tipo, idioma y alcance** (sede o toda la empresa): publicar otra igual se rechaza. La de la sede tapa a la de la empresa. Si quedan varias (compra, arrendamiento…), Ventas deja elegir. |
 
 Licencias y horarios (pestañas de Configuración General) son informativos: ningún otro módulo los exige.
 

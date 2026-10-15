@@ -618,3 +618,9 @@ Commits: B 080e5b7 · F 2df6f91 · guía `README.md`. Verificado: `DocumentSeque
 **Lecciones:**
 - Antes de pedir al usuario que configure algo por cada sede, ver si el sistema puede crearlo con un valor por defecto en el primer uso.
 - Crear datos de configuración dentro de la transacción de otro documento: transacción propia y un bloqueo que cubra la regla de unicidad que solo vive en la aplicación.
+
+**Plantillas por defecto (misma sesión)** — B 6a0922e · guía. Verificado: `DefaultTemplateProvisionerTest` (4, nuevo), `DocumentTemplateServiceTest`, `GeneratedDocumentServiceTest`, `ContractServiceTest` (70), `QuotationServiceTest` y `EterniumArchitectureTest` en verde.
+- Decisiones del usuario: de empresa (para todas las sedes, no por sede); solo contrato y propuesta, las dos que el sistema emite (actas, OS, constancia y certificado no los imprime ningún proceso); al arrancar y en el primer uso.
+- `DefaultTemplateProvisioner`: una sola escritura de contrato (cesión de uso, texto neutro respecto de la tenencia) y la propuesta, publicadas y con `branch_id` nulo. No crea nada si la empresa tuvo alguna vez una del tipo (aunque esté borrada): borrar la estándar y redactar la propia funciona. Corre al arrancar para todo cementerio y, para empresas dadas de alta después, al abrir Plantillas o al resolver plantillas al emitir; en transacción propia y recordando en memoria las empresas ya revisadas.
+- Sustituye al sembrador de propuesta y al de contrato que solo corría en `dev`.
+- Lección: antes de sembrar un juego completo, ver qué consume el sistema. Publicar las tres plantillas de contrato habría dejado el contrato ambiguo (`ETN_CONTRACT_TEMPLATE_AMBIGUOUS`).
