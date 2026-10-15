@@ -28,7 +28,7 @@
 | G · Guía (secciones 10–12) | 0 | 5 | 3 | 8 |
 | **Total** | **47** | **134** | **42** | **223** |
 
-**Progreso:** 2026-10-11 — Fase 6 (Mantenimiento) completa: las 43 F6 corregidas y marcadas con [x]. 2026-10-12 — Fase 7 (Portal de Familias) completa: las 13 F7 corregidas. 2026-10-13 — Fase 4 (Pagos) completa: las 37 F4 corregidas; T-01 corregida. 2026-10-13 — Fase 5 (Servicios Funerarios) completa: las 24 F5 corregidas. 2026-10-13 — Fase 2 (Espacios) completa: las 12 F2 corregidas. 2026-10-14 — Fase 3 (Ventas → Contrato) completa: las 38 F3 corregidas. 2026-10-14 — Fase 1 (Configuración) completa: las 32 F1 corregidas.
+**Progreso:** 2026-10-11 — Fase 6 (Mantenimiento) completa: las 43 F6 corregidas y marcadas con [x]. 2026-10-12 — Fase 7 (Portal de Familias) completa: las 13 F7 corregidas. 2026-10-13 — Fase 4 (Pagos) completa: las 37 F4 corregidas; T-01 corregida. 2026-10-13 — Fase 5 (Servicios Funerarios) completa: las 24 F5 corregidas. 2026-10-13 — Fase 2 (Espacios) completa: las 12 F2 corregidas. 2026-10-14 — Fase 3 (Ventas → Contrato) completa: las 38 F3 corregidas. 2026-10-14 — Fase 1 (Configuración) completa: las 32 F1 corregidas. 2026-10-15 — Fase 8 (Análisis) completa: las 4 F8 corregidas.
 
 **Prioridad sugerida (las A que rompen dinero o datos):** F4-01, F4-02, F4-03 (moneda y doble facturación) ·
 F5-02/03/04 (difunto ≠ el de la OS) · F2-01, F2-02 (espacios que quedan RESERVED/AVAILABLE mal) ·
@@ -307,10 +307,10 @@ F3-06 (transferencia con deuda en 0) · F6-01, F6-02, F6-03 (ejecución en campo
 
 ## Fase 8 · Análisis
 
-- [ ] **F8-01 · A** — REP-CAR-05 «Cartera»: el rango de fechas del formulario se ignora y el Excel/PDF dice «Periodo X–Y» sobre la foto actual. `FinancialReportDelegateService.java:53,68-71`; `V121__m10_reporting_and_audit.sql` (`filter_schema`).
-- [ ] **F8-02 · M · P20** — Auditoría, bitácora: módulo, operación (INSERT/UPDATE) y entidad = clase Java (`FuneralSpace`, `PaymentPlanInstallment`); facetas y placeholder «Contract, Deceased…». `auditoria.component.html:604,717-725`.
-- [ ] **F8-03 · M · P20** — Trazabilidad por contrato: «FuneralSpace #12», título «Entidad · UPDATE». `auditoria.component.html:302`; `ContractTraceService.java:176-177`.
-- [ ] **F8-04 · M · P20** — Salud de datos: nombres `mv_*`, código del job, estado de integración y último error técnico crudos. `dashboard-ejecutivo.component.html:1095,1132,1174,1182`.
+- [x] **F8-01 · A** — REP-CAR-05 «Cartera»: el rango de fechas del formulario se ignora y el Excel/PDF dice «Periodo X–Y» sobre la foto actual. `FinancialReportDelegateService.java:53,68-71`; `V121__m10_reporting_and_audit.sql` (`filter_schema`). — ✅ **Corregida 2026-10-15**: La cartera es una foto al día: V142 quita el rango de su esquema y un reporte sin `DATE_RANGE` descarta las fechas que lleguen (también las de programaciones guardadas); el export dice «Corte al <fecha>». (B 49307a0)
+- [x] **F8-02 · M · P20** — Auditoría, bitácora: módulo, operación (INSERT/UPDATE) y entidad = clase Java (`FuneralSpace`, `PaymentPlanInstallment`); facetas y placeholder «Contract, Deceased…». `auditoria.component.html:604,717-725`. — ✅ **Corregida 2026-10-15**: El listener de auditoría guarda el módulo (paquete de la entidad) y V143 lo rellena en las filas existentes; listado, detalle, facetas, fichas y export muestran entidad, módulo y operación traducidos (`export.enum.auditEntity/auditModule/auditOperation`, es/en/pt). El filtro de entidad es un desplegable con las del período. (B 49307a0 · F 94bd651)
+- [x] **F8-03 · M · P20** — Trazabilidad por contrato: «FuneralSpace #12», título «Entidad · UPDATE». `auditoria.component.html:302`; `ContractTraceService.java:176-177`. — ✅ **Corregida 2026-10-15**: La traza titula «Contrato · Modificación» (la descripción genérica del listener se reemplaza) y nombra la entidad por su etiqueta (`entityLabel`). (B 49307a0 · F 94bd651)
+- [x] **F8-04 · M · P20** — Salud de datos: nombres `mv_*`, código del job, estado de integración y último error técnico crudos. `dashboard-ejecutivo.component.html:1095,1132,1174,1182`. — ✅ **Corregida 2026-10-15**: Fuentes, tareas, estados de corrida e integraciones por su nombre; el error técnico queda plegado en «Detalle técnico»; los textos ya no mencionan `calculated_at`, `job_runs` ni vistas materializadas. (F 94bd651)
 
 ---
 

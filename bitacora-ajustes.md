@@ -46,6 +46,7 @@ Errores que aparecieron en varios módulos. Antes de dar un módulo por bueno, p
 | P27 | **«Segundo aprobador» nominal**: el solicitante elige a otro y queda aprobado sin que esa persona actúe; el selector incluye al propio usuario. | Flujos de doble aprobación. | La aprobación queda pendiente hasta que el aprobador actúe en su sesión; excluir al solicitante (pendiente: F5-06, G-02, G-03). |
 | P28 | **Plurales fijos** («{{n}} tareas» → «1 tareas»). | Buscar `{{n}} ` seguido de una palabra en plural. | Redacción neutra («Tareas: 1») mientras no haya plural ICU global (T-03). |
 | P29 | **«No existe» cuando sí existe pero un filtro lo excluye** (plantilla «CONTRATO DE COMPRA» guardada con tipo «Acta de exhumación»: enviar a firma decía «no hay ninguna plantilla»). | Toda búsqueda que filtra por tipo, sede, idioma, estado o vigencia y responde «no hay». | El error nombra los casi-candidatos y qué cambiar (tipo, sede, publicar) y la ruta real del menú; probar con datos cargados «fuera del flujo» de la guía (B 9d9f23e). |
+| P32 | **Filtro que el formulario ofrece y la consulta ignora** (rango de fechas de la cartera: el Excel decía «Período X–Y» sobre la foto de hoy). | Para cada filtro del `filter_schema` (o del formulario), seguirlo hasta el `WHERE`; desconfiar de los reportes «foto» (saldos vivos, inventario) que piden fechas. | Si la consulta no puede usarlo, quitarlo del esquema y descartarlo en el back; el encabezado dice lo que de verdad se filtró («Corte al …») (F8-01). |
 | P31 | **KPI «de la empresa» calculado sobre la página cargada** («Por vencer ≤ 6 h», «Sin contacto ≥ 7 días»: cambiaban al paginar y con 25 filas nunca pasaban de 25). | KPIs que hacen `filter(...).length` sobre la lista paginada o sobre `totalElements` con filtros. | Contarlo en el back y servirlo en el `meta` del listado, junto con el umbral que usa (F3-16, F3-25). |
 | P30 | **La pantalla muestra un dato y el sistema cobra otro** (precio del espacio vs tarifa vigente que usa la cotización); la misma regla vive en dos sitios y diverge. | Comparar lo que ve el vendedor con lo que cotiza el contrato; buscar la misma regla (filtro, orden) escrita dos veces. | Una sola definición en el dominio (`SpaceTypeRate.currentFor`) que usan todos; el DTO trae el valor efectivo ya resuelto (B e4475db). |
 | P19 | **Un módulo inyecta el repositorio (`infrastructure.persistence`) de otro módulo.** Lo rechaza `EterniumArchitectureTest.modulo_no_importa_persistencia_ajena_nueva`. | Correr la suite **completa** (`mvnw test`), no solo los tests de la clase tocada. | Puerto en `<módulo>/domain/port` con un record de solo lo necesario, implementado por el servicio dueño del repositorio (`BranchBusinessHoursPort` en `BranchScheduleService`, sesión 2026-10-09). |
@@ -533,3 +534,23 @@ Commits: B 10cd0ba, de34c32, 1b1ba0e · F a57feb2, 57d1fbb, 8250ff9. Verificado:
 - Para editar algo que vive en partner-core desde Eternium, el adaptador debe partir de la entidad actual: un DTO incompleto borra lo que la pantalla no muestra (teléfono, responsable).
 - Un mensaje sin argumentos no pasa por MessageFormat: no escapar llaves ni comillas en él.
 - GateGuard (hook ECC) pide datos antes de cada archivo nuevo: con muchos archivos conviene declarar `GATEGUARD_EXEMPT_GLOBS` para los repos de trabajo.
+
+## 15. FASE 8 — Análisis (sesión 2026-10-15)
+
+Commits: B 49307a0 · F 94bd651. Verificado: 174 tests (reporting, auditreports, analytics, finreports, auditoría de difuntos, `ExportLabelsTest` y `EterniumArchitectureTest`) en verde; `ngc --noEmit` sin errores; V142 y V143 probadas sobre `eternium_qa` dentro de una transacción con ROLLBACK (1 definición y 104 554 filas). Incidencias cerradas: F8-01 a F8-04.
+
+**Reporte con un filtro de adorno (F8-01)** — Ver P32.
+- REP-CAR-05 ofrecía rango de fechas, pero la cartera son saldos vivos: el rango no filtraba y el export decía «Período X–Y». V142 lo quita del `filter_schema`; `buildQuery` descarta las fechas en todo reporte cuyo esquema no tenga `DATE_RANGE` (así también las programaciones ya guardadas), y el subtítulo pasa a «Corte al <hoy>».
+
+**Bitácora con nombres de clase (F8-02, F8-03)** — Ver P20.
+- El listener global (`AuditHibernateListener`) no guardaba el módulo: las ~100 000 filas de QA lo tenían vacío y el filtro por módulo no servía. Ahora lo deriva del paquete (`.modules.<x>` o `.common.<x>`) y V143 rellena lo existente con el mismo criterio (mapa entidad→módulo generado del código).
+- Entidad, módulo y operación se traducen en el back (`AuditLabels`, claves `export.enum.auditEntity/auditModule/auditOperation`, 279 entidades y 67 módulos en es/en/pt) y viajan como `entityLabel/moduleLabel/operationLabel` y `label` en las facetas; el valor crudo se sigue enviando porque es el que filtra. Una entidad nueva sin traducción se muestra separada en palabras, no pegada.
+- La traza ya no arma «Contract · UPDATE»: el título lo pone el back con las etiquetas y reemplaza la descripción genérica del listener («Entidad actualizada»).
+
+**Pantalla de diagnóstico en jerga (F8-04)** — Ver P20.
+- Salud de datos traduce fuentes (`mv_*`), tareas, estados de corrida e integraciones; el último error técnico queda plegado en «Detalle técnico» y los textos ya no hablan de `calculated_at`, `job_runs` ni vistas materializadas.
+
+**Lecciones:**
+- Un listener genérico debe guardar todo lo que la pantalla filtra: un campo que solo rellenan los servicios a mano queda vacío en el 99 % de las filas.
+- Traducir en el back lo que también va al export (entidad, módulo) evita dos diccionarios; el front solo pinta `*Label` con respaldo al código.
+- Al rellenar datos a partir del código (clase→módulo), generar el mapa con un script sobre las fuentes y usar la misma regla que el código nuevo.
