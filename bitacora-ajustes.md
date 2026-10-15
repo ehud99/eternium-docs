@@ -46,6 +46,7 @@ Errores que aparecieron en varios módulos. Antes de dar un módulo por bueno, p
 | P27 | **«Segundo aprobador» nominal**: el solicitante elige a otro y queda aprobado sin que esa persona actúe; el selector incluye al propio usuario. | Flujos de doble aprobación. | La aprobación queda pendiente hasta que el aprobador actúe en su sesión; excluir al solicitante (F5-06). Excepción: si el negocio acepta que lo apruebe la misma persona (cobranza, G-02/G-03), no se finge un segundo actor: se valida que el aprobador sea un usuario activo de la empresa y se dice así en la pantalla. |
 | P28 | **Plurales fijos** («{{n}} tareas» → «1 tareas»). | Buscar `{{n}} ` seguido de una palabra en plural. | Redacción neutra («Tareas: 1») mientras no haya plural ICU global (T-03). |
 | P29 | **«No existe» cuando sí existe pero un filtro lo excluye** (plantilla «CONTRATO DE COMPRA» guardada con tipo «Acta de exhumación»: enviar a firma decía «no hay ninguna plantilla»). | Toda búsqueda que filtra por tipo, sede, idioma, estado o vigencia y responde «no hay». | El error nombra los casi-candidatos y qué cambiar (tipo, sede, publicar) y la ruta real del menú; probar con datos cargados «fuera del flujo» de la guía (B 9d9f23e). |
+| P34 | **Clase de color de una paleta que el tema no define** (`text-info-600`): Tailwind 4 no genera CSS y el texto hereda el color, ilegible en modo oscuro. | Buscar prefijos de color usados en plantillas (`grep -oE "(text|bg|border)-\w+-[0-9]+"`) y comparar con los `--color-*` de `@theme` en `styles.css`. | Definir la paleta en `@theme` (alias de una existente) o usar la que ya existe. |
 | P33 | **Fecha en ISO dentro de un mensaje** («vence el 2026-10-15T19:00:00Z»): se pasa el `Instant`/`LocalDate` tal cual a `messages.get`. | Buscar `messages.get(` con `.toString()`, `String.valueOf(` o un getter de fecha como argumento. | `ExportDates.format(fecha)` para calendario y `ExportDates.format(instante, zona)` con la zona de `UserZoneResolver` (del destinatario si va a otra persona) (T-12). |
 | P32 | **Filtro que el formulario ofrece y la consulta ignora** (rango de fechas de la cartera: el Excel decía «Período X–Y» sobre la foto de hoy). | Para cada filtro del `filter_schema` (o del formulario), seguirlo hasta el `WHERE`; desconfiar de los reportes «foto» (saldos vivos, inventario) que piden fechas. | Si la consulta no puede usarlo, quitarlo del esquema y descartarlo en el back; el encabezado dice lo que de verdad se filtró («Corte al …») (F8-01). |
 | P31 | **KPI «de la empresa» calculado sobre la página cargada** («Por vencer ≤ 6 h», «Sin contacto ≥ 7 días»: cambiaban al paginar y con 25 filas nunca pasaban de 25). | KPIs que hacen `filter(...).length` sobre la lista paginada o sobre `totalElements` con filtros. | Contarlo en el back y servirlo en el `meta` del listado, junto con el umbral que usa (F3-16, F3-25). |
@@ -598,3 +599,22 @@ Commits: B 901bf4a · F 235eb0a · guía `README.md`. Verificado: `CollectionExc
 - Una regla de cuatro ojos que el negocio no puede cumplir (una sola persona) termina en aprobaciones de nombre: preguntar antes si la segunda persona existe siempre.
 - Si dos respuestas del usuario se contradicen, señalarlo antes de implementar.
 - La tabla de procesos de la guía se genera leyendo los `@Scheduled` (cron y `fixedDelay`), no de memoria.
+
+## 18. Mejoras pedidas por el usuario (sesión 2026-10-15)
+
+Commits: B 080e5b7 · F 2df6f91 · guía `README.md`. Verificado: `DocumentSequenceServiceTest` (21), `DocumentSequenceAutoProvisionerTest` (5, nuevo), `DocumentSequenceExportServiceTest` y `EterniumArchitectureTest` en verde; el bloqueo consultivo probado en `eternium_qa`; `ngc --noEmit` sin errores.
+
+**Nota sin color en Atención al Titular** — Ver P34.
+- La nota del workflow usaba `text-info-600 / dark:text-info-400`, pero el tema no tenía paleta `info`: no se generaba CSS y en modo oscuro el texto salía casi negro. Se define `--color-info-*` como alias del azul informativo (`blue-light`); arregla también los otros tres modales que usaban `info-*`.
+
+**Series que se crean solas**
+- Decisión del usuario: la serie se crea al emitir el primer documento de un tipo en una sede que no tiene serie activa (no al crear la sede ni con migración). Prefijo: el base del tipo con el primer número libre de la empresa (COT1, COT2…), porque el prefijo es único por empresa; 7 dígitos (el folio de reportes, 6 con reinicio anual).
+- `DocumentSequenceAutoProvisioner` en transacción propia (`REQUIRES_NEW`) con `pg_advisory_xact_lock` por empresa: dos emisiones simultáneas no eligen el mismo prefijo, y la serie queda aunque falle el documento (no consume número, no deja saltos).
+- Una serie cerrada sin sucesora también cuenta como «sin serie»: el siguiente documento abre una nueva con el siguiente prefijo libre. Borrar una serie sin emisiones ya no deja la sede sin poder emitir.
+
+**Series en una sola tabla**
+- Selector de sede (por defecto la primera) en lugar de una tabla por sede. Los tipos sin serie se informan en azul («se crean solas al emitir») en vez de avisarse como falta.
+
+**Lecciones:**
+- Antes de pedir al usuario que configure algo por cada sede, ver si el sistema puede crearlo con un valor por defecto en el primer uso.
+- Crear datos de configuración dentro de la transacción de otro documento: transacción propia y un bloqueo que cubra la regla de unicidad que solo vive en la aplicación.

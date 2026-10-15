@@ -82,7 +82,7 @@ Si el backend arranca con perfil `dev`, ya existe el tenant **"Cementerio Jardin
 | Viene sembrado | NO viene sembrado |
 |---|---|
 | Perfil legal con RUC validado y representante | Parámetros de sede (moneda, patrón de código) |
-| Series de casi todos los tipos (QUOTATION, RESERVATION, SALE, PAYMENT…) | Series **CONTRACT** y **ACT_*** (actas) |
+| Series de casi todos los tipos (QUOTATION, RESERVATION, SALE, PAYMENT…) | Las series que faltan (CONTRACT, ACT_*…) se crean solas al emitir el primer documento |
 | 6 servicios con tarifa aprobada (Inhumación, Cremación…) | Tarifas de **tipos de espacio** |
 | Pabellón «San José» con sectores, tipos (Nicho, Lote, Mausoleo) y espacios | Prospectos, contratos, pagos (todo lo operativo) |
 | Plantilla de contrato publicada y plantilla de propuesta | |
@@ -103,7 +103,7 @@ Orden recomendado. Entre paréntesis, lo que falla si te lo saltas.
 | 1 | **Configuración General → Datos** | RUC, dirección fiscal, **representante legal** | Aparecen en contratos y actas. Sin representante, el contrato falla con `ETN_TPL_UNRESOLVED_VARS`. «Verificar RUC» consulta un padrón **simulado** (no verifica nada): comprueba el RUC en el portal de SUNAT y usa «Marcar como validado». |
 | 2 | **Sedes** | Cada sede (nombre, código, dirección, RUC propio) y su **moneda** al crearla | Casi todo es por sede. «Editar» corrige los datos base; los parámetros se cambian en el paso 3. |
 | 3 | **Configuración General → Parámetros** (por sede) | **Moneda** (obligatoria), zona horaria, sede operativa, nombres de niveles, **patrón de código de espacio** (al menos un token) | Cambiar la moneda afecta a lo que se cree desde entonces; lo registrado conserva la suya. Una sede **no operativa** no puede emitir nada. |
-| 4 | **Series y Correlativos** | Una serie por **sede × tipo de documento** | Si falta, falla **al emitir** con `ETN_SEQUENCE_MISSING`. Mínimo: QUOTATION, RESERVATION, SALE, **CONTRACT**, PAYMENT, RECEIPT, PAYMENT_PLAN, SERVICE_REQUEST, SERVICE_QUOTATION, SERVICE_ORDER, **ACT_INTERMENT/EXHUMATION/CREMATION/TRANSFER**, CEREMONY_EVENT, WORK_ORDER, PORTAL_REQUEST. Tras emitir el primer número, la serie queda bloqueada para edición. |
+| 4 | **Series y Correlativos** (opcional) | Una serie por **sede × tipo de documento**. Se elige la sede en el filtro de la tabla | No hace falta crearlas: si la sede no tiene serie de un tipo, se crea sola al emitir el primer documento, con el prefijo base y el primer número libre de la empresa (COT1, COT2…, 7 dígitos). Aquí se edita el prefijo o el formato **antes** de la primera emisión; tras emitir el primer número, la serie queda bloqueada para edición. |
 | 5 | **Tipos de Espacio** | Nombre, **familia física** (nicho, tierra, mausoleo…), capacidad máxima | La familia debe ser compatible con la tipología del sector (un nicho no va en un jardín de lotes). |
 | 6 | **Pabellones y Sectores** | Pabellón → sectores (tipología, grilla filas×columnas, **tipo de espacio por defecto**, precio por defecto, construcción **operativa**) → en el sector hoja, **«Generar espacios»** | Si el sector no está operativo, sus espacios nacen deshabilitados. Solo se generan espacios en sectores «hoja» (sin sub-sectores), con un tipo de familia compatible y como máximo 20 000 celdas. |
 | 7 | *(ya no hace falta)* | — | Al crear la tarifa por pabellón, el tipo queda vinculado a ese pabellón (si alguno de sus sectores admite la familia). |
@@ -237,7 +237,6 @@ ni pipeline. Es la forma más rápida de tener un contrato ACTIVE para probar la
 
 - Contrato **ACTIVE** sobre el espacio, que no esté en mantenimiento ni deshabilitado y **con capacidad libre**.
 - Servicios con tarifa aprobada.
-- Series SERVICE_* y ACT_*.
 - Capillas y Salas, si habrá sepelio.
 
 | # | Pantalla → acción | Resultado | Requisito clave |
@@ -420,7 +419,6 @@ Sin segundo usuario: aprobar tarifas, publicar paquetes y plantillas, validar el
 
 | Error / síntoma | Causa | Dónde se arregla |
 |---|---|---|
-| `ETN_SEQUENCE_MISSING` | Falta la serie de ese tipo en esa sede | Configuración / Series y Correlativos |
 | `ETN_QUOTE_NO_PRICE` | Sin tarifa **aprobada** vigente ni precio en el espacio | Tarifas (aprobar) o Parámetros de sede (moneda) |
 | `ETN_CONTRACT_NO_TEMPLATE` / `…TEMPLATE_AMBIGUOUS` | Cero o varias plantillas de contrato publicadas | Plantillas de Documentos |
 | `ETN_TPL_UNRESOLVED_VARS` | La plantilla usa un dato vacío (representante del cementerio, dirección del titular…) | Config. General (datos del cementerio). Los del titular los pide «Generar contrato» en «Completar datos del titular» |
@@ -439,7 +437,7 @@ Sin segundo usuario: aprobar tarifas, publicar paquetes y plantillas, validar el
 ## 13. Receta mínima para ver todo funcionando (tenant demo)
 
 1. **Parámetros** de la sede principal: guardar la moneda (PEN).
-2. **Series:** crear CONTRACT y ACT_INTERMENT (no vienen sembradas).
+2. **Series:** no hace falta crearlas; se crean solas al emitir cada documento.
 3. **Tarifas → Espacios:** crear y aprobar la tarifa del tipo "Nicho".
 4. **Prospecto** → **Cotización** (emitir en firme) → **Reserva** → pago inicial → validar → **Venta** → Generar contrato → **Firmar** → Asignar.
 5. En **Titulares**, poner al titular un **email real** que puedas leer.
