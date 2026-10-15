@@ -46,6 +46,7 @@ Errores que aparecieron en varios módulos. Antes de dar un módulo por bueno, p
 | P27 | **«Segundo aprobador» nominal**: el solicitante elige a otro y queda aprobado sin que esa persona actúe; el selector incluye al propio usuario. | Flujos de doble aprobación. | La aprobación queda pendiente hasta que el aprobador actúe en su sesión; excluir al solicitante (pendiente: F5-06, G-02, G-03). |
 | P28 | **Plurales fijos** («{{n}} tareas» → «1 tareas»). | Buscar `{{n}} ` seguido de una palabra en plural. | Redacción neutra («Tareas: 1») mientras no haya plural ICU global (T-03). |
 | P29 | **«No existe» cuando sí existe pero un filtro lo excluye** (plantilla «CONTRATO DE COMPRA» guardada con tipo «Acta de exhumación»: enviar a firma decía «no hay ninguna plantilla»). | Toda búsqueda que filtra por tipo, sede, idioma, estado o vigencia y responde «no hay». | El error nombra los casi-candidatos y qué cambiar (tipo, sede, publicar) y la ruta real del menú; probar con datos cargados «fuera del flujo» de la guía (B 9d9f23e). |
+| P33 | **Fecha en ISO dentro de un mensaje** («vence el 2026-10-15T19:00:00Z»): se pasa el `Instant`/`LocalDate` tal cual a `messages.get`. | Buscar `messages.get(` con `.toString()`, `String.valueOf(` o un getter de fecha como argumento. | `ExportDates.format(fecha)` para calendario y `ExportDates.format(instante, zona)` con la zona de `UserZoneResolver` (del destinatario si va a otra persona) (T-12). |
 | P32 | **Filtro que el formulario ofrece y la consulta ignora** (rango de fechas de la cartera: el Excel decía «Período X–Y» sobre la foto de hoy). | Para cada filtro del `filter_schema` (o del formulario), seguirlo hasta el `WHERE`; desconfiar de los reportes «foto» (saldos vivos, inventario) que piden fechas. | Si la consulta no puede usarlo, quitarlo del esquema y descartarlo en el back; el encabezado dice lo que de verdad se filtró («Corte al …») (F8-01). |
 | P31 | **KPI «de la empresa» calculado sobre la página cargada** («Por vencer ≤ 6 h», «Sin contacto ≥ 7 días»: cambiaban al paginar y con 25 filas nunca pasaban de 25). | KPIs que hacen `filter(...).length` sobre la lista paginada o sobre `totalElements` con filtros. | Contarlo en el back y servirlo en el `meta` del listado, junto con el umbral que usa (F3-16, F3-25). |
 | P30 | **La pantalla muestra un dato y el sistema cobra otro** (precio del espacio vs tarifa vigente que usa la cotización); la misma regla vive en dos sitios y diverge. | Comparar lo que ve el vendedor con lo que cotiza el contrato; buscar la misma regla (filtro, orden) escrita dos veces. | Una sola definición en el dominio (`SpaceTypeRate.currentFor`) que usan todos; el DTO trae el valor efectivo ya resuelto (B e4475db). |
@@ -554,3 +555,28 @@ Commits: B 49307a0 · F 94bd651. Verificado: 174 tests (reporting, auditreports,
 - Un listener genérico debe guardar todo lo que la pantalla filtra: un campo que solo rellenan los servicios a mano queda vacío en el 99 % de las filas.
 - Traducir en el back lo que también va al export (entidad, módulo) evita dos diccionarios; el front solo pinta `*Label` con respaldo al código.
 - Al rellenar datos a partir del código (clase→módulo), generar el mapa con un script sobre las fuentes y usar la misma regla que el código nuevo.
+
+## 16. T — Transversal (sesión 2026-10-15)
+
+Commits: B b0ef4e2 · F 41235e7. Verificado: 140 tests de los servicios tocados (con `ExportDatesTest` nuevo y `EterniumArchitectureTest`) y los que leen los `messages` reales, en verde; `ngc --noEmit` sin errores; paridad es/en/pt y mismos placeholders en las tres. Incidencias cerradas: T-02 a T-12 (T-10 sin cambio).
+
+**Plurales (T-03)** — Ver P28. Decisión del usuario: redacción neutra, sin plural ICU ni dependencia nueva.
+- Front: 137 textos y 28 paginadores pasan a «Etiqueta: n» («Tareas: 1», «Registros: 1»); back: 24 mensajes (importaciones, tareas, reservas, portal). Se dejaron a propósito los topes de configuración (mínimo de caracteres, máximo de meses, horas de TTL: siempre > 1) y las claves `*Plural/*Many` que el código ya elige según el número.
+
+**Enums y jerga (T-02, T-05, T-08, T-09)** — Ver P20.
+- Estados del historial del prospecto, eventos de reserva, vínculos de oportunidad y severidad de auditoría por clave; los códigos se contrastaron con los que hay en `eternium_qa`.
+- El tipo de evento de una pasarela no se traduce: lo inventa cada proveedor; se muestra como referencia técnica, igual que su id.
+- «job / idempotente / sync / UUID / append-only / backend / endpoint» reescritos para el usuario. «Hash» se queda en back-office: es el nombre de la prueba de integridad que audita el usuario.
+
+**Textos que prometen o copian valores (T-06, T-07)** — Ver P24 y P21.
+- La nota de asignación prometía push y reenvío a los 30 min: ahora dice aviso en el sistema y correo, que es lo que hace el back.
+- Los textos de reprogramaciones y rechazos interpolan el umbral vigente con un servicio compartido (`UmbralesVigentesService`, una llamada a `/thresholds` por empresa); el corte del ámbar del pabellón, que es constante del back y no umbral configurable, viaja en el DTO del tablero.
+
+**Formato (T-11, T-12)** — Ver P33.
+- Números del front con el locale del idioma activo. Los formateadores de moneda con `style: 'currency'` siguen en 'es-PE' (cambiarlos alteraría el símbolo «S/»): pendiente si se quiere.
+- Fechas de los mensajes del back en dd/MM/yyyy; los instantes con hora en la zona del usuario o del destinatario (`UserZoneResolver`), nunca zona fija.
+
+**Lecciones:**
+- Antes de corregir una incidencia transversal, comprobar si una fase anterior ya la cerró (M03, RF-357, «Te quedan {0} intentos» y los umbrales de asignación ya no estaban).
+- Un valor que vive como constante del back (no como umbral) también se sirve en el DTO si un texto lo cita.
+- Para traducir enums, sacar los valores reales de la BD: evita claves faltantes que muestran la ruta de la clave.
