@@ -46,6 +46,7 @@ Errores que aparecieron en varios módulos. Antes de dar un módulo por bueno, p
 | P27 | **«Segundo aprobador» nominal**: el solicitante elige a otro y queda aprobado sin que esa persona actúe; el selector incluye al propio usuario. | Flujos de doble aprobación. | La aprobación queda pendiente hasta que el aprobador actúe en su sesión; excluir al solicitante (F5-06). Excepción: si el negocio acepta que lo apruebe la misma persona (cobranza, G-02/G-03), no se finge un segundo actor: se valida que el aprobador sea un usuario activo de la empresa y se dice así en la pantalla. |
 | P28 | **Plurales fijos** («{{n}} tareas» → «1 tareas»). | Buscar `{{n}} ` seguido de una palabra en plural. | Redacción neutra («Tareas: 1») mientras no haya plural ICU global (T-03). |
 | P29 | **«No existe» cuando sí existe pero un filtro lo excluye** (plantilla «CONTRATO DE COMPRA» guardada con tipo «Acta de exhumación»: enviar a firma decía «no hay ninguna plantilla»). | Toda búsqueda que filtra por tipo, sede, idioma, estado o vigencia y responde «no hay». | El error nombra los casi-candidatos y qué cambiar (tipo, sede, publicar) y la ruta real del menú; probar con datos cargados «fuera del flujo» de la guía (B 9d9f23e). |
+| P35 | **Endpoint que recibe o devuelve la entidad JPA** (`@Valid @RequestBody SpaceLegalRestriction`): la entidad no tiene anotaciones de validación, así que un campo vacío llega a la BD y el error es un 500; la respuesta expone columnas internas. | Buscar `@RequestBody` y `ResponseEntity<List<` con tipos de `domain.model`. | DTO de entrada con Bean Validation y mensajes por clave, DTO de salida; reglas de catálogo y de rango en el servicio (F2-12). |
 | P34 | **Clase de color de una paleta que el tema no define** (`text-info-600`): Tailwind 4 no genera CSS y el texto hereda el color, ilegible en modo oscuro. | Buscar prefijos de color usados en plantillas (`grep -oE "(text|bg|border)-\w+-[0-9]+"`) y comparar con los `--color-*` de `@theme` en `styles.css`. | Definir la paleta en `@theme` (alias de una existente) o usar la que ya existe. |
 | P33 | **Fecha en ISO dentro de un mensaje** («vence el 2026-10-15T19:00:00Z»): se pasa el `Instant`/`LocalDate` tal cual a `messages.get`. | Buscar `messages.get(` con `.toString()`, `String.valueOf(` o un getter de fecha como argumento. | `ExportDates.format(fecha)` para calendario y `ExportDates.format(instante, zona)` con la zona de `UserZoneResolver` (del destinatario si va a otra persona) (T-12). |
 | P32 | **Filtro que el formulario ofrece y la consulta ignora** (rango de fechas de la cartera: el Excel decía «Período X–Y» sobre la foto de hoy). | Para cada filtro del `filter_schema` (o del formulario), seguirlo hasta el `WHERE`; desconfiar de los reportes «foto» (saldos vivos, inventario) que piden fechas. | Si la consulta no puede usarlo, quitarlo del esquema y descartarlo en el back; el encabezado dice lo que de verdad se filtró («Corte al …») (F8-01). |
@@ -624,3 +625,28 @@ Commits: B 080e5b7 · F 2df6f91 · guía `README.md`. Verificado: `DocumentSeque
 - `DefaultTemplateProvisioner`: una sola escritura de contrato (cesión de uso, texto neutro respecto de la tenencia) y la propuesta, publicadas y con `branch_id` nulo. No crea nada si la empresa tuvo alguna vez una del tipo (aunque esté borrada): borrar la estándar y redactar la propia funciona. Corre al arrancar para todo cementerio y, para empresas dadas de alta después, al abrir Plantillas o al resolver plantillas al emitir; en transacción propia y recordando en memoria las empresas ya revisadas.
 - Sustituye al sembrador de propuesta y al de contrato que solo corría en `dev`.
 - Lección: antes de sembrar un juego completo, ver qué consume el sistema. Publicar las tres plantillas de contrato habría dejado el contrato ambiguo (`ETN_CONTRACT_TEMPLATE_AMBIGUOUS`).
+
+## 19. Menores pendientes y mapa de la geocerca (sesión 2026-10-15)
+
+Commits: B f0a7498, 30b74b4 · F b26fb9c, b38e651, 2fe786d. Verificado: `AuditLabelsTest`, `ContractTraceServiceTest`, `ActionLogServiceTest`, `CeremonyStaffServiceTest`, `SpaceHoldServiceTest`, `FuneralSpaceServiceTest`, `ExportLabelsTest` y `EterniumArchitectureTest` en verde; `ngc --noEmit` sin errores; paridad es/en/pt. V142–V144 aplicadas en `eternium_qa` al reiniciar.
+
+**Importes en otros idiomas**
+- `Intl.NumberFormat` con `style: 'currency'` no conoce «S/» fuera de es-PE (sale «PEN 1,234.50», también con `narrowSymbol`). Decisión del usuario: el número sigue el idioma y el símbolo sale del catálogo de monedas. `formatCurrencyAmount` en `@shared/utils/i18n`; los dos `formatMoney` y `MonedaService` (que ahora guarda el símbolo) pasan por él. USD deja de salir como «USD 1,234.50».
+- Pendiente menor: los `computed()` que formatean importes sin leer el idioma no se recalculan al cambiarlo hasta la siguiente carga.
+
+**Códigos crudos en mensajes y traza** — Ver P20.
+- Aviso y escalamiento de ceremonias con el rol traducido (`export.enum.ceremonyStaffRole`).
+- Traza del contrato: estado de contrato, evento de espacio, estado de pago y tipo/estado de acta traducidos en el back (también van al export).
+- `changedFields`: catálogo `export.field.*` con los 333 nombres de campo que hay en `audit_logs` de QA; acepta camelCase y snake_case y, sin traducción, separa las palabras. Se traducen en la lista, la traza y el export; el detalle conserva el nombre técnico porque se cruza con los valores anterior/nuevo.
+
+**F2-12: funciones del back sin pantalla** — Ver P35.
+- Restricciones legales: DTOs con validación (tipo del catálogo, expediente, inicio, fin ≥ inicio), no se levanta dos veces, GET con permiso de ver. Pantalla en el menú de fila del inventario y en el distintivo «Restringido» (su tooltip describía la protección de datos).
+- Bloqueos: decisión del usuario, «Todos» y «Reasignar» para quien puede editar (el GET no pedía permiso). El nuevo vendedor es obligatorio, distinto del actual y usuario activo; el DTO trae su nombre.
+
+**Mapa de la geocerca**
+- Decisión del usuario: OpenStreetMap (sin llave ni costo), como infrasys. `EtnGeofenceMapComponent`: clic o arrastre del marcador, búsqueda con Nominatim, círculo del radio y del radio con tolerancia. Reemplaza el enlace a Google Maps.
+
+**Lecciones:**
+- `Intl` con `style: 'currency'` ata el símbolo al locale: para mostrar la moneda local en otros idiomas, el símbolo tiene que venir de datos.
+- Antes de crear una pantalla para un endpoint huérfano, revisar el endpoint: los tres de F2-12 tenían huecos (sin validación, sin permiso, sin comprobar el vendedor).
+- Un componente de mapa no debe buscar su contenedor por id: con dos instancias o dentro de un modal, Leaflet engancha el que no es.
