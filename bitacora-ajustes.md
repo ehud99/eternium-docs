@@ -650,3 +650,15 @@ Commits: B f0a7498, 30b74b4 · F b26fb9c, b38e651, 2fe786d. Verificado: `AuditLa
 - `Intl` con `style: 'currency'` ata el símbolo al locale: para mostrar la moneda local en otros idiomas, el símbolo tiene que venir de datos.
 - Antes de crear una pantalla para un endpoint huérfano, revisar el endpoint: los tres de F2-12 tenían huecos (sin validación, sin permiso, sin comprobar el vendedor).
 - Un componente de mapa no debe buscar su contenedor por id: con dos instancias o dentro de un modal, Leaflet engancha el que no es.
+
+## 20. Primera versión sin SMS, Culqi ni Yape/Plin (sesión 2026-10-19)
+
+Commits: B 2c93fa5 · F c4ffc6f. Verificado: `CollectionAssessmentServiceTest` (20, uno nuevo), `PortalCheckoutServiceTest`, `WebhookIngestServiceTest`, `WebhookProcessingServiceTest`, `PortalPaymentHistoryReceiptTest` y `EterniumArchitectureTest` en verde; `ngc --noEmit` sin errores.
+
+**Decisión del equipo:** la pasarela es Izipay (solo tarjeta); Culqi, Yape/Plin y SMS se ocultan sin borrar el código hasta tener credenciales. WhatsApp e Izipay se integran después.
+
+- `ChannelFeatures` (back) lee `ETERNIUM_SMS_ENABLED`, `ETERNIUM_CULQI_ENABLED`, `ETERNIUM_YAPE_PLIN_ENABLED` (false por defecto). Apagado: fuera de Pasarelas y del alta de plantillas, no cobra en el checkout, y la etapa `DAY_3_SMS` de cobranza se omite. `GET /api/eternium/features` y `EtnFeaturesService` (front) ocultan las opciones; un registro que ya tiene SMS lo sigue mostrando.
+- SMS/WhatsApp sin proveedor real ya no simulan la entrega: fallan con motivo salvo `ETERNIUM_MESSAGING_STUB=true`. La entrega simulada contaba como evidencia para el bloqueo de cobranza.
+- Se mantienen: «Yape/Plin» como medio manual en Caja (es dinero recibido, no pasarela) y el registro manual de WhatsApp en cotizaciones.
+
+**Lección:** ocultar un canal en pantalla no basta si una regla del back lo usa sola (la etapa del día 3 de cobranza era SMS fija).
