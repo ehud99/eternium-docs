@@ -662,3 +662,17 @@ Commits: B 2c93fa5 · F c4ffc6f. Verificado: `CollectionAssessmentServiceTest` (
 - Se mantienen: «Yape/Plin» como medio manual en Caja (es dinero recibido, no pasarela) y el registro manual de WhatsApp en cotizaciones.
 
 **Lección:** ocultar un canal en pantalla no basta si una regla del back lo usa sola (la etapa del día 3 de cobranza era SMS fija).
+
+## 21. Pasarela Izipay (sesión 2026-10-19)
+
+Commits: B 35bed1f · F (este paso). Verificado: `IzipayGatewayAdapterTest` (8, nuevo), `PortalCheckoutServiceTest`, `WebhookIngestServiceTest`, `WebhookProcessingServiceTest`, `PortalPaymentHistoryReceiptTest`, `CollectionAssessmentServiceTest` y `EterniumArchitectureTest` en verde; `ngc --noEmit` sin errores; `CreatePayment` contra el sandbox de Izipay con las credenciales de prueba → `SUCCESS` (formToken de ~6 000 caracteres). Falta el recorrido en la app con tarjeta de prueba.
+
+- `IzipayGatewayAdapter` (API REST V4, contrastado con los ejemplos oficiales `izipay-pe/Embedded-PaymentForm-Springboot-Java` y `-Angular`): `CreatePayment` con Basic `idTienda:contraseña` (el id de tienda sale de la clave pública `idTienda:clave`); `orderId` = número de operación = `providerChargeId`.
+- Confirmación: IPN firmada con la contraseña (`kr-hash-key=password`) y retorno del navegador firmado con la clave HMAC (`sha256_hmac`, sobre `rawClientAnswer`), reenviado a `POST /api/eternium/portal/payments/return/izipay` y aplicado al momento. Comparten el `uuid` de la transacción: el segundo es duplicado.
+- Rechazo con `orderCycle=OPEN` no cierra la transacción (el titular puede reintentar en el mismo formulario); solo `CLOSED` la rechaza.
+- Los eventos se verifican con la configuración de la empresa dueña de la orden (`peekChargeId` → transacción → empresa), no con la primera del proveedor: cada cementerio tendrá su tienda.
+- V145: `online_payment_transactions.client_token` para volver a pintar el mismo formulario en un reintento con la misma clave de idempotencia.
+- Portal: `PortalIzipayFormComponent` carga Krypton en modo SPA sin dependencia npm; el sondeo de estado empieza al pagar, no al abrir el formulario.
+- Variables: `IZIPAY_IPN_URL` (URL pública del webhook), `IZIPAY_API_URL` (opcional). Las credenciales se referencian por nombre en Pasarelas.
+
+**Lección:** con una pasarela que permite reintentar dentro del mismo formulario, un rechazo intermedio no es un desenlace; tratarlo como tal pierde el pago aprobado que llega después.
