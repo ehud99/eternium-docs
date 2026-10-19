@@ -688,3 +688,14 @@ Commits: B e3e188f · F 1f22e40. Verificado: 66 tests en 8 clases (nuevos: 6 en 
 - `supportsStatusQuery()` en el puerto: Izipay y Culqi sí; el simulador no (se comporta como antes).
 
 **Lección:** «vacío» en una consulta a un tercero tiene que significar «no se sabe», nunca «no pagado»; si no, una caída de red se convierte en un cobro perdido.
+
+## 22. WhatsApp Cloud API (Meta) para las alertas de cobranza (sesión 2026-10-19)
+
+Commits: B b445755 · F (este paso). Verificado: `WhatsAppCloudClientTest` (8, contra `MockRestServiceServer`), `MessageDeliveryStatusServiceTest` (7), `CollectionAssessmentServiceTest`, `CeremonyStaffServiceTest` y `EterniumArchitectureTest` en verde; `ngc --noEmit` sin errores. Sin credenciales de Meta todavía: falta el envío real.
+
+- `WhatsAppCloudClient` (common/adapter): `POST graph.facebook.com/{v23.0}/{phone_number_id}/messages` con la plantilla aprobada; teléfono normalizado a `51XXXXXXXXX`; variables limpiadas (Meta rechaza vacías o con saltos de línea). SENT al aceptarlo Meta; rechazo → FAILED con `(#código) detalle`.
+- Plantilla: `provider_template_id` = nombre en Meta (o `nombre:idioma`; por defecto es→es, en→en, pt→pt_BR). Variables `{{1}}…{{n}}` en el orden de primera aparición de los marcadores (`MessageTemplate.placeholderOrder`); el formulario de plantillas muestra ese texto para copiarlo a Meta.
+- Webhook público `/api/eternium/webhooks/whatsapp` (permitAll en `SecurityConfig`): GET de verificación con `WHATSAPP_WEBHOOK_VERIFY_TOKEN`; POST firmado (`X-Hub-Signature-256`, App Secret) → `MessageDeliveryStatusService`: entregado/leído/fallido en el mensaje y su alerta, sin retroceder; un intento viejo no pisa una alerta reintentada.
+- Sin `WHATSAPP_PHONE_NUMBER_ID` + `WHATSAPP_ACCESS_TOKEN` el canal sigue sin configurar (FAILED con motivo).
+
+**Lección:** con WhatsApp lo que se envía es la plantilla de Meta, no el texto: el texto renderizado queda como evidencia, pero el orden de las variables es el contrato con Meta y tiene que salir del mismo sitio en el back y en la pantalla.
