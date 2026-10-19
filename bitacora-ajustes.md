@@ -676,3 +676,15 @@ Commits: B 35bed1f · F (este paso). Verificado: `IzipayGatewayAdapterTest` (8, 
 - Variables: `IZIPAY_IPN_URL` (URL pública del webhook), `IZIPAY_API_URL` (opcional). Las credenciales se referencian por nombre en Pasarelas.
 
 **Lección:** con una pasarela que permite reintentar dentro del mismo formulario, un rechazo intermedio no es un desenlace; tratarlo como tal pierde el pago aprobado que llega después.
+
+### 21.1 Pago cobrado por la pasarela que no llegaba a registrarse
+
+Commits: B e3e188f · F 1f22e40. Verificado: 66 tests en 8 clases (nuevos: 6 en `WebhookProcessingServiceTest`, 2 en `IzipayGatewayAdapterTest`, `PortalPaymentExpiryServiceTest` reescrito con 6 casos —incluido el que ya existía— y `PortalPaymentReconciliationServiceTest` con 4); `ngc --noEmit` sin errores. `Order/Get` contra el sandbox: una orden sin intentos responde `PSP_010 transaction not found`.
+
+- Hueco: la caducidad horaria cerraba los cobros pendientes sin preguntar a la pasarela, y una confirmación sobre un cobro ya cerrado se marcaba procesada sin tocar nada. Titular que cierra la página tras pagar + IPN perdida = dinero cobrado sin registrar.
+- `PortalPaymentReconciliationJob` (cada 10 min): cobros con más de 15 min esperando → `queryStatus`; pagado → `applyQueriedApproval` (mismo camino que una IPN). Usa `findStaleLiveTransactions`, que existía para RF-008 sin uso.
+- Caducidad: pregunta antes; pagado → aprueba; sin respuesta → reintenta en la siguiente pasada hasta 48 h; sin pago → caduca. Cada orden se cierra en su transacción releyendo con bloqueo (no pisa una IPN que llegó mientras se consultaba).
+- Pago confirmado tarde: cuotas aún pendientes por lo cobrado y sin otro cobro que las cubra → se aprueba; si no → `REFUND_REQUESTED` (`PAID_AFTER_CLOSE`) y aviso a finanzas con enlace a Pasarelas. Avisos repetidos sobre un cobro en devolución no lo tocan.
+- `supportsStatusQuery()` en el puerto: Izipay y Culqi sí; el simulador no (se comporta como antes).
+
+**Lección:** «vacío» en una consulta a un tercero tiene que significar «no se sabe», nunca «no pagado»; si no, una caída de red se convierte en un cobro perdido.
