@@ -699,3 +699,13 @@ Commits: B b445755 · F (este paso). Verificado: `WhatsAppCloudClientTest` (8, c
 - Sin `WHATSAPP_PHONE_NUMBER_ID` + `WHATSAPP_ACCESS_TOKEN` el canal sigue sin configurar (FAILED con motivo).
 
 **Lección:** con WhatsApp lo que se envía es la plantilla de Meta, no el texto: el texto renderizado queda como evidencia, pero el orden de las variables es el contrato con Meta y tiene que salir del mismo sitio en el back y en la pantalla.
+
+## 23. Huecos previos a UAT y suite completa del back (sesión 2026-10-20)
+
+Commits: B 6de1ade · F 9d945de. Suite completa del back (`mvnw test`, sin clean): **1736 tests, 0 fallos, 0 errores, 6 omitidos** en 194 clases (1 min 59 s). Omitidos a propósito: `NotificationsE2ETest` (5, solo con `ETERNIUM_E2E=true`) y `PartnerCoreApplicationTests` (1, `@Disabled`).
+
+- Cobranza: `{{enlace}}` = `{PORTAL_PUBLIC_BASE_URL}/{RUC}/pagos` (antes siempre «pague en oficina» aunque el portal ya existía). El portal recuerda `?destino=` en el ingreso y vuelve a la página pedida (solo rutas internas).
+- PUSH: sin transporte; `channelAvailable` lo rechaza y la pantalla no lo ofrece.
+- Difuntos / Datos Sensibles: no era un hueco. El criterio vigente (§7) es el `canView` de Difuntos, igual que en Auditoría y Reportes; los TODO (M12) estaban desactualizados y se corrigieron (solo comentarios).
+
+**Lección:** un TODO en el código no es una incidencia hasta contrastarlo con la regla documentada; aquí el TODO era el que estaba viejo.
