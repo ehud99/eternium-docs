@@ -20,11 +20,23 @@
 | 18 | Validación insuficiente de RUC y teléfono en sedes | Configuración / Sedes | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B eed61f2 · F f80e513 |
 | 19 | Licencias duplicadas del mismo tipo; el adjunto persiste en el modal | Configuración General / Licencias | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B bb297f7 · F 306cd6b |
 | 20 | Tarifa con vigencia retroactiva | Configuración / Tarifas | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B 8153a1f · F a999e63 |
+| 22 | Tarifas duplicadas del mismo concepto y vigencia que luego no se pueden aprobar | Configuración / Tarifas | Alta | 21/10/2026 | Corregida — pendiente de validar en UAT | B 9301a67 |
+| 24 | El tarifario exportado incluye tarifas rechazadas | Configuración / Tarifas | Alta | 21/10/2026 | Corregida — pendiente de validar en UAT | B 9d75661 |
+| 25 | El ícono de calendario de la vigencia no abre el selector | Configuración / Paquetes | Media | 21/10/2026 | Corregida — pendiente de validar en UAT | F da9d35a |
 
-### Abiertas en la planilla (leída el 22/10/2026), por facilidad
+### Abiertas en la planilla (leída el 23/10/2026), por facilidad
 
 | N.° | Título (planilla) | Módulo | Prioridad | Estimación |
 |---|---|---|---|---|
+| 26 | El botón «Guardar» desaparece en la pestaña «Requisitos previos»; solo queda «Cancelar» | Servicios | Media | Fácil |
+| 27 | Logo, firma y sello fallan con 413 de Nginx aunque pesan menos de 2 MB; el error sale como HTML | Plantillas de documentos | Alta | Fácil en código (mensaje claro); el límite real es de Nginx en el servidor (`client_max_body_size`) |
+| 28 | El PDF del contrato sale con interlineado y espaciado excesivos | Plantillas de documentos | Alta | Media |
+| 23 | Tarifas aprobadas sin acciones en «ACC.»; sin fecha fin no se puede cambiar el precio | Tarifas | Alta | Media (definir el flujo de «nueva vigencia») |
+| 21 | Huecos superpuestos en una celda con capacidad inconsistente; desplegable «Tipo de sector» desbordado; no se puede quitar el adjunto del pabellón | Pabellones y sectores | Alta | Media |
+| 29 | Sin detalle en la planilla (Espacios / Inventarios); su documento repite el de la 26 | Inventarios de espacios | Media | Por precisar con QA |
+| 16 | Reabierta: «mejora en la plantilla de documentos» | Plantillas de documentos | Alta | Corregida, a la espera de aprobación (no se toca) |
+
+---|---|---|---|---|
 | 25 | El ícono de calendario de «Vigencia desde/hasta» no abre el selector | Paquetes | Media | Fácil |
 | 24 | El reporte exportado incluye tarifas rechazadas; debe mostrar solo las aprobadas | Tarifas | Alta | Fácil |
 | 22 | Permite tarifas duplicadas del mismo servicio y vigencia, que luego no se pueden aprobar | Tarifas | Alta | Fácil–media |
@@ -112,3 +124,65 @@ desde el 05/10 se superpone a contratos y comprobantes ya emitidos con el precio
 
 **Para validar en UAT:** Tarifas → Nueva tarifa: los días anteriores a hoy aparecen deshabilitados; intentar
 aprobar una tarifa pendiente cuya vigencia ya empezó → mensaje para corregir la fecha.
+
+---
+
+## INC-22 — Tarifas duplicadas con vigencia cruzada
+
+[Documento](https://drive.google.com/file/d/1oPI121IVIftM6UJer4aSlCI7Wa33T3o1/view) · Incidencia funcional · Alta
+
+**Reporte:** en Tarifas de servicios se registraron tres tarifas de Exhumación de la misma sede con la misma
+vigencia; todas quedaron en la bandeja y ninguna se podía aprobar. **Esperado:** validar al registrar que no
+haya otra tarifa del mismo servicio con vigencia cruzada, con error y sin guardar.
+
+**Causa:** el cruce solo lo controlaba el EXCLUDE de la BD, que mira únicamente las **aprobadas**: al crear no
+se comprobaba nada y el choque aparecía recién al aprobar.
+
+**Corrección (B, servicios y espacios):** crear, editar o restaurar una tarifa cuya vigencia se cruce con otra
+**pendiente o aprobada** del mismo concepto (servicio + sede; tipo de espacio + pabellón) se rechaza con
+`ETN_RATE_OVERLAP` y un mensaje que pide ajustar las fechas o editar la existente. Mismo criterio que la BD
+(fechas inclusivas, sin fin = abierta); las rechazadas no cuentan. Tests: +6.
+- No se tocó la importación masiva (igual que en la 20).
+- Relación con la 23: hoy una tarifa aprobada **sin fecha fin** bloquea cualquier tarifa nueva del mismo
+  concepto. El cambio de precio queda para la 23 (nueva vigencia que cierre la anterior).
+
+**Para validar en UAT:** Tarifas de servicios → registrar dos veces la misma tarifa con la misma vigencia → la
+segunda muestra el mensaje y no llega a la bandeja. Con vigencias contiguas (la nueva empieza el día después
+del fin de la otra) se registra.
+
+---
+
+## INC-24 — El tarifario exportado incluye rechazadas
+
+[Documento](https://drive.google.com/file/d/1RWfQS0fYmXombWFrJ6BbWds0lG4ISCcY/view) · Incidencia funcional · Alta
+
+**Reporte:** al exportar el Tarifario de Tipos de Espacio salían 3 tarifas: 1 aprobada y 2 rechazadas.
+**Esperado:** solo las aprobadas.
+
+**Causa:** la exportación seguía el filtro de estado de la pantalla y, con «Todos», no filtraba nada.
+
+**Corrección (B, espacios y servicios):** sin un estado pedido, el tarifario exportado lleva solo las
+**aprobadas** (es lo que rige). Si se filtra explícitamente por Pendientes o Rechazadas, se exporta eso.
+Tests: +2.
+
+**Para validar en UAT:** Tarifas → filtro «Todos» → Exportar (Excel, CSV, PDF) → solo aprobadas.
+
+---
+
+## INC-25 — El calendario de vigencia de Paquetes no abre
+
+[Documento](https://drive.google.com/file/d/1SgU0cEo_VmId_fn4GKYziDBMXfCl5F-P/view) · Incidencia funcional · Media
+
+**Reporte:** en el Configurador de paquete, el ícono de calendario de «Vigencia desde/hasta» no abría el
+selector; solo se podía escribir la fecha.
+
+**Causa:** el configurador vive en un `app-drawer`, que se desliza con `transform`. Un ancestro con
+`transform` pasa a ser el bloque contenedor de los `position: fixed`, así que el popup del selector (fixed,
+calculado contra la ventana) se pintaba desplazado, fuera de la pantalla.
+
+**Corrección (F):** `EtnDateInputComponent` busca ese ancestro (transform, filter, perspective, contain…) y
+resta su esquina al posicionar el popup. Sirve para cualquier selector de fecha dentro de un drawer.
+
+**Para validar en UAT:** Paquetes → Nuevo paquete → pulsar el ícono de calendario de ambas vigencias → abre
+junto al campo; elegir un día lo carga.
+
