@@ -317,12 +317,12 @@ contratos publicados. La empresa de QA ya tenía plantillas propias, así que nu
 **Corrección:** botón **«Plantilla estándar»** en Plantillas (permiso de alta). Se elige contrato de cesión o
 propuesta comercial y se crea como **borrador** de empresa (vale para todas las sedes), sin tocar lo existente;
 se abre en el editor para revisarla y publicarla. Si ya hay un contrato publicado, al publicar la estándar el
-sistema lo nombra y pide despublicarlo o enviarlo a la papelera (una sola vigente por tipo). B:
+sistema lo nombra y pide enviarlo a la papelera (una sola vigente por tipo). B:
 `POST /document-templates/standard?kind=CONTRACT|PROPOSAL`. Tests: +1.
 
 **Para explicar a QA:** las prediseñadas se crean solas en empresas nuevas (o sin plantillas de ese tipo); en una
 empresa que ya tiene las suyas se piden con «Plantilla estándar».
 
 **Para validar en UAT:** Plantillas → «Plantilla estándar» → Contrato → se abre el borrador con logo, partes,
-cláusulas y firmas → enviar a la papelera o despublicar el contrato propio → publicar la estándar.
+cláusulas y firmas → enviar a la papelera el contrato propio → publicar la estándar.
 
