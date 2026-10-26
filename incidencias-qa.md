@@ -18,7 +18,7 @@
 | N.° | Título | Módulo | Prioridad | Registro | Estado | Commits |
 |---|---|---|---|---|---|---|
 | 16 | Plantillas prediseñadas no visibles en una empresa que ya tenía plantillas (reabierta) | Configuración / Plantillas de documentos | Alta | 28/09/2026 | Corregida — pendiente de validar en UAT | B ea92546 · F 86e562c |
-| 18 | Validación insuficiente de RUC y teléfono en sedes | Configuración / Sedes | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B eed61f2 · F f80e513 |
+| 18 | RUC y teléfono de sedes (18-1); sedes «No operativa» en los filtros (18-2) | Configuración / Sedes | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B eed61f2 · F f80e513, 2d29460 |
 | 19 | Licencias duplicadas del mismo tipo; el adjunto persiste en el modal | Configuración General / Licencias | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B bb297f7 · F 306cd6b |
 | 20 | Tarifa con vigencia retroactiva | Configuración / Tarifas | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B 8153a1f · F a999e63 |
 | 21 | Huecos superpuestos; desplegable que desborda; no se puede quitar el plano del pabellón | Configuración / Pabellones y sectores | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B 2ed8a40 · F 7986215 |
@@ -29,11 +29,21 @@
 | 26 | El botón «Guardar» desaparece en «Requisitos previos» | Configuración / Servicios | Media | 22/10/2026 | Corregida — pendiente de validar en UAT | F afceb2d |
 | 27 | Logo, firma y sello fallan con 413 aunque pesan menos de 2 MB | Configuración / Plantillas | Alta | 22/10/2026 | Corregida — pendiente de desplegar y validar en UAT | F 06331df |
 | 28 | PDF del contrato con interlineado excesivo | Configuración / Plantillas | Alta | 22/10/2026 | Corregida — pendiente de validar en UAT | B 7379f15 |
+| 29 | El alta de espacios ofrece pabellones sin sectores habilitados para el tipo | Espacios / Inventario | Alta | 23/10/2026 | Corregida — pendiente de validar en UAT | B a5b10b7 · F df1549a |
 
-### Abiertas en la planilla (leída el 23/10/2026; actualizada el 26/10/2026), por facilidad
+### Abiertas en la planilla (leída el 26/10/2026), por facilidad
 
 | N.° | Título (planilla) | Módulo | Prioridad | Estimación |
 |---|---|---|---|---|
+| 32 | RUC de persona jurídica sin validación de prefijo 20 en titulares | Contratos / Titulares | Alta | Fácil (reusar la regla de RUC de la 18 + prefijo 20 para jurídica) |
+| 34-3 | Se guarda un borrador de contrato con precio pactado S/ 0.00 | Contratos | Media | Fácil |
+| 31 | El historial exportado muestra códigos técnicos, detalles vacíos y estados sin «antes → después» | Espacios / Historial | Alta | Fácil–media |
+| 30 | Sin tarifa aprobada, el precio de lista del espacio se escribe a mano | Espacios / Inventario | Alta | Media (decidir: exigir tarifa aprobada o dejar el precio vacío) |
+| 33 | El contrato no trae los beneficiarios del titular | Contratos | Alta | Media (vincular con % y prelación) |
+| 34-1 | Sede sin moneda bloquea la activación del contrato | Contratos | Media | Por precisar (QA pide evidencia; ¿avisar antes de empezar?) |
+| 34-2 / 35 | El espacio sigue «Disponible» y el historial no muestra el contrato en borrador | Contratos / Historial | Media | Regla de negocio: hoy un borrador no reserva ni es evento; decidir |
+
+---|---|---|---|---|
 | 29 | Sin detalle en la planilla (Espacios / Inventarios); su documento repite el de la 26 | Inventarios de espacios | Media | Por precisar con QA |
 | 18-2 | Los filtros de sede muestran sedes «No operativa» en varios módulos (parte nueva de la 18) | Varios | Alta | Media (cada pantalla carga sus sedes) |
 
@@ -325,4 +335,42 @@ empresa que ya tiene las suyas se piden con «Plantilla estándar».
 
 **Para validar en UAT:** Plantillas → «Plantilla estándar» → Contrato → se abre el borrador con logo, partes,
 cláusulas y firmas → enviar a la papelera el contrato propio → publicar la estándar.
+
+---
+
+## INC-18-2 — Sedes «No operativa» en los filtros
+
+Parte nueva de la 18 (planilla): los filtros de sede mostraban sedes «No operativa» en los distintos módulos.
+
+**Causa:** la regla existía (RN-014: una sede no operativa queda fuera del selector) pero casi ninguna pantalla la
+aplicaba: de 45 selectores de sede solo uno filtraba.
+
+**Corrección (F):** las pantallas que operan dejan de ofrecer sedes «No operativa»: espacios (inventario, plano,
+disponibilidad), catálogo (tarifas, tipos de espacio, pabellones), contratos, cotizaciones, pagos (caja, cobranza,
+facturación, conciliación, planes de pago), mantenimiento, servicios funerarios, solicitudes, servicios, paquetes y
+plantillas. Se mantienen todas en Configuración (Sedes, Configuración general, Series) y en las vistas históricas
+(historial de espacios, reportes, dashboard, auditoría) para poder consultar datos pasados. Servicios, Paquetes y
+Plantillas usan el listado de sedes de partner-core (sin ese dato) y lo cruzan con los perfiles
+(`EtnSedesOperativasService`).
+
+**Para validar en UAT:** Configuración General → Parámetros → marcar una sede como no operativa → no aparece en los
+selectores de Inventario, Tarifas, Caja, etc.; sí en Sedes y en Reportes.
+
+---
+
+## INC-29 — Pabellones sin sectores habilitados para el tipo
+
+[Documento](https://drive.google.com/file/d/1DHNaizVFBd4oh8J29ACJp2LwdPMV58ZO/view) · Incidencia funcional · Alta
+
+**Reporte:** al elegir «Nicho individual estándar» en Nuevo espacio, el selector ofrecía «Pabellón San José» aunque
+sus sectores no tienen ese tipo habilitado. (El documento al principio era una copia del de la 26; se reescribió.)
+
+**Corrección:** B — `GET /spaces/eligible-sectors` devuelve los sectores hoja donde el tipo se puede registrar, con
+la MISMA regla que valida el alta (`SpacePositionValidator.typeFits`: familia del sector + tipos habilitados en el
+sector o, si no declara, pabellones compatibles del tipo). F — al elegir el tipo, Pabellón y Sector muestran solo
+ubicaciones compatibles; si no hay ninguna: «No hay sectores habilitados para este tipo de espacio. Configura su
+compatibilidad antes de continuar». En edición se conserva la ubicación actual. Tests: +1.
+
+**Nota:** un sector que no declara tipos admite cualquiera si el tipo tampoco declara pabellones compatibles (regla
+de V113). Si QA espera que «sin tipos» signifique «ninguno», es un cambio de regla a decidir.
 
