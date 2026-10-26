@@ -41,7 +41,6 @@
 | 25 | El ícono de calendario de «Vigencia desde/hasta» no abre el selector | Paquetes | Media | Fácil |
 | 24 | El reporte exportado incluye tarifas rechazadas; debe mostrar solo las aprobadas | Tarifas | Alta | Fácil |
 | 22 | Permite tarifas duplicadas del mismo servicio y vigencia, que luego no se pueden aprobar | Tarifas | Alta | Fácil–media |
-| 21 | El formulario de sectores tiene campos redundantes y configuración avanzada sin agrupar | Pabellones y sectores | Alta | Media (rediseño de formulario) |
 | 16 | No permite publicar la plantilla pese a cumplir los obligatorios (reabierta: «mejora en la plantilla de documentos») | Plantillas de documentos | Alta | Por precisar con QA |
 
 ---
