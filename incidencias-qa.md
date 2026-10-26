@@ -23,17 +23,18 @@
 | 22 | Tarifas duplicadas del mismo concepto y vigencia que luego no se pueden aprobar | Configuración / Tarifas | Alta | 21/10/2026 | Corregida — pendiente de validar en UAT | B 9301a67 |
 | 24 | El tarifario exportado incluye tarifas rechazadas | Configuración / Tarifas | Alta | 21/10/2026 | Corregida — pendiente de validar en UAT | B 9d75661 |
 | 25 | El ícono de calendario de la vigencia no abre el selector | Configuración / Paquetes | Media | 21/10/2026 | Corregida — pendiente de validar en UAT | F da9d35a |
+| 26 | El botón «Guardar» desaparece en «Requisitos previos» | Configuración / Servicios | Media | 22/10/2026 | Corregida — pendiente de validar en UAT | F afceb2d |
 
-### Abiertas en la planilla (leída el 23/10/2026), por facilidad
+### Abiertas en la planilla (leída el 23/10/2026; actualizada el 26/10/2026), por facilidad
 
 | N.° | Título (planilla) | Módulo | Prioridad | Estimación |
 |---|---|---|---|---|
-| 26 | El botón «Guardar» desaparece en la pestaña «Requisitos previos»; solo queda «Cancelar» | Servicios | Media | Fácil |
-| 27 | Logo, firma y sello fallan con 413 de Nginx aunque pesan menos de 2 MB; el error sale como HTML | Plantillas de documentos | Alta | Fácil en código (mensaje claro); el límite real es de Nginx en el servidor (`client_max_body_size`) |
+| 27 | Logo, firma y sello fallan con 413 de Nginx aunque pesan menos de 2 MB; el error sale como HTML | Plantillas de documentos | Alta | Fácil: el `nginx.conf` del front no fija `client_max_body_size` (por defecto 1 MB); falta además un mensaje claro. Puede haber otro proxy delante en UAT |
 | 28 | El PDF del contrato sale con interlineado y espaciado excesivos | Plantillas de documentos | Alta | Media |
 | 23 | Tarifas aprobadas sin acciones en «ACC.»; sin fecha fin no se puede cambiar el precio | Tarifas | Alta | Media (definir el flujo de «nueva vigencia») |
 | 21 | Huecos superpuestos en una celda con capacidad inconsistente; desplegable «Tipo de sector» desbordado; no se puede quitar el adjunto del pabellón | Pabellones y sectores | Alta | Media |
 | 29 | Sin detalle en la planilla (Espacios / Inventarios); su documento repite el de la 26 | Inventarios de espacios | Media | Por precisar con QA |
+| 18-2 | Los filtros de sede muestran sedes «No operativa» en varios módulos (parte nueva de la 18) | Varios | Alta | Media (cada pantalla carga sus sedes) |
 | 16 | Reabierta: «mejora en la plantilla de documentos» | Plantillas de documentos | Alta | Corregida, a la espera de aprobación (no se toca) |
 
 ---|---|---|---|---|
@@ -185,4 +186,22 @@ resta su esquina al posicionar el popup. Sirve para cualquier selector de fecha 
 
 **Para validar en UAT:** Paquetes → Nuevo paquete → pulsar el ícono de calendario de ambas vigencias → abre
 junto al campo; elegir un día lo carga.
+
+---
+
+## INC-26 — «Guardar» desaparece en «Requisitos previos»
+
+[Documento](https://drive.google.com/file/d/14PkG35BdxA6GxvugKb3DMHyjRDhMgNJI/view) · Incidencia funcional · Media
+
+**Reporte:** al editar un servicio y abrir «Requisitos previos», solo quedaba «Cancelar»; para guardar había
+que volver a «Datos». **Esperado:** «Guardar» visible en ambas pestañas.
+
+**Causa:** el pie del drawer mostraba «Guardar» solo con la pestaña «Datos» activa.
+
+**Corrección (F):** «Guardar» se ve en las dos pestañas. Si falta el nombre, vuelve a «Datos», donde está el
+error. Los requisitos se guardan con «Agregar requisito»: si hay uno escrito (o con documento) sin agregar, se
+avisa y no se guarda, para no perderlo en silencio; el aviso se apaga al agregarlo o borrarlo.
+
+**Para validar en UAT:** Servicios → Editar → «Requisitos previos» → aparece «Guardar» y guarda. Escribir un
+requisito sin agregarlo y pulsar «Guardar» → aviso.
 
