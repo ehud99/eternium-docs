@@ -24,13 +24,13 @@
 | 24 | El tarifario exportado incluye tarifas rechazadas | Configuración / Tarifas | Alta | 21/10/2026 | Corregida — pendiente de validar en UAT | B 9d75661 |
 | 25 | El ícono de calendario de la vigencia no abre el selector | Configuración / Paquetes | Media | 21/10/2026 | Corregida — pendiente de validar en UAT | F da9d35a |
 | 26 | El botón «Guardar» desaparece en «Requisitos previos» | Configuración / Servicios | Media | 22/10/2026 | Corregida — pendiente de validar en UAT | F afceb2d |
+| 27 | Logo, firma y sello fallan con 413 aunque pesan menos de 2 MB | Configuración / Plantillas | Alta | 22/10/2026 | Corregida — pendiente de desplegar y validar en UAT | F 06331df |
+| 28 | PDF del contrato con interlineado excesivo | Configuración / Plantillas | Alta | 22/10/2026 | Corregida — pendiente de validar en UAT | B 7379f15 |
 
 ### Abiertas en la planilla (leída el 23/10/2026; actualizada el 26/10/2026), por facilidad
 
 | N.° | Título (planilla) | Módulo | Prioridad | Estimación |
 |---|---|---|---|---|
-| 27 | Logo, firma y sello fallan con 413 de Nginx aunque pesan menos de 2 MB; el error sale como HTML | Plantillas de documentos | Alta | Fácil: el `nginx.conf` del front no fija `client_max_body_size` (por defecto 1 MB); falta además un mensaje claro. Puede haber otro proxy delante en UAT |
-| 28 | El PDF del contrato sale con interlineado y espaciado excesivos | Plantillas de documentos | Alta | Media |
 | 23 | Tarifas aprobadas sin acciones en «ACC.»; sin fecha fin no se puede cambiar el precio | Tarifas | Alta | Media (definir el flujo de «nueva vigencia») |
 | 21 | Huecos superpuestos en una celda con capacidad inconsistente; desplegable «Tipo de sector» desbordado; no se puede quitar el adjunto del pabellón | Pabellones y sectores | Alta | Media |
 | 29 | Sin detalle en la planilla (Espacios / Inventarios); su documento repite el de la 26 | Inventarios de espacios | Media | Por precisar con QA |
@@ -204,4 +204,51 @@ avisa y no se guarda, para no perderlo en silencio; el aviso se apaga al agregar
 
 **Para validar en UAT:** Servicios → Editar → «Requisitos previos» → aparece «Guardar» y guarda. Escribir un
 requisito sin agregarlo y pulsar «Guardar» → aviso.
+
+---
+
+## INC-27 — Logo, firma y sello fallan con 413
+
+[Documento](https://drive.google.com/file/d/1LYMnh53RUhVmLy68oA4kAazncyikmT93/view) · Incidencia funcional · Alta
+
+**Reporte:** en el editor de plantillas, un logo PNG de 1,75 MB (dentro de los 2 MB que anuncia la pantalla)
+fallaba con «413 Request Entity Too Large» de Nginx, mostrado como código HTML. Igual con firma y sello.
+
+**Causa:** el `nginx.conf` del contenedor del front no fijaba `client_max_body_size`, así que regía el valor por
+defecto de nginx (1 MB) y la subida se cortaba antes de llegar al backend (que admite 10 MB por archivo y 30 MB
+por petición). El interceptor de errores mostraba como texto cualquier cuerpo de error, aunque fuera HTML.
+
+**Corrección (F):**
+- `nginx.conf`: `client_max_body_size 30m`, igual que el `max-request-size` del backend.
+- Interceptor global: un cuerpo de error en HTML ya no se muestra; el 413 tiene título y mensaje propios.
+- Editor: el 413 deja junto al activo un mensaje claro (y no duplica el aviso).
+
+**Despliegue:** el cambio de `nginx.conf` entra con la imagen del front. Si en UAT hay otro proxy delante del
+contenedor (el dominio público), su límite también debe ser de al menos 30 MB; si no, el 413 seguirá saliendo,
+ahora con el mensaje claro.
+
+**Para validar en UAT:** Plantillas → Editor → Activos de la sede → subir un logo, una firma y un sello de 1–2 MB.
+
+---
+
+## INC-28 — PDF del contrato con interlineado excesivo
+
+[Documento](https://drive.google.com/file/d/1OCkOg6L0hEzsjJrr3zlx1w-F0aKVQcSu/view) · Incidencia funcional · Alta
+
+**Reporte:** el PDF del contrato de concesión (vista previa con BORRADOR) salía con huecos enormes entre cada
+renglón, incluso dentro de un mismo párrafo, y un documento corto ocupaba varias páginas.
+
+**Causa:** la plantilla está escrita como texto con saltos de línea (`<br>`) y lleva el logo arriba. `HTMLWorker`
+la convierte en UN solo párrafo con el logo dentro, y el interlineado es uno por párrafo: el ajuste que reserva el
+alto del logo para que el margen no lo corte (~100 pt) se aplicaba a todos los renglones del contrato.
+
+**Corrección (B):** `DocumentRenderService.splitImageLines` parte en renglones el párrafo que lleva una imagen;
+solo la línea del logo reserva su alto y el texto vuelve a su interlineado normal. Se conservan los renglones en
+blanco, la alineación y las sangrías. Las plantillas con párrafos propios (`<p>`, `<div>`) no cambian. Tests: +1.
+
+**Pendiente conocido (no reportado):** HTMLWorker calcula el interlineado sobre 12 pt aunque el texto sea más
+chico (un texto de 9–10 pt queda algo holgado). Se puede afinar si QA lo observa.
+
+**Para validar en UAT:** Plantillas → plantilla 11 (contrato de concesión) → Vista previa PDF → interlineado
+normal y el logo entero arriba.
 
