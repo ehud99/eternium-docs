@@ -20,6 +20,7 @@
 | 18 | Validación insuficiente de RUC y teléfono en sedes | Configuración / Sedes | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B eed61f2 · F f80e513 |
 | 19 | Licencias duplicadas del mismo tipo; el adjunto persiste en el modal | Configuración General / Licencias | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B bb297f7 · F 306cd6b |
 | 20 | Tarifa con vigencia retroactiva | Configuración / Tarifas | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B 8153a1f · F a999e63 |
+| 21 | Huecos superpuestos; desplegable que desborda; no se puede quitar el plano del pabellón | Configuración / Pabellones y sectores | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B 2ed8a40 · F 7986215 |
 | 22 | Tarifas duplicadas del mismo concepto y vigencia que luego no se pueden aprobar | Configuración / Tarifas | Alta | 21/10/2026 | Corregida — pendiente de validar en UAT | B 9301a67 |
 | 23 | Tarifas aprobadas sin acciones; sin fecha fin no se puede cambiar el precio | Configuración / Tarifas | Alta | 21/10/2026 | Corregida — pendiente de validar en UAT | B 6e3fbb0 · F 691cadc |
 | 24 | El tarifario exportado incluye tarifas rechazadas | Configuración / Tarifas | Alta | 21/10/2026 | Corregida — pendiente de validar en UAT | B 9d75661 |
@@ -32,7 +33,6 @@
 
 | N.° | Título (planilla) | Módulo | Prioridad | Estimación |
 |---|---|---|---|---|
-| 21 | Huecos superpuestos en una celda con capacidad inconsistente; desplegable «Tipo de sector» desbordado; no se puede quitar el adjunto del pabellón | Pabellones y sectores | Alta | Media |
 | 29 | Sin detalle en la planilla (Espacios / Inventarios); su documento repite el de la 26 | Inventarios de espacios | Media | Por precisar con QA |
 | 18-2 | Los filtros de sede muestran sedes «No operativa» en varios módulos (parte nueva de la 18) | Varios | Alta | Media (cada pantalla carga sus sedes) |
 | 16 | Reabierta: «mejora en la plantilla de documentos» | Plantillas de documentos | Alta | Corregida, a la espera de aprobación (no se toca) |
@@ -278,4 +278,31 @@ la BD al aprobar.
 **Para validar en UAT:** Tarifas de servicios → Exhumación aprobada sin fin → «Nuevo precio» con otro monto desde
 mañana → aprobar en la bandeja → la anterior queda hasta hoy y la nueva desde mañana. «Cerrar vigencia» en una
 aprobada → elegir una fecha → la vigencia muestra el fin.
+
+---
+
+## INC-21 — Pabellones y sectores: huecos, desplegable y plano
+
+[Documento](https://drive.google.com/file/d/1gaMGaYITtrUHMPP0G5d9SCCtRUnGDTY-/view) · Incidencia funcional · Alta
+
+**21-1 — Huecos superpuestos.** Con cara 1, filas 1–1 / col 1–1 y filas 1–2 / col 1–1, ambos incluían (1,1); se
+guardaba sin aviso y la previsualización mostraba 57 en vez de 58.
+- **Causa:** la capacidad del formulario sumaba el área de cada hueco (sin deduplicar ni mirar la cara); el back
+  deduplicaba al calcular pero no rechazaba el solape.
+- **Corrección:** F — la capacidad descuenta cada celda una vez y solo en su cara; un aviso en «Huecos» nombra los
+  dos huecos y la primera celda común, y «Guardar» lleva a esa pestaña sin confirmar. B — `validateGaps` rechaza el
+  solape en la misma cara (`ETN_SECTOR_GAP_OVERLAP`). Rangos contiguos o en otra cara se permiten. Tests: +2.
+
+**21-2 — «Tipo de sector» desborda al desplazar.** El campo es un `<select>` nativo: la lista la pinta el navegador
+fuera de la página y no sigue al campo cuando el modal se desplaza. **Corrección (F, componente compartido
+`app-select`):** si un contenedor se desplaza con la lista abierta, la lista se cierra (QA aceptaba «conservar la
+alineación o cerrarse»). Aplica a todos los desplegables del sistema.
+
+**21-3 — Quitar el plano del pabellón.** Solo había «Abrir» y «Reemplazar». **Corrección:** botón «Eliminar archivo»
+(también cuando el archivo ya no está disponible) con confirmación; suelta la referencia del pabellón (B: clave vacía
+= sin plano), borra el archivo del storage y limpia el uploader.
+
+**Para validar en UAT:** Editar sector → Huecos → el caso de QA muestra el aviso y no guarda; Previsualización → 58.
+Nuevo sector → abrir «Tipo de sector» y desplazar con la rueda → la lista se cierra. Pabellón con plano → «Eliminar
+archivo» → confirmar → queda sin plano.
 
