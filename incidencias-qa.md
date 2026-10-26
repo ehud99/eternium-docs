@@ -21,6 +21,7 @@
 | 19 | Licencias duplicadas del mismo tipo; el adjunto persiste en el modal | Configuración General / Licencias | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B bb297f7 · F 306cd6b |
 | 20 | Tarifa con vigencia retroactiva | Configuración / Tarifas | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B 8153a1f · F a999e63 |
 | 22 | Tarifas duplicadas del mismo concepto y vigencia que luego no se pueden aprobar | Configuración / Tarifas | Alta | 21/10/2026 | Corregida — pendiente de validar en UAT | B 9301a67 |
+| 23 | Tarifas aprobadas sin acciones; sin fecha fin no se puede cambiar el precio | Configuración / Tarifas | Alta | 21/10/2026 | Corregida — pendiente de validar en UAT | B 6e3fbb0 · F 691cadc |
 | 24 | El tarifario exportado incluye tarifas rechazadas | Configuración / Tarifas | Alta | 21/10/2026 | Corregida — pendiente de validar en UAT | B 9d75661 |
 | 25 | El ícono de calendario de la vigencia no abre el selector | Configuración / Paquetes | Media | 21/10/2026 | Corregida — pendiente de validar en UAT | F da9d35a |
 | 26 | El botón «Guardar» desaparece en «Requisitos previos» | Configuración / Servicios | Media | 22/10/2026 | Corregida — pendiente de validar en UAT | F afceb2d |
@@ -31,7 +32,6 @@
 
 | N.° | Título (planilla) | Módulo | Prioridad | Estimación |
 |---|---|---|---|---|
-| 23 | Tarifas aprobadas sin acciones en «ACC.»; sin fecha fin no se puede cambiar el precio | Tarifas | Alta | Media (definir el flujo de «nueva vigencia») |
 | 21 | Huecos superpuestos en una celda con capacidad inconsistente; desplegable «Tipo de sector» desbordado; no se puede quitar el adjunto del pabellón | Pabellones y sectores | Alta | Media |
 | 29 | Sin detalle en la planilla (Espacios / Inventarios); su documento repite el de la 26 | Inventarios de espacios | Media | Por precisar con QA |
 | 18-2 | Los filtros de sede muestran sedes «No operativa» en varios módulos (parte nueva de la 18) | Varios | Alta | Media (cada pantalla carga sus sedes) |
@@ -41,7 +41,6 @@
 | 25 | El ícono de calendario de «Vigencia desde/hasta» no abre el selector | Paquetes | Media | Fácil |
 | 24 | El reporte exportado incluye tarifas rechazadas; debe mostrar solo las aprobadas | Tarifas | Alta | Fácil |
 | 22 | Permite tarifas duplicadas del mismo servicio y vigencia, que luego no se pueden aprobar | Tarifas | Alta | Fácil–media |
-| 23 | Tarifas aprobadas sin acciones en «ACC.»; sin fecha fin no se puede cambiar el precio | Tarifas | Alta | Media (definir el flujo de «nueva vigencia») |
 | 21 | El formulario de sectores tiene campos redundantes y configuración avanzada sin agrupar | Pabellones y sectores | Alta | Media (rediseño de formulario) |
 | 16 | No permite publicar la plantilla pese a cumplir los obligatorios (reabierta: «mejora en la plantilla de documentos») | Plantillas de documentos | Alta | Por precisar con QA |
 
@@ -144,8 +143,8 @@ se comprobaba nada y el choque aparecía recién al aprobar.
 `ETN_RATE_OVERLAP` y un mensaje que pide ajustar las fechas o editar la existente. Mismo criterio que la BD
 (fechas inclusivas, sin fin = abierta); las rechazadas no cuentan. Tests: +6.
 - No se tocó la importación masiva (igual que en la 20).
-- Relación con la 23: hoy una tarifa aprobada **sin fecha fin** bloquea cualquier tarifa nueva del mismo
-  concepto. El cambio de precio queda para la 23 (nueva vigencia que cierre la anterior).
+- Con la 23, una tarifa que empieza **después** de una aprobada no es duplicada: es un nuevo precio que la
+  reemplaza al aprobarse.
 
 **Para validar en UAT:** Tarifas de servicios → registrar dos veces la misma tarifa con la misma vigencia → la
 segunda muestra el mensaje y no llega a la bandeja. Con vigencias contiguas (la nueva empieza el día después
@@ -251,4 +250,32 @@ chico (un texto de 9–10 pt queda algo holgado). Se puede afinar si QA lo obser
 
 **Para validar en UAT:** Plantillas → plantilla 11 (contrato de concesión) → Vista previa PDF → interlineado
 normal y el logo entero arriba.
+
+---
+
+## INC-23 — Tarifas aprobadas sin acciones; no se puede cambiar el precio
+
+[Documento](https://drive.google.com/file/d/1NjGsRqnKf3KIBhrvxQTAJf8kPMMWv0M_/view) · Incidencia funcional · Alta
+
+**Reporte:** en Tarifas de servicios, las aprobadas no tenían botones en «ACC.». La Exhumación aprobada sin fecha
+fin no se podía editar ni cerrar: si el servicio sube de precio, no había forma de actualizarla. **Esperado:**
+acciones para cerrar la vigencia o registrar un nuevo precio desde una fecha.
+
+**Causa:** una aprobada es inmutable (RN-009) y la pantalla solo ofrecía «Corregir» para las no aprobadas. Una
+tarifa nueva del mismo concepto chocaba con la aprobada abierta: la 22 lo rechazaba al registrar y el EXCLUDE de
+la BD al aprobar.
+
+**Corrección:**
+- **Nuevo precio** (B + F): en una aprobada, el botón 🏷 abre el formulario con el concepto cargado y la fecha
+  desde mañana (o desde hoy si la vigente empezó antes), con un aviso de qué tarifa reemplaza. Va a la bandeja
+  como cualquier tarifa. Al **aprobarse**, la aprobada que empezó antes se cierra el día anterior al nuevo precio
+  (se graba antes de aprobar la nueva para que el EXCLUDE no salte). Una tarifa que empieza el mismo día o antes
+  que la aprobada sigue siendo duplicada.
+- **Cerrar vigencia** (B + F): botón 📅✕ en una aprobada que sigue abierta. Pide el último día: desde hoy, no
+  antes del inicio y solo acorta. `POST /{id}/close` en espacios y servicios (permiso de edición).
+- Tests: +7 (servicios 20, espacios 20).
+
+**Para validar en UAT:** Tarifas de servicios → Exhumación aprobada sin fin → «Nuevo precio» con otro monto desde
+mañana → aprobar en la bandeja → la anterior queda hasta hoy y la nueva desde mañana. «Cerrar vigencia» en una
+aprobada → elegir una fecha → la vigencia muestra el fin.
 
