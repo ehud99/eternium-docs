@@ -17,6 +17,7 @@
 
 | N.° | Título | Módulo | Prioridad | Registro | Estado | Commits |
 |---|---|---|---|---|---|---|
+| 16 | Plantillas prediseñadas no visibles en una empresa que ya tenía plantillas (reabierta) | Configuración / Plantillas de documentos | Alta | 28/09/2026 | Corregida — pendiente de validar en UAT | B ea92546 · F 86e562c |
 | 18 | Validación insuficiente de RUC y teléfono en sedes | Configuración / Sedes | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B eed61f2 · F f80e513 |
 | 19 | Licencias duplicadas del mismo tipo; el adjunto persiste en el modal | Configuración General / Licencias | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B bb297f7 · F 306cd6b |
 | 20 | Tarifa con vigencia retroactiva | Configuración / Tarifas | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B 8153a1f · F a999e63 |
@@ -35,13 +36,11 @@
 |---|---|---|---|---|
 | 29 | Sin detalle en la planilla (Espacios / Inventarios); su documento repite el de la 26 | Inventarios de espacios | Media | Por precisar con QA |
 | 18-2 | Los filtros de sede muestran sedes «No operativa» en varios módulos (parte nueva de la 18) | Varios | Alta | Media (cada pantalla carga sus sedes) |
-| 16 | Reabierta: «mejora en la plantilla de documentos» | Plantillas de documentos | Alta | Corregida, a la espera de aprobación (no se toca) |
 
 ---|---|---|---|---|
 | 25 | El ícono de calendario de «Vigencia desde/hasta» no abre el selector | Paquetes | Media | Fácil |
 | 24 | El reporte exportado incluye tarifas rechazadas; debe mostrar solo las aprobadas | Tarifas | Alta | Fácil |
 | 22 | Permite tarifas duplicadas del mismo servicio y vigencia, que luego no se pueden aprobar | Tarifas | Alta | Fácil–media |
-| 16 | No permite publicar la plantilla pese a cumplir los obligatorios (reabierta: «mejora en la plantilla de documentos») | Plantillas de documentos | Alta | Por precisar con QA |
 
 ---
 
@@ -304,4 +303,26 @@ alineación o cerrarse»). Aplica a todos los desplegables del sistema.
 **Para validar en UAT:** Editar sector → Huecos → el caso de QA muestra el aviso y no guarda; Previsualización → 58.
 Nuevo sector → abrir «Tipo de sector» y desplazar con la rueda → la lista se cierra. Pabellón con plano → «Eliminar
 archivo» → confirmar → queda sin plano.
+
+---
+
+## INC-16 — Plantillas prediseñadas que QA no ve (reabierta)
+
+Reabierta como «mejora en la plantilla de documentos»: en UAT las plantillas no aparecían prediseñadas.
+
+**Causa:** `DefaultTemplateProvisioner` crea las estándar (contrato de cesión y propuesta comercial, publicadas)
+solo en empresas que **nunca** tuvieron una plantilla de ese tipo, para no pisar lo redactado ni dejar dos
+contratos publicados. La empresa de QA ya tenía plantillas propias, así que nunca las recibió.
+
+**Corrección:** botón **«Plantilla estándar»** en Plantillas (permiso de alta). Se elige contrato de cesión o
+propuesta comercial y se crea como **borrador** de empresa (vale para todas las sedes), sin tocar lo existente;
+se abre en el editor para revisarla y publicarla. Si ya hay un contrato publicado, al publicar la estándar el
+sistema lo nombra y pide despublicarlo o enviarlo a la papelera (una sola vigente por tipo). B:
+`POST /document-templates/standard?kind=CONTRACT|PROPOSAL`. Tests: +1.
+
+**Para explicar a QA:** las prediseñadas se crean solas en empresas nuevas (o sin plantillas de ese tipo); en una
+empresa que ya tiene las suyas se piden con «Plantilla estándar».
+
+**Para validar en UAT:** Plantillas → «Plantilla estándar» → Contrato → se abre el borrador con logo, partes,
+cláusulas y firmas → enviar a la papelera o despublicar el contrato propio → publicar la estándar.
 
