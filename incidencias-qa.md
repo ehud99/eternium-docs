@@ -30,14 +30,13 @@
 | 27 | Logo, firma y sello fallan con 413 aunque pesan menos de 2 MB | Configuración / Plantillas | Alta | 22/10/2026 | Corregida — pendiente de desplegar y validar en UAT | F 06331df |
 | 28 | PDF del contrato con interlineado excesivo | Configuración / Plantillas | Alta | 22/10/2026 | Corregida — pendiente de validar en UAT | B 7379f15 |
 | 29 | El alta de espacios ofrece pabellones sin sectores habilitados para el tipo | Espacios / Inventario | Alta | 23/10/2026 | Corregida — pendiente de validar en UAT | B a5b10b7 · F df1549a |
+| 31 | El historial exportado muestra códigos técnicos y detalles insuficientes | Espacios / Historial | Alta | 23/10/2026 | Corregida — pendiente de validar en UAT | B d7c5ab4 |
+| 34-3 | Borrador de contrato con precio pactado S/ 0.00 | Contratos | Media | 26/10/2026 | Corregida — pendiente de validar en UAT | B 4d3bf54 · F cac1dcd |
 
 ### Abiertas en la planilla (leída el 26/10/2026), por facilidad
 
 | N.° | Título (planilla) | Módulo | Prioridad | Estimación |
 |---|---|---|---|---|
-| 32 | RUC de persona jurídica sin validación de prefijo 20 en titulares | Contratos / Titulares | Alta | Fácil (reusar la regla de RUC de la 18 + prefijo 20 para jurídica) |
-| 34-3 | Se guarda un borrador de contrato con precio pactado S/ 0.00 | Contratos | Media | Fácil |
-| 31 | El historial exportado muestra códigos técnicos, detalles vacíos y estados sin «antes → después» | Espacios / Historial | Alta | Fácil–media |
 | 30 | Sin tarifa aprobada, el precio de lista del espacio se escribe a mano | Espacios / Inventario | Alta | Media (decidir: exigir tarifa aprobada o dejar el precio vacío) |
 | 33 | El contrato no trae los beneficiarios del titular | Contratos | Alta | Media (vincular con % y prelación) |
 | 34-1 | Sede sin moneda bloquea la activación del contrato | Contratos | Media | Por precisar (QA pide evidencia; ¿avisar antes de empezar?) |
@@ -373,4 +372,48 @@ compatibilidad antes de continuar». En edición se conserva la ubicación actua
 
 **Nota:** un sector que no declara tipos admite cualquiera si el tipo tampoco declara pabellones compatibles (regla
 de V113). Si QA espera que «sin tipos» signifique «ninguno», es un cambio de regla a decidir.
+
+---
+
+## INC-32 — RUC de persona jurídica sin validar el prefijo
+
+[Documento](https://drive.google.com/file/d/1Po8-SDwzgHF-8w2_B9xfcxQ88UcUhH0R/view) · Incidencia funcional · Alta
+
+**Reporte:** Nuevo titular → Persona jurídica → RUC `40283823921` sin advertencia. **Esperado:** 11 dígitos, empieza en
+20 y dígito verificador válido; si no, impedir avanzar con «Ingrese un RUC de persona jurídica válido, de 11 dígitos
+y que comience con 20».
+
+**Corrección:** F — `legalRucError` (`F/ui/src/identity/identity-rules.ts`) en el formulario de titular: error al
+escribir y «Siguiente» bloqueado. B — `IdentityRules.isValidLegalEntityRuc` en `HolderService.validateFormat`
+(alta y edición), con el mismo mensaje. Tests: +1 (y el RUC inventado del test de alta jurídica pasa a uno real).
+
+**Para validar en UAT:** Titulares → Nuevo → Persona jurídica → `40283823921` → mensaje y no avanza;
+`20131312955` → avanza.
+
+---
+
+## INC-34-3 — Borrador de contrato a S/ 0.00
+
+[Documento](https://drive.google.com/file/d/1dxHHSe98UiNyEDO5yHZt_c3GsL8EICyq/view) · Incidencia funcional · Media
+
+**Corrección:** el precio pactado debe ser mayor que cero. F — error «El precio pactado debe ser mayor que cero» y no
+se avanza del paso 2. B — `@DecimalMin` exclusivo en `ContractRequestDTO.agreedPrice` (antes admitía 0). Tests: +1.
+Las partes 34-1 (moneda de sede) y 34-2 (espacio «Disponible» con borrador) siguen abiertas: dependen de evidencia y
+de una regla de negocio.
+
+---
+
+## INC-31 — Historial exportado con códigos técnicos
+
+[Documento](https://drive.google.com/file/d/1urxv3ce6thfkHT74rwfgbQw3WtfkTFaK/view) · Incidencia funcional · Alta
+
+**Reporte:** el PDF del historial de NIC-SJ-A-001 mostraba SPACE_CREATED, RESERVATION_HOLD, STATUS_CHANGE…, detalles
+vacíos y un cambio de estado que solo decía «inhabilitar». Fechas también según la zona configurada.
+
+**Corrección (B, `SpaceHistoryService.buildPdf`):** el evento sale traducido (las mismas etiquetas de la pantalla; un
+tipo sin traducción muestra su código, nunca falla); el detalle dice «Estado: Disponible → Inhabilitado» o
+«Capacidad: X → Y» cuando el evento lo registró, más el motivo, y «Sin observaciones registradas» si no hay nada; las
+fechas van en la zona del usuario (`UserZoneResolver`) y no en UTC. El hash de integridad no cambia. Tests: +3.
+
+**Para validar en UAT:** Historial de espacios → NIC-SJ-A-001 → Exportar PDF.
 
