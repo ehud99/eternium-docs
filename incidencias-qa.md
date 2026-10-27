@@ -31,6 +31,7 @@
 | 28 | PDF del contrato con interlineado excesivo | Configuración / Plantillas | Alta | 22/10/2026 | Corregida — pendiente de validar en UAT | B 7379f15 |
 | 29 | El alta de espacios ofrece pabellones sin sectores habilitados para el tipo | Espacios / Inventario | Alta | 23/10/2026 | Corregida — pendiente de validar en UAT | B a5b10b7 · F df1549a |
 | 31 | El historial exportado muestra códigos técnicos y detalles insuficientes | Espacios / Historial | Alta | 23/10/2026 | Corregida — pendiente de validar en UAT | B d7c5ab4 |
+| 32 | RUC de persona jurídica sin validación de prefijo 20 | Contratos / Titulares | Alta | 26/10/2026 | Corregida — pendiente de validar en UAT | B e976538 · F f30734c |
 | 34-3 | Borrador de contrato con precio pactado S/ 0.00 | Contratos | Media | 26/10/2026 | Corregida — pendiente de validar en UAT | B 4d3bf54 · F cac1dcd |
 
 ### Abiertas en la planilla (leída el 26/10/2026), por facilidad
