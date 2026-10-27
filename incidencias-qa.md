@@ -32,6 +32,7 @@
 | 29 | El alta de espacios ofrece pabellones sin sectores habilitados para el tipo | Espacios / Inventario | Alta | 23/10/2026 | Corregida — pendiente de validar en UAT | B a5b10b7 · F df1549a |
 | 31 | El historial exportado muestra códigos técnicos y detalles insuficientes | Espacios / Historial | Alta | 23/10/2026 | Corregida — pendiente de validar en UAT | B d7c5ab4 |
 | 32 | RUC de persona jurídica sin validación de prefijo 20 | Contratos / Titulares | Alta | 26/10/2026 | Corregida — pendiente de validar en UAT | B e976538 · F f30734c |
+| 33 | El contrato no recupera los beneficiarios del titular | Contratos | Alta | 26/10/2026 | Corregida — pendiente de validar en UAT | B 8382086 · F 272e8c0 |
 | 34-3 | Borrador de contrato con precio pactado S/ 0.00 | Contratos | Media | 26/10/2026 | Corregida — pendiente de validar en UAT | B 4d3bf54 · F cac1dcd |
 
 ### Abiertas en la planilla (leída el 26/10/2026), por facilidad
@@ -39,7 +40,6 @@
 | N.° | Título (planilla) | Módulo | Prioridad | Estimación |
 |---|---|---|---|---|
 | 30 | Sin tarifa aprobada, el precio de lista del espacio se escribe a mano | Espacios / Inventario | Alta | Media (decidir: exigir tarifa aprobada o dejar el precio vacío) |
-| 33 | El contrato no trae los beneficiarios del titular | Contratos | Alta | Media (vincular con % y prelación) |
 | 34-1 | Sede sin moneda bloquea la activación del contrato | Contratos | Media | Por precisar (QA pide evidencia; ¿avisar antes de empezar?) |
 | 34-2 / 35 | El espacio sigue «Disponible» y el historial no muestra el contrato en borrador | Contratos / Historial | Media | Regla de negocio: hoy un borrador no reserva ni es evento; decidir |
 
@@ -417,4 +417,31 @@ tipo sin traducción muestra su código, nunca falla); el detalle dice «Estado:
 fechas van en la zona del usuario (`UserZoneResolver`) y no en UTC. El hash de integridad no cambia. Tests: +3.
 
 **Para validar en UAT:** Historial de espacios → NIC-SJ-A-001 → Exportar PDF.
+
+---
+
+## INC-33 — El contrato no recupera los beneficiarios del titular
+
+[Documento](https://drive.google.com/file/d/15LVmLky1v9XvJdFb4Ilto4HQCkZYXHYS/view) · Incidencia funcional · Alta
+
+**Reporte:** el borrador del titular Jose Manuel Rodriguez decía «El contrato no tiene beneficiarios vinculados» aunque el
+titular tenía una beneficiaria registrada y validada (Ana Maria). **Esperado:** recuperar los beneficiarios del titular
+al asociarlo y reutilizar sus datos, completando porcentaje y prelación al vincularlos.
+
+**Causa:** el contrato no los traía: había que «Agregar» y elegir cada beneficiario a mano. Porcentaje y prelación son
+del contrato, no del beneficiario del titular.
+
+**Corrección:**
+- B — al crear el contrato se vinculan los beneficiarios vivos del titular: prelación en orden (1, 2, 3…) y el
+  porcentaje restante hasta 100 en partes iguales (el último absorbe el redondeo: 33,33 / 33,33 / 33,34). Nuevo
+  `POST /contracts/{id}/beneficiaries/from-holder` para los borradores que ya existían: vincula los que falten con la
+  prelación siguiente y el porcentaje que quede. Todo editable mientras sea borrador. Tests: +3.
+- F — en la pestaña Beneficiarios de un borrador: «El titular tiene N beneficiario(s) designado(s) sin vincular» con
+  el botón «Vincular beneficiarios del titular».
+
+**Pendiente conocido:** si en un borrador se cambia el titular, los beneficiarios del anterior siguen vinculados (se
+quitan a mano). Se puede automatizar si QA lo pide.
+
+**Para validar en UAT:** el borrador de QA → Beneficiarios → aviso con 1 pendiente → «Vincular» → Ana Maria al 100 %,
+prelación 1. Un contrato nuevo de un titular con beneficiarios ya nace con ellos vinculados.
 
