@@ -34,23 +34,17 @@
 | 32 | RUC de persona jurídica sin validación de prefijo 20 | Contratos / Titulares | Alta | 26/10/2026 | Corregida — pendiente de validar en UAT | B e976538 · F f30734c |
 | 33 | El contrato no recupera los beneficiarios del titular | Contratos | Alta | 26/10/2026 | Corregida — pendiente de validar en UAT | B 8382086 · F 272e8c0 |
 | 34-3 | Borrador de contrato con precio pactado S/ 0.00 | Contratos | Media | 26/10/2026 | Corregida — pendiente de validar en UAT | B 4d3bf54 · F cac1dcd |
+| 34-1 | Una sede sin moneda dejaba un borrador que no se podía activar | Contratos | Media | 26/10/2026 | Corregida — pendiente de validar en UAT | B 7cb1de4 · F 7c74e7d |
+| 30 | Sin tarifa aprobada, el precio de lista del espacio se escribía a mano | Espacios / Inventario | Alta | 23/10/2026 | Corregida — pendiente de validar en UAT | B cda3d4b · F 6f77c45 |
+| 35 | El QR del espacio debe abrir el espacio al escanearlo (reemplaza a la 35 anterior) | Espacios / Inventario | Media | 27/10/2026 | Corregida — pendiente de validar en UAT | B 17e69b4 · F a628546 |
+| 36 | Historial exportado: «de X a Y», detalle de alta e importación, zona horaria | Espacios / Historial | Media | 27/10/2026 | Corregida — pendiente de validar en UAT | B 9e72893 |
 
-### Abiertas en la planilla (leída el 26/10/2026), por facilidad
+### Descartadas por QA
 
-| N.° | Título (planilla) | Módulo | Prioridad | Estimación |
-|---|---|---|---|---|
-| 30 | Sin tarifa aprobada, el precio de lista del espacio se escribe a mano | Espacios / Inventario | Alta | Media (decidir: exigir tarifa aprobada o dejar el precio vacío) |
-| 34-1 | Sede sin moneda bloquea la activación del contrato | Contratos | Media | Por precisar (QA pide evidencia; ¿avisar antes de empezar?) |
-| 34-2 / 35 | El espacio sigue «Disponible» y el historial no muestra el contrato en borrador | Contratos / Historial | Media | Regla de negocio: hoy un borrador no reserva ni es evento; decidir |
-
----|---|---|---|---|
-| 29 | Sin detalle en la planilla (Espacios / Inventarios); su documento repite el de la 26 | Inventarios de espacios | Media | Por precisar con QA |
-| 18-2 | Los filtros de sede muestran sedes «No operativa» en varios módulos (parte nueva de la 18) | Varios | Alta | Media (cada pantalla carga sus sedes) |
-
----|---|---|---|---|
-| 25 | El ícono de calendario de «Vigencia desde/hasta» no abre el selector | Paquetes | Media | Fácil |
-| 24 | El reporte exportado incluye tarifas rechazadas; debe mostrar solo las aprobadas | Tarifas | Alta | Fácil |
-| 22 | Permite tarifas duplicadas del mismo servicio y vigencia, que luego no se pueden aprobar | Tarifas | Alta | Fácil–media |
+| N.° | Título | Motivo |
+|---|---|---|
+| 34-2 | El espacio sigue «Disponible» con un contrato en borrador | Descartada por QA (27/10/2026): un borrador no reserva el espacio |
+| 35 (anterior) | El historial no muestra el contrato en borrador | Descartada por QA (27/10/2026); el número pasó a la incidencia del QR |
 
 ---
 
@@ -399,8 +393,7 @@ escribir y «Siguiente» bloqueado. B — `IdentityRules.isValidLegalEntityRuc` 
 
 **Corrección:** el precio pactado debe ser mayor que cero. F — error «El precio pactado debe ser mayor que cero» y no
 se avanza del paso 2. B — `@DecimalMin` exclusivo en `ContractRequestDTO.agreedPrice` (antes admitía 0). Tests: +1.
-Las partes 34-1 (moneda de sede) y 34-2 (espacio «Disponible» con borrador) siguen abiertas: dependen de evidencia y
-de una regla de negocio.
+La 34-1 (moneda de sede) se corrige aparte, más abajo; la 34-2 (espacio «Disponible» con borrador) la descartó QA.
 
 ---
 
@@ -444,4 +437,55 @@ quitan a mano). Se puede automatizar si QA lo pide.
 
 **Para validar en UAT:** el borrador de QA → Beneficiarios → aviso con 1 pendiente → «Vincular» → Ana Maria al 100 %,
 prelación 1. Un contrato nuevo de un titular con beneficiarios ya nace con ellos vinculados.
+
+---
+
+## INC-34-1 — Sede sin moneda: borrador que no se podía activar
+
+Incidencia funcional · Media
+
+**Corrección (avisar y bloquear al iniciar):** B — `ContractService.resolveCurrencyId` rechaza crear el contrato si ni el
+formulario ni la sede traen moneda (`ETN_CONTRACT_BRANCH_CURRENCY`, «La sede no tiene moneda configurada…»); antes quedaba
+un borrador que la activación rechazaba después. F — al elegir la sede, el paso 1 muestra el aviso y no deja avanzar.
+Tests: 1 reescrito.
+
+**Para validar en UAT:** nuevo contrato con una sede sin moneda → aviso bajo «Sede» y «Siguiente» deshabilitado.
+
+---
+
+## INC-30 — Precio de lista del espacio escrito a mano
+
+Incidencia funcional · Alta
+
+**Corrección (registrar sin precio):** el precio de lista ya no se escribe: es el de la tarifa APROBADA y vigente hoy del
+tipo (la del pabellón si existe, si no la general; mismo criterio que `SpaceTypeRate.currentFor`), con su moneda. Sin
+tarifa vigente el espacio se registra sin precio. B — `FuneralSpaceService` lo impone al crear y al editar (ignora el
+valor que llegue). F — campo de solo lectura con el aviso de la tarifa aplicada o «se registra sin precio». Tests: +1.
+
+**Fuera de alcance:** importación por Excel y generación por grilla no se tocaron.
+
+---
+
+## INC-35 — Escanear el QR del espacio para verlo
+
+Incidencia funcional · Media. Reemplaza a la 35 anterior (historial con borradores), descartada.
+
+**Corrección (solo personal con sesión):** el QR ya no lleva solo el token: lleva el enlace
+`<app>/espacio-qr/<token>`. Al abrirlo se pide iniciar sesión si hace falta, el front resuelve el token con
+`GET /spaces/by-qr/{token}` (solo espacios de la empresa del usuario; 404 si no) y abre el historial del espacio.
+Tests: +1.
+
+**Importante:** los QR impresos antes de este cambio contienen solo el token y hay que reimprimirlos.
+
+**Para validar en UAT:** Inventario → QR de un espacio → escanear con el celular → abre el historial de ese espacio.
+
+---
+
+## INC-36 — Historial exportado: textos y zona horaria
+
+Incidencia funcional · Media
+
+**Corrección (B, `SpaceHistoryService`):** cabecera «Generado el … (hora de <zona>)», columna «Fecha (<zona>)», detalle
+«Estado: de X a Y» / «Capacidad: de X a Y» (la flecha no existe en la fuente del PDF), y detalle para el alta manual,
+la importación y la importación por lote. Tests: 4.
 
