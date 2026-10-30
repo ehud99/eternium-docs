@@ -38,6 +38,13 @@
 | 30 | Sin tarifa aprobada, el precio de lista del espacio se escribía a mano | Espacios / Inventario | Alta | 23/10/2026 | Corregida — pendiente de validar en UAT | B cda3d4b · F 6f77c45 |
 | 35 | El QR del espacio debe abrir el espacio al escanearlo (reemplaza a la 35 anterior) | Espacios / Inventario | Media | 27/10/2026 | Corregida — pendiente de validar en UAT | B 17e69b4 · F a628546 |
 | 36 | Historial exportado: «de X a Y», detalle de alta e importación, zona horaria | Espacios / Historial | Media | 27/10/2026 | Corregida — pendiente de validar en UAT | B 9e72893 |
+| 37 | «Espacio funerario» ofrece espacios sin contrato o fuera de servicio | Servicios funerarios / Inhumaciones | Media | 28/10/2026 | Corregida — pendiente de validar en UAT | B 3de992f · F 3d0ffb5 |
+| 39 | Los espacios no se filtran por la sede de la orden | Servicios funerarios / Inhumaciones | Media | 28/10/2026 | Corregida — pendiente de validar en UAT | B 1503375 · F 3dede17 |
+| 38 | Fecha programada anterior a la defunción; no queda en el acta | Servicios funerarios / Inhumaciones | Media | 28/10/2026 | Corregida — pendiente de validar en UAT | B 76e692c · F c113bbf |
+| 34 (nueva) | No se ve el precio registrado al modificar una tarifa desde Acciones | Configuración / Tarifas | Media | 26/10/2026 | **Pendiente** (el Excel la marca «Resuelto») | — |
+| 40 | Beneficiarios: la fecha de nacimiento no se valida contra «Es menor de edad» | Contratos / Titularidad | Media | 28/10/2026 | Pendiente | — |
+| 41 | RENIEC: Titulares valida cualquier DNI ficticio | Contratos / Titulares | Media | 28/10/2026 | Pendiente — falta decidir el comportamiento esperado | — |
+| 42 | La alerta de vencimiento no muestra un contrato que vence dentro de 90 días | Contratos / Renovaciones | Media | 29/10/2026 | Pendiente | — |
 
 ### Descartadas por QA
 
@@ -45,6 +52,7 @@
 |---|---|---|
 | 34-2 | El espacio sigue «Disponible» con un contrato en borrador | Descartada por QA (27/10/2026): un borrador no reserva el espacio |
 | 35 (anterior) | El historial no muestra el contrato en borrador | Descartada por QA (27/10/2026); el número pasó a la incidencia del QR |
+| 34 (contratos) | 34-1 sede sin moneda, 34-2 espacio «Disponible», 34-3 precio S/ 0.00 | Revisión del 30/10/2026: QA reemplazó el texto de la 34 por un caso de Tarifas («No se visualiza el precio registrado al modificar una tarifa desde Acciones») y dejó el comentario DEV anterior. Las correcciones 34-1 y 34-3 siguen subidas; la 34 nueva queda pendiente. Confirmar con QA |
 
 ---
 
@@ -489,3 +497,49 @@ Incidencia funcional · Media
 «Estado: de X a Y» / «Capacidad: de X a Y» (la flecha no existe en la fuente del PDF), y detalle para el alta manual,
 la importación y la importación por lote. Tests: 4.
 
+---
+
+## INC-37 — «Espacio funerario» ofrece espacios sin contrato o fuera de servicio
+
+Incidencia funcional · Media (requerimiento 37, vinculación difunto–espacio–contrato)
+
+**Reporte:** en Registrar inhumación se podía elegir un espacio sin contrato (MAU-01) y la operación fallaba recién al
+ejecutar con «Conflicto: El espacio MAU-01 no tiene un contrato vigente». **Causa:** el selector cargaba los primeros 200
+espacios de la empresa sin filtro; solo la ejecución comprobaba contrato y estado (patrón P22).
+
+**Corrección:**
+- B — `GET /spaces?forInterment=true` (`FuneralSpaceSpecification.intermentEligible`): contrato ACTIVE sobre el espacio,
+  ni inhabilitado ni en mantenimiento y con plaza libre (sin capacidad cuenta 1, como la ejecución). La ejecución sigue
+  validando todo.
+- F — el selector pide ese filtro y lo explica debajo («Solo aparecen espacios con contrato vigente…»).
+- En `eternium_qa` (empresa 2) quedan 24 de 181 espacios; los «OCCUPIED 0/n» entran: vendidos sin inhumados.
+
+**Para validar en UAT:** Inhumaciones → Registrar inhumación → MAU-01 (sin contrato) ya no aparece en «Espacio funerario».
+
+---
+
+## INC-39 — Los espacios no se filtran por la sede de la orden
+
+Incidencia funcional · Media
+
+**Corrección:** F — al elegir la orden se recargan los espacios de su sede (se conserva el que fija la orden). B — la
+ejecución rechaza un espacio de otra sede que la orden (`ETN_ACT_ORDER_OTHER_BRANCH`, queda en la bitácora de rechazos).
+Tests: +1.
+
+**Para validar en UAT:** elegir una orden de la Sede Norte → solo aparecen espacios de esa sede.
+
+---
+
+## INC-38 — Fecha programada anterior a la defunción; no queda en el acta
+
+Incidencia funcional · Media
+
+**Corrección:**
+- F — el selector de «Fecha programada» empieza el día de la defunción; si se escribe una anterior: «La fecha programada no
+  puede ser anterior a la fecha de defunción (dd/mm/aaaa)» y no se puede ejecutar.
+- B — misma regla (`ETN_INTERMENT_SCHEDULED_BEFORE_DEATH`), comparando el día en la zona del usuario. `scheduledAt` entra
+  en el contenido firmado del acta (y en su hash) y en el PDF como «Programada para». Las actas anteriores no cambian.
+  Tests: +2.
+
+**Para validar en UAT:** programar una fecha anterior a la defunción → error. Con una fecha válida → el acta (detalle y
+PDF) muestra «Programada para».
