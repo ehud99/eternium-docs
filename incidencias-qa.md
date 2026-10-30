@@ -44,7 +44,7 @@
 | 34 (nueva) | No se ve el precio registrado al modificar una tarifa desde Acciones | Configuración / Tarifas | Media | 26/10/2026 | Corregida — pendiente de validar en UAT | F 8bf1c02 |
 | 40 | Beneficiarios: la fecha de nacimiento no se valida contra «Es menor de edad» | Contratos / Titularidad | Media | 28/10/2026 | Corregida — pendiente de validar en UAT | B ffd1cc9 · F f03c274 |
 | 41 | RENIEC: Titulares valida cualquier DNI ficticio | Contratos / Titulares | Media | 28/10/2026 | Pendiente — falta decidir el comportamiento esperado | — |
-| 42 | La alerta de vencimiento no muestra un contrato que vence dentro de 90 días | Contratos / Renovaciones | Media | 29/10/2026 | Pendiente | — |
+| 42 | La alerta de vencimiento no muestra un contrato que vence dentro de 90 días | Contratos / Renovaciones | Media | 29/10/2026 | Corregida — pendiente de validar en UAT | B 328d9ae · F 1b1cfc6 |
 
 ### Descartadas por QA
 
@@ -581,3 +581,27 @@ fecha.
 
 **Para validar en UAT:** Titulares → detalle → Beneficiarios → nuevo → fecha de hace 30 años: el interruptor queda
 apagado y bloqueado; fecha de hace 10 años: se enciende y pide tutor.
+
+---
+
+## INC-42 — La alerta de vencimiento no muestra un contrato dentro de los 90 días
+
+Incidencia funcional · Media
+
+**Reporte:** un contrato que vence dentro del plazo de 90 días no aparece en «Alertas de vencimiento» de Contratos.
+
+**Causa:** el panel listaba solo las filas de `contract_expiry_alerts`, que crea el job diario de las 06:25
+(`ContractExpiryJob`). Un contrato que entraba en la ventana (activado hoy, o con fin dentro de 90 días) no salía
+hasta la corrida siguiente, y nunca si el servidor no estaba encendido a esa hora (en la base local el job no corre
+desde el 11/10). Además seguían saliendo filas de contratos ya renovados o vencidos.
+
+**Corrección:**
+- B — `ContractService.expiryAlerts` lee en vivo los contratos ACTIVOS de la empresa que vencen entre hoy y hoy+90
+  (la misma consulta del tablero ejecutivo), ordenados por vencimiento. La fila del job, si existe para ese
+  vencimiento, solo aporta las marcas de aviso; sin ella van en null. La ventana de 90 queda en
+  `ContractExpiryAlertDTO.ALERT_DAYS` y la usa también el job. Los avisos (portal, campana, escalamiento) siguen
+  saliendo solo del job. Tests: +1.
+- F — la lista se identifica por contrato (la alerta puede no tener id todavía).
+
+**Para validar en UAT:** activar un contrato con fecha fin dentro de 90 días → Contratos → «Alertas de
+vencimiento»: aparece en el momento, con su semáforo.
