@@ -41,7 +41,7 @@
 | 37 | «Espacio funerario» ofrece espacios sin contrato o fuera de servicio | Servicios funerarios / Inhumaciones | Media | 28/10/2026 | Corregida — pendiente de validar en UAT | B 3de992f · F 3d0ffb5 |
 | 39 | Los espacios no se filtran por la sede de la orden | Servicios funerarios / Inhumaciones | Media | 28/10/2026 | Corregida — pendiente de validar en UAT | B 1503375 · F 3dede17 |
 | 38 | Fecha programada anterior a la defunción; no queda en el acta | Servicios funerarios / Inhumaciones | Media | 28/10/2026 | Corregida — pendiente de validar en UAT | B 76e692c · F c113bbf |
-| 34 (nueva) | No se ve el precio registrado al modificar una tarifa desde Acciones | Configuración / Tarifas | Media | 26/10/2026 | **Pendiente** (el Excel la marca «Resuelto») | — |
+| 34 (nueva) | No se ve el precio registrado al modificar una tarifa desde Acciones | Configuración / Tarifas | Media | 26/10/2026 | Corregida — pendiente de validar en UAT | F 8bf1c02 |
 | 40 | Beneficiarios: la fecha de nacimiento no se valida contra «Es menor de edad» | Contratos / Titularidad | Media | 28/10/2026 | Pendiente | — |
 | 41 | RENIEC: Titulares valida cualquier DNI ficticio | Contratos / Titulares | Media | 28/10/2026 | Pendiente — falta decidir el comportamiento esperado | — |
 | 42 | La alerta de vencimiento no muestra un contrato que vence dentro de 90 días | Contratos / Renovaciones | Media | 29/10/2026 | Pendiente | — |
@@ -543,3 +543,19 @@ Incidencia funcional · Media
 
 **Para validar en UAT:** programar una fecha anterior a la defunción → error. Con una fecha válida → el acta (detalle y
 PDF) muestra «Programada para».
+
+---
+
+## INC-34 (nueva) — Nuevo precio de una tarifa sin el precio registrado
+
+Incidencia funcional · Media
+
+**Reporte:** al modificar una tarifa desde «ACC.», el campo de precio no muestra el precio registrado.
+
+**Causa:** «Corregir» (no aprobadas) ya cargaba el precio; «Nuevo precio» (🏷, aprobadas, INC-23) abría el campo
+vacío y el precio vigente solo aparecía en el aviso de arriba.
+
+**Corrección (F, `TarifasComponent.openNewPrice`):** el campo arranca con el precio registrado, en espacios y en
+servicios; el usuario lo cambia y se envía a la bandeja como antes. Sin cambios en el backend.
+
+**Para validar en UAT:** Tarifas → una aprobada → 🏷 «Nuevo precio» → el campo muestra el precio vigente.
