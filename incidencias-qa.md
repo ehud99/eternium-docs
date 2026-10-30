@@ -42,7 +42,7 @@
 | 39 | Los espacios no se filtran por la sede de la orden | Servicios funerarios / Inhumaciones | Media | 28/10/2026 | Corregida — pendiente de validar en UAT | B 1503375 · F 3dede17 |
 | 38 | Fecha programada anterior a la defunción; no queda en el acta | Servicios funerarios / Inhumaciones | Media | 28/10/2026 | Corregida — pendiente de validar en UAT | B 76e692c · F c113bbf |
 | 34 (nueva) | No se ve el precio registrado al modificar una tarifa desde Acciones | Configuración / Tarifas | Media | 26/10/2026 | Corregida — pendiente de validar en UAT | F 8bf1c02 |
-| 40 | Beneficiarios: la fecha de nacimiento no se valida contra «Es menor de edad» | Contratos / Titularidad | Media | 28/10/2026 | Pendiente | — |
+| 40 | Beneficiarios: la fecha de nacimiento no se valida contra «Es menor de edad» | Contratos / Titularidad | Media | 28/10/2026 | Corregida — pendiente de validar en UAT | B ffd1cc9 · F f03c274 |
 | 41 | RENIEC: Titulares valida cualquier DNI ficticio | Contratos / Titulares | Media | 28/10/2026 | Pendiente — falta decidir el comportamiento esperado | — |
 | 42 | La alerta de vencimiento no muestra un contrato que vence dentro de 90 días | Contratos / Renovaciones | Media | 29/10/2026 | Pendiente | — |
 
@@ -559,3 +559,25 @@ vacío y el precio vigente solo aparecía en el aviso de arriba.
 servicios; el usuario lo cambia y se envía a la bandeja como antes. Sin cambios en el backend.
 
 **Para validar en UAT:** Tarifas → una aprobada → 🏷 «Nuevo precio» → el campo muestra el precio vigente.
+
+---
+
+## INC-40 — Beneficiario: «Es menor de edad» contra la fecha de nacimiento
+
+Incidencia funcional · Media
+
+**Reporte:** el registro de beneficiarios no validaba la fecha de nacimiento contra la opción «Es menor de edad».
+
+**Causa:** la opción y la fecha eran independientes. El backend tomaba «menor» si cualquiera de las dos lo decía, así
+que un adulto marcado como menor quedaba como menor (y le pedía tutor); en pantalla se podía marcar lo contrario a la
+fecha.
+
+**Corrección:**
+- F — con fecha de nacimiento, el interruptor se fija solo según la edad, queda deshabilitado y muestra «Se calcula
+  con la fecha de nacimiento (N años)». Sin fecha sigue siendo manual. Al editar uno antiguo se recalcula (un menor
+  que ya cumplió 18 deja de serlo).
+- B — `BeneficiaryService.resolveMinor`: con fecha, la edad decide y una opción declarada que la contradice se
+  rechaza (`ETN_BENEFICIARY_MINOR_MISMATCH`, «…el beneficiario tiene N años»). Sin fecha vale lo declarado. Tests: +2.
+
+**Para validar en UAT:** Titulares → detalle → Beneficiarios → nuevo → fecha de hace 30 años: el interruptor queda
+apagado y bloqueado; fecha de hace 10 años: se enciende y pide tutor.
