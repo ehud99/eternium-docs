@@ -46,6 +46,7 @@ Errores que aparecieron en varios módulos. Antes de dar un módulo por bueno, p
 | P27 | **«Segundo aprobador» nominal**: el solicitante elige a otro y queda aprobado sin que esa persona actúe; el selector incluye al propio usuario. | Flujos de doble aprobación. | La aprobación queda pendiente hasta que el aprobador actúe en su sesión; excluir al solicitante (F5-06). Excepción: si el negocio acepta que lo apruebe la misma persona (cobranza, G-02/G-03), no se finge un segundo actor: se valida que el aprobador sea un usuario activo de la empresa y se dice así en la pantalla. |
 | P28 | **Plurales fijos** («{{n}} tareas» → «1 tareas»). | Buscar `{{n}} ` seguido de una palabra en plural. | Redacción neutra («Tareas: 1») mientras no haya plural ICU global (T-03). |
 | P29 | **«No existe» cuando sí existe pero un filtro lo excluye** (plantilla «CONTRATO DE COMPRA» guardada con tipo «Acta de exhumación»: enviar a firma decía «no hay ninguna plantilla»). | Toda búsqueda que filtra por tipo, sede, idioma, estado o vigencia y responde «no hay». | El error nombra los casi-candidatos y qué cambiar (tipo, sede, publicar) y la ruta real del menú; probar con datos cargados «fuera del flujo» de la guía (B 9d9f23e). |
+| P36 | **Texto armado fuera de una petición (job, hilo asíncrono) con `messages.get(clave)`**: sin `Accept-Language` sale en el idioma de la JVM (inglés en UAT), y las fechas con `String.valueOf(LocalDate)` salen en ISO (INC-43). | Buscar `messages.get("` en clases `@Scheduled`/`*Job` y en lo que llaman; buscar `String.valueOf(` sobre fechas en avisos. | Armar el texto por destinatario con `messages.get(locale, …)` y `RecipientLocaleResolver`; fechas con `ExportDates.format`. Pendientes con el mismo patrón: `ExceptionSlaJob`, escalamiento de ceremonias. |
 | P35 | **Endpoint que recibe o devuelve la entidad JPA** (`@Valid @RequestBody SpaceLegalRestriction`): la entidad no tiene anotaciones de validación, así que un campo vacío llega a la BD y el error es un 500; la respuesta expone columnas internas. | Buscar `@RequestBody` y `ResponseEntity<List<` con tipos de `domain.model`. | DTO de entrada con Bean Validation y mensajes por clave, DTO de salida; reglas de catálogo y de rango en el servicio (F2-12). |
 | P34 | **Clase de color de una paleta que el tema no define** (`text-info-600`): Tailwind 4 no genera CSS y el texto hereda el color, ilegible en modo oscuro. | Buscar prefijos de color usados en plantillas (`grep -oE "(text|bg|border)-\w+-[0-9]+"`) y comparar con los `--color-*` de `@theme` en `styles.css`. | Definir la paleta en `@theme` (alias de una existente) o usar la que ya existe. |
 | P33 | **Fecha en ISO dentro de un mensaje** («vence el 2026-10-15T19:00:00Z»): se pasa el `Instant`/`LocalDate` tal cual a `messages.get`. | Buscar `messages.get(` con `.toString()`, `String.valueOf(` o un getter de fecha como argumento. | `ExportDates.format(fecha)` para calendario y `ExportDates.format(instante, zona)` con la zona de `UserZoneResolver` (del destinatario si va a otra persona) (T-12). |
@@ -709,3 +710,18 @@ Commits: B 6de1ade · F 9d945de. Suite completa del back (`mvnw test`, sin clean
 - Difuntos / Datos Sensibles: no era un hueco. El criterio vigente (§7) es el `canView` de Difuntos, igual que en Auditoría y Reportes; los TODO (M12) estaban desactualizados y se corrigieron (solo comentarios).
 
 **Lección:** un TODO en el código no es una incidencia hasta contrastarlo con la regla documentada; aquí el TODO era el que estaba viejo.
+
+## 24. Incidencias QA 43–45 (sesión 2026-11-02)
+
+Commits: B 5df06f4, b56fee3, a1837ee · F 996544d, 1aa3a0e. Verificado: `ContractExpiryJobTest` (8), `ContractServiceTest`
+(76), `SpaceHistoryServiceTest` (5), `RenewalServiceTest` (12), `TransferServiceTest` (13) en verde; `tsc` y
+`ngc --noEmit` sin errores. Detalle en [`incidencias-qa.md`](incidencias-qa.md). La 41 (RENIEC) queda fuera hasta tener
+una API de consulta (p. ej. Factiliza).
+
+- INC-43: avisos de vencimiento en el idioma del destinatario y con fecha dd/mm/aaaa (patrón nuevo P36).
+- INC-44: la renovación (manual y tácita) escribe `CONTRACT_RENEWED` en el historial del espacio.
+- INC-45: el checklist de transferencias sube y vincula el documento; un documento ajeno ya no se reporta como «sin
+  permisos» (otro caso de P2).
+
+**Lección:** un mensaje de «sin permisos» que sale de una comparación de empresa confunde a QA y lleva a buscar el
+problema en los roles; cuando lo que falla es que el dato no corresponde, el mensaje tiene que decir eso.

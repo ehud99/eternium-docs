@@ -45,6 +45,9 @@
 | 40 | Beneficiarios: la fecha de nacimiento no se valida contra «Es menor de edad» | Contratos / Titularidad | Media | 28/10/2026 | Corregida — pendiente de validar en UAT | B ffd1cc9 · F f03c274 |
 | 41 | RENIEC: Titulares valida cualquier DNI ficticio | Contratos / Titulares | Media | 28/10/2026 | Pendiente — falta decidir el comportamiento esperado | — |
 | 42 | La alerta de vencimiento no muestra un contrato que vence dentro de 90 días | Contratos / Renovaciones | Media | 29/10/2026 | Corregida — pendiente de validar en UAT | B 328d9ae · F 1b1cfc6 |
+| 43 | La notificación de vencimiento sale en inglés y con fecha ISO | Configuración / Notificaciones | Media | 30/10/2026 | Corregida — pendiente de validar en UAT | B 5df06f4 |
+| 44 | La renovación completada no genera evento en el historial del espacio | Espacios / Historial | Media | 30/10/2026 | Corregida — pendiente de validar en UAT | B b56fee3 · F 996544d |
+| 45 | «No tiene permisos sobre este registro» al vincular un documento en la transferencia | Contratos / Transferencias | Alta | 30/10/2026 | Corregida — pendiente de validar en UAT | B a1837ee · F 1aa3a0e |
 
 ### Descartadas por QA
 
@@ -605,3 +608,80 @@ desde el 11/10). Además seguían saliendo filas de contratos ya renovados o ven
 
 **Para validar en UAT:** activar un contrato con fecha fin dentro de 90 días → Contratos → «Alertas de
 vencimiento»: aparece en el momento, con su semáforo.
+
+---
+
+## INC-43 — La notificación de vencimiento sale en inglés y con fecha ISO
+
+Incidencia funcional · Media
+
+**Reporte:** en Notificaciones, el aviso del contrato CON-CHIC-0000002 decía «Contract CON-CHIC-0000002 expires on
+2027-01-15…», con el sistema en español.
+
+**Causa:** el aviso lo arma `ContractExpiryJob` (06:25), fuera de una petición HTTP. Sin `Accept-Language`,
+`messages.get(clave)` toma el idioma por defecto de la JVM, que en el servidor de UAT es inglés. La fecha se pasaba
+con `String.valueOf(LocalDate)` (ISO). Lo mismo le pasaba a la fecha del aviso al titular en el portal.
+
+**Corrección:**
+- B — `ContractExpiryJob.notifyStaff` arma título y mensaje por destinatario, en su idioma
+  (`RecipientLocaleResolver`: preferencia del usuario → idioma de la empresa → español) con `messages.get(locale, …)`.
+  Las fechas (aviso al staff y al titular) salen con `ExportDates.format` (dd/mm/aaaa). Tests: +1.
+
+**Ojo:** la notificación que QA ya tiene se guardó en inglés y no cambia; además esa alerta ya quedó sellada, así que
+el job no la vuelve a enviar. Para validar hace falta un contrato nuevo que entre en la ventana de 90 días.
+
+**Para validar en UAT:** activar un contrato con fecha fin dentro de 90 días → al día siguiente (06:25) la campana
+muestra «El contrato … vence el dd/mm/aaaa».
+
+**Pendiente (mismo patrón, no reportado):** `ExceptionSlaJob` (conciliación) y el escalamiento de ceremonias también
+arman textos fuera de una petición con el idioma por defecto.
+
+---
+
+## INC-44 — La renovación completada no genera evento en el historial del espacio
+
+Incidencia funcional · Media
+
+**Reporte:** la renovación manual de CON-CHIC-0000002 (15/01/2027 → 15/01/2028) figura «Completada», pero el historial
+de NIC-SM-B-102 sigue con 2 eventos (Importación y Contrato activado).
+
+**Causa:** la activación, la cancelación y la transferencia de un contrato escriben en `space_events`; la renovación
+(`ContractService.applyRenewal`, por donde pasan la manual y la tácita) solo dejaba el historial del contrato.
+
+**Corrección:**
+- B — `applyRenewal` agrega el evento `CONTRACT_RENEWED` al espacio con `contractNumber`, `previousEndDate` y
+  `newEndDate` (dd/mm/aaaa). El PDF del historial lo detalla («Contrato X: vigencia extendida del … al …»). Etiquetas
+  `etn.history.event.*` y `export.enum.spaceEventType.*` en es/en/pt; en el portal sale como hito de contrato.
+  Tests: +2.
+- F — Historial: «Contrato renovado» y las etiquetas «Vigencia anterior hasta» / «Nueva vigencia hasta».
+
+**Ojo:** las renovaciones completadas antes del cambio no generan el evento hacia atrás.
+
+**Para validar en UAT:** completar una renovación nueva → Espacios → Historial del espacio: aparece «Contrato
+renovado» con las dos vigencias y el contador de eventos sube en uno.
+
+---
+
+## INC-45 — «No tiene permisos sobre este registro» al vincular un documento en la transferencia
+
+Incidencia funcional · Alta
+
+**Reporte:** un usuario ADMIN (228/228 permisos) recibía «Acción no permitida — No tiene permisos sobre este registro»
+al pulsar «Vincular» en el checklist documental de la Transferencia #6. QA sospechaba que el permiso iba ligado al
+creador del registro.
+
+**Causa:** no era el rol. La fila pedía teclear un «Id doc.» (el id interno del documento, que nadie conoce) y el
+backend, si ese id era de un documento de otra empresa, respondía con `etn.common.wrongCompany`, que se lee como
+falta de permisos. Además, «Vincular» no cumplía nada: un requisito se da por cumplido solo si el **contrato** tiene un
+documento vivo del tipo pedido; vincular por id solo guardaba algo en el caso de la sucesión intestada (patrón P2 de
+la bitácora).
+
+**Corrección:**
+- F — en las filas sin cumplir, el campo «Id doc.» y «Vincular» se reemplazan por «Subir y vincular»: el archivo se
+  sube como documento del contrato con el tipo del requisito y se vincula en el acto; la fila pasa a cumplida.
+- B — `TransferService.attachDocument`: un documento que no es de la empresa o del contrato responde «El documento no
+  pertenece al contrato de la transferencia», no «sin permisos». Tests: +2.
+
+**Para validar en UAT:** Contratos → Transferencias → Transferencia #6 → en un requisito sin cumplir, «Subir y
+vincular» → elegir un archivo: el requisito queda en verde con el documento. Con eso se puede seguir el flujo (y
+validar la INC-02 de notificaciones).
