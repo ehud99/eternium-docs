@@ -2,7 +2,8 @@
 
 > Para quien ya conoce la parte de partner-core (empresas, usuarios, roles) y necesita entender
 > **en qué orden se cargan los datos de cementerio** y **cómo se encadenan los módulos**.
-> Elaborada el 2026-09-26 leyendo el código (servicios, validaciones y pantallas). Las rutas de
+> Elaborada el 2026-09-26 leyendo el código (servicios, validaciones y pantallas) y revisada contra el
+> código el 2026-11-17 (incidencias QA hasta la 70). Las rutas de
 > pantalla son las del tenant (`/cementerio/...`); las del grupo "Cementerio Sistema"
 > (`/cementerio-sistema/...`, etiqueta SYS) son el mismo espejo para el Provider.
 >
@@ -10,7 +11,8 @@
 > el menú no coincide 1 a 1 con el Excel.
 > [`bitacora-ajustes.md`](bitacora-ajustes.md) registra las correcciones hechas al recorrer este flujo
 > y los patrones de error que conviene revisar en otros módulos.
-> [`incidencias.md`](incidencias.md) lista lo pendiente tras la evaluación completa del 2026-10-11.
+> [`incidencias.md`](incidencias.md) lista lo pendiente tras la evaluación completa del 2026-10-11, y
+> [`incidencias-qa.md`](incidencias-qa.md), las incidencias reportadas por QA en UAT.
 
 ---
 
@@ -82,13 +84,14 @@ Si el backend arranca con perfil `dev`, ya existe el tenant **"Cementerio Jardin
 | Viene sembrado | NO viene sembrado |
 |---|---|
 | Perfil legal con RUC validado y representante | Parámetros de sede (moneda, patrón de código) |
-| Series de casi todos los tipos (QUOTATION, RESERVATION, SALE, PAYMENT…) | Las series que faltan (CONTRACT, ACT_*…) se crean solas al emitir el primer documento |
+| Series de casi todos los tipos (QUOTATION, RESERVATION, SALE, PAYMENT…) y, en Facturación, F001/B001 en cada sede operativa | Las series que faltan (CONTRACT, ACT_*…) se crean solas al emitir el primer documento |
 | 6 servicios con tarifa aprobada (Inhumación, Cremación…) | Tarifas de **tipos de espacio** |
 | Pabellón «San José» con sectores, tipos (Nicho, Lote, Mausoleo) y espacios | Prospectos, contratos, pagos (todo lo operativo) |
 | Plantilla de contrato publicada y plantilla de propuesta | |
 | Checklist de transferencias y política de consentimiento del portal | |
 
-> El seeder de espacios puede necesitar un **segundo arranque** del backend para completarse.
+> El seeder de espacios puede necesitar un **segundo arranque** del backend para completarse. Con otro perfil
+> (p. ej. `qa`) no se siembra nada.
 > Una empresa nueva en producción **no recibe nada de esto** salvo las plantillas de contrato y de propuesta
 > (de empresa, para todas las sedes) y las series, que se crean al emitir: lo demás se carga con la fase 1.
 
@@ -100,18 +103,18 @@ Orden recomendado. Entre paréntesis, lo que falla si te lo saltas.
 
 | # | Pantalla | Qué registrar | Por qué importa |
 |---|---|---|---|
-| 1 | **Configuración General → Datos** | RUC, dirección fiscal, **representante legal** | Aparecen en contratos y actas. Sin representante, el contrato falla con `ETN_TPL_UNRESOLVED_VARS`. «Verificar RUC» consulta un padrón **simulado** (no verifica nada): comprueba el RUC en el portal de SUNAT y usa «Marcar como validado». |
-| 2 | **Sedes** | Cada sede (nombre, código, dirección, RUC propio) y su **moneda** al crearla | Casi todo es por sede. «Editar» corrige los datos base; los parámetros se cambian en el paso 3. |
-| 3 | **Configuración General → Parámetros** (por sede) | **Moneda** (obligatoria), zona horaria, sede operativa, nombres de niveles, **patrón de código de espacio** (al menos un token) | Cambiar la moneda afecta a lo que se cree desde entonces; lo registrado conserva la suya. Una sede **no operativa** no puede emitir nada. |
-| 4 | **Series y Correlativos** (opcional) | Una serie por **sede × tipo de documento**. Se elige la sede en el filtro de la tabla | No hace falta crearlas: si la sede no tiene serie de un tipo, se crea sola al emitir el primer documento, con el prefijo base y el primer número libre de la empresa (COT1, COT2…, 7 dígitos). Aquí se edita el prefijo o el formato **antes** de la primera emisión; tras emitir el primer número, la serie queda bloqueada para edición. |
+| 1 | **Configuración General → Datos** | RUC, dirección fiscal, **representante legal** | Aparecen en contratos y actas. Sin representante, el contrato falla con `ETN_TPL_UNRESOLVED_VARS`. «Verificar RUC» consulta el padrón de SUNAT (vía Factiliza) si el servidor no está en modo simulado, y deja el RUC validado o rechazado. En modo simulado (el de por defecto), o si el padrón no responde, no verifica nada: comprueba el RUC en el portal de SUNAT y usa «Marcar como validado». Aquí también se registra la **llave del facturador** (sin ella no se emiten comprobantes electrónicos reales, ver §5). |
+| 2 | **Sedes** | Cada sede (nombre, código, dirección, RUC propio) y su **moneda** al crearla | Casi todo es por sede. «Editar» corrige los datos base; los parámetros se cambian en el paso 3. El RUC se valida (11 dígitos, prefijo y dígito verificador) y el teléfono debe tener de 6 a 9 dígitos. |
+| 3 | **Configuración General → Parámetros** (por sede) | **Moneda** (obligatoria), zona horaria, sede operativa, nombres de niveles, **patrón de código de espacio** (al menos un token) | Cambiar la moneda afecta a lo que se cree desde entonces; lo registrado conserva la suya. Una sede **no operativa** no puede emitir nada ni tener series, y deja de aparecer en las pantallas de trabajo (ventas, contratos, pagos, mantenimiento…); solo Configuración, informes y auditoría la siguen mostrando. |
+| 4 | **Series y Correlativos** (opcional) | Una serie por **sede × tipo de documento**. Se elige la sede en el filtro de la tabla | No hace falta crearlas: si la sede no tiene serie de un tipo, se crea sola al emitir el primer documento, con el prefijo base y el primer número libre de la empresa (COT1, COT2…, 7 dígitos). Aquí se edita el prefijo o el formato **antes** de la primera emisión; tras emitir el primer número, la serie queda bloqueada para edición. Las sedes no operativas no aparecen aquí. Las series de boleta y factura son aparte (Facturación, §5). |
 | 5 | **Tipos de Espacio** | Nombre, **familia física** (nicho, tierra, mausoleo…), capacidad máxima | La familia debe ser compatible con la tipología del sector (un nicho no va en un jardín de lotes). |
 | 6 | **Pabellones y Sectores** | Pabellón → sectores (tipología, grilla filas×columnas, **tipo de espacio por defecto**, precio por defecto, construcción **operativa**) → en el sector hoja, **«Generar espacios»** | Si el sector no está operativo, sus espacios nacen deshabilitados. Solo se generan espacios en sectores «hoja» (sin sub-sectores), con un tipo de familia compatible y como máximo 20 000 celdas. |
 | 7 | *(ya no hace falta)* | — | Al crear la tarifa por pabellón, el tipo queda vinculado a ese pabellón (si alguno de sus sectores admite la familia). |
-| 8 | **Tarifas → pestaña Espacios** | Precio por tipo (y opcionalmente por pabellón), vigencia → **Aprobar** | **Una tarifa no aprobada no se usa.** Va en la moneda de la sede. Es inmutable una vez aprobada; una rechazada se puede **corregir y reenviar**. |
+| 8 | **Tarifas → pestaña Espacios** | Precio por tipo (y opcionalmente por pabellón), vigencia → **Aprobar** | **Una tarifa no aprobada no se usa.** Va en la moneda de la sede y su vigencia empieza hoy o después: apruébala antes de que empiece. Es inmutable una vez aprobada: para cambiar el precio usa **«Nuevo precio»** (al aprobarse, la anterior se cierra el día previo) o **«Cerrar vigencia»**. No puede haber dos tarifas del mismo concepto con vigencias cruzadas. Una rechazada se puede **corregir y reenviar**. El precio de lista de los espacios sale de esta tarifa. |
 | 9 | **Servicios** | Inhumación, exhumación, cremación, mantenimiento… + requisitos (documento de referencia opcional) + compatibilidad con tipos (informativa) | El servicio **no lleva precio**: el precio va en Tarifas. |
-| 10 | **Tarifas → pestaña Servicios** | Precio por servicio y sede → **Aprobar** | Hazlo **antes** de los paquetes. |
+| 10 | **Tarifas → pestaña Servicios** | Precio por servicio y sede → **Aprobar** | Hazlo **antes** de los paquetes. Mismas reglas de vigencia que en la pestaña Espacios. |
 | 11 | **Paquetes** (opcional) | ≥ 2 servicios, precio, vigencia → Publicar | El precio de cada componente se toma **al publicar** desde la tarifa aprobada vigente. Sin tarifa de algún componente, o con precio mayor a la suma, publicar exige un motivo de excepción. |
-| 12 | **Plantillas de Documentos** (opcional) | Ya vienen publicadas, de empresa (valen para todas las sedes), la de contrato («Contrato de cesión de derechos de uso - Estándar») y la de propuesta. Se editan con una versión nueva; si se borran, no se vuelven a crear | Solo puede haber **una publicada por tipo, idioma y alcance** (sede o toda la empresa): publicar otra igual se rechaza. La de la sede tapa a la de la empresa. Si quedan varias (compra, arrendamiento…), Ventas deja elegir. |
+| 12 | **Plantillas de Documentos** (opcional) | Ya vienen publicadas, de empresa (valen para todas las sedes), la de contrato («Contrato de cesión de derechos de uso - Estándar») y la de propuesta. Se editan con una versión nueva; si se borraron, el botón **«Plantilla estándar»** las vuelve a crear como borrador | Solo puede haber **una publicada por tipo, idioma y alcance** (sede o toda la empresa): publicar otra igual se rechaza; para reemplazarla, envía la vigente a la papelera y publica la otra. La de la sede tapa a la de la empresa. Si quedan varias (compra, arrendamiento…), Ventas deja elegir. |
 
 Licencias y horarios (pestañas de Configuración General) son informativos: ningún otro módulo los exige.
 
@@ -121,7 +124,7 @@ Licencias y horarios (pestañas de Configuración General) son informativos: nin
 
 | Pantalla | Para qué | Notas |
 |---|---|---|
-| **Inventario de Espacios** | Alta individual, importación Excel, o el asistente **"Generar espacios"** desde un sector (crea toda la grilla de golpe) | Generar exige tipo por defecto en el sector y permiso **Inventario → Crear**. Cada espacio recibe código y QR. Si no lleva pabellón queda "huérfano": existe pero no sale en el plano. |
+| **Inventario de Espacios** | Alta individual, importación Excel, o el asistente **"Generar espacios"** desde un sector (crea toda la grilla de golpe) | Generar exige tipo por defecto en el sector y permiso **Inventario → Crear**. Cada espacio recibe código y QR. En el alta individual el precio de lista no se escribe: sale de la tarifa aprobada vigente del tipo (la del pabellón o la general); sin tarifa, el espacio queda sin precio. Al elegir el tipo solo se ofrecen pabellones y sectores compatibles. Si no lleva pabellón queda "huérfano": existe pero no sale en el plano. |
 | **Plano Interactivo** | Ver pabellón/sector con colores por estado; cambio de estado en lote | Solo dibuja espacios con posición (fila/columna o nodo SVG). |
 | **Disponibilidad y Bloqueos** | Búsqueda comercial (solo AVAILABLE, con el precio que cotiza el contrato) y bloqueo temporal (72 h por defecto; la empresa lo configura) | Mientras dura el bloqueo, el espacio queda RESERVED; el bloqueo se cierra solo al crear el contrato o se libera a mano. |
 | **Historial de Espacios** | Línea de tiempo de solo lectura (auditoría) | Se llena solo; exporta a PDF con hash. |
@@ -137,7 +140,7 @@ AVAILABLE ──(reserva/bloqueo)──► RESERVED ──(contrato ACTIVE)─�
 
 `RESERVED` y `OCCUPIED` **no se ponen a mano**: los ponen la reserva y el contrato.
 
-✅ **Chequeo de fin de fase:** en Disponibilidad aparece al menos un espacio AVAILABLE con precio (tarifa aprobada, o precio y moneda del propio espacio).
+✅ **Chequeo de fin de fase:** en Disponibilidad aparece al menos un espacio AVAILABLE con precio (el precio sale de la tarifa aprobada vigente de su tipo).
 
 ---
 
@@ -148,9 +151,9 @@ Esta es la columna vertebral. Paso a paso, con el botón exacto:
 | # | Pantalla → acción | Resultado | Requisito clave |
 |---|---|---|---|
 | 1 | **Ventas / Prospectos (CRM) → Agregar** | Prospecto | Consentimiento (Ley 29733) con una **política de datos publicada** en Portal de Familias → Consentimientos (sin ella no se puede registrar ni prospecto ni titular); mayor de 18 años; documento no duplicado |
-| 2 | *(opcional)* **Ventas / Pipeline → Nueva oportunidad** | Tarjeta en el kanban | Solo seguimiento; no crea nada más |
+| 2 | *(opcional)* **Ventas / Pipeline → Nueva oportunidad** | Tarjeta en el kanban | Solo seguimiento; no crea nada más. El tablero se filtra por vendedor; «Conversión» muestra cuántas oportunidades pasan de una etapa a otra; en «Metas y tarifario» se definen las metas (por sede o por vendedor) y las **reglas de comisión** |
 | 3 | *(opcional)* **Contratos / Titulares → Agregar** con **el mismo documento** | Titular ya registrado; la venta se vinculará a él | Ya no hace falta: «Generar contrato» pide lo que falte. Ver ⚠️ más abajo |
-| 4 | **Ventas / Cotización → Agregar → "Emitir en firme"** | Cotización ISSUED (15 días de vigencia) | Espacio AVAILABLE con precio. El asistente muestra el total **con IGV** que se va a congelar. Si el descuento supera el límite del rol, la cotización queda «Descuento por aprobar» y hay que aprobarla antes de emitir (puede hacerlo el mismo usuario que la creó). Crear no es emitir. Si el espacio no estaba disponible, sale **«Referencial»**: sirve de precio pero no deja reservar (clónala en firme). |
+| 4 | **Ventas / Cotización → Agregar → "Emitir en firme"** | Cotización ISSUED (15 días de vigencia) | Espacio AVAILABLE con precio. El asistente muestra el total **con IGV** que se va a congelar. Si el descuento supera el límite del rol, la cotización queda «Descuento por aprobar» y hay que aprobarla antes de emitir (puede hacerlo el mismo usuario que la creó). Crear no es emitir. Si el espacio no estaba disponible, sale **«Referencial»**: sirve de precio pero no deja reservar (clónala en firme). El descuento debe ser menor al 100 % (una cotización no puede quedar en cero) y la inicial del plan simulado también. |
 | 5 | **Ventas / Reserva → Nueva reserva** (desde la cotización) | Reserva ACTIVE, espacio RESERVED, reloj con el plazo configurado (72 h por defecto) | Cotización emitida o aceptada, vigente y **en firme** |
 | 6 | **Reserva → Registrar pago inicial** | Reserva CONFIRMED (el reloj se detiene) | Monto ≥ mínimo (10 % o cuota inicial del plan simulado). **No pasa por Caja.** |
 | 7 | **Reserva → Validar pago** | Pago VALIDATED | Sin esto no se puede abrir la venta. Una reserva con pago recibido (CONFIRMED) ya **no se libera**: sigue a la venta o a una anulación formal |
@@ -158,7 +161,7 @@ Esta es la columna vertebral. Paso a paso, con el botón exacto:
 | 9 | **Checklist → Vincular/Subir → Verificar** cada documento | Checklist completo | Si no configuraste requisitos (botón "Requisitos"), cuenta como completo. El tipo del requisito se elige del catálogo de Gestión Documental (el DNI es «Documento de identidad»). «Sincronizar avance» comprueba si ya se cumple el paso siguiente y avanza el expediente |
 | 10 | **"Generar contrato"** (tenencia, plazo en años o meses, plantilla si hay varias) → si al titular le falta algo, formulario **«Completar datos del titular»** | Crea o vincula el **titular** (desde el prospecto), le guarda los datos completados y crea el **contrato en PENDING_SIGNATURE** | Serie CONTRACT, una plantilla publicada. Temporal/Renovable exigen plazo (máx. 200 años) |
 | 11 | **Contratos / Contratos de Titularidad → detalle → Firmar** (cada firmante) | Contrato **ACTIVE**, espacio **OCCUPIED**, escritura en Gestión Documental | El último firmante es el usuario que envió a firma (representante del cementerio) |
-| 12 | **Proceso de Venta → "Asignar definitivamente"** | Venta ASSIGNED, comisión, oportunidad Ganada (es la única forma de marcarla Ganada) | Contrato ACTIVE |
+| 12 | **Proceso de Venta → "Asignar definitivamente"** | Venta ASSIGNED, comisión, oportunidad Ganada (es la única forma de marcarla Ganada) | Contrato ACTIVE. La comisión solo se genera si hay una **regla vigente** (Pipeline → Metas y tarifario → Reglas de comisión); si la creas después, se calcula sola para las ventas ya asignadas |
 
 ⚠️ **Trampas de Ventas**
 
@@ -176,15 +179,16 @@ Esta es la columna vertebral. Paso a paso, con el botón exacto:
   Fase 4 (Pagos → Planes de Pago), volviendo a ingresar esos datos.
 
 **Atajo — contrato directo sin venta:** `Contratos / Titulares → Agregar` → `Contratos de Titularidad
-→ Agregar` (espacio no reservado, titular, tenencia, precio, moneda, plantilla; aquí sí puedes añadir
-cotitulares y beneficiarios en borrador) → **Enviar a firma** → **Firmar**. No genera venta, comisión
+→ Agregar` (espacio no reservado, titular, tenencia, precio mayor que cero, moneda —la sede debe tenerla—,
+plantilla; el borrador trae los beneficiarios que el titular ya tiene designados, y aquí sí puedes añadir
+cotitulares y beneficiarios) → **Enviar a firma** → **Firmar**. No genera venta, comisión
 ni pipeline. Es la forma más rápida de tener un contrato ACTIVE para probar las fases siguientes.
 
 **Otras pantallas de Contratos**
 
 - **Gestión Documental:** repositorio de documentos enlazados a contrato, espacio o titular, con versiones. Las escrituras llegan solas.
 - **Transferencias y Renovaciones:**
-  - **Transferencia:** contrato ACTIVE, nuevo titular ya creado (distinto del actual), **«Verificar deuda en Pagos»** en cero (la deuda ya no se teclea: se consulta en Pagos; con cuotas impagas o si Pagos no responde queda bloqueada), checklist y firma de ambos titulares. Crea una copia ACTIVE del contrato a nombre del nuevo titular.
+  - **Transferencia:** contrato ACTIVE, nuevo titular ya creado (distinto del actual), **«Verificar deuda en Pagos»** en cero (la deuda ya no se teclea: se consulta en Pagos; con cuotas impagas o si Pagos no responde queda bloqueada), checklist (cada documento se sube y se vincula desde el requisito) y firma de ambos titulares. Crea una copia ACTIVE del contrato a nombre del nuevo titular.
   - **Renovación:** solo para contratos vigentes o vencidos, no perpetuos y con fecha de vencimiento (la lista solo ofrece esos); plazo máximo 200 años / 2400 meses.
 
 ---
@@ -214,19 +218,20 @@ ni pipeline. Es la forma más rápida de tener un contrato ACTIVE para probar la
 3. **Pagos / Caja y Pagos:**
    - Crear el **punto de cobro** de la sede (el punto «Portal» es solo para pagos en línea y no aparece aquí).
    - **Abrir la sesión (turno)**. Sin sesión abierta el cobro falla (`ETN_PAY_NO_SESSION`).
-4. **Registrar el pago** con el medio de pago (el canal es siempre «Caja»: no se elige). Se cobra en la **moneda del contrato**; transferencia, POS, Yape/Plin y en línea exigen el **n.º de operación**. Se aplica a las cuotas y se emite el recibo interno; el excedente queda como crédito.
+4. **Registrar el pago** con el medio de pago (el canal es siempre «Caja»: no se elige). Se cobra en la **moneda del contrato**; transferencia, POS, Yape/Plin y en línea exigen el **n.º de operación**. Se aplica a las cuotas (con la mora calculada al día del cobro) y se emite el recibo interno, que se envía al correo escrito en caja o, si se deja vacío, al correo del titular; el excedente queda como crédito.
 5. *(Opcional)* **Facturación Electrónica → "Emitir desde pago"** (boleta o factura).
    - **No es automático** en caja.
    - **Un comprobante por pago**: para cambiar boleta por factura, primero se anula la emitida. Los pagos con «saldo a favor» no se facturan (ya se facturó el pago que lo generó).
-   - Hoy está en **modo simulado** (`eternium.sunat.stub=true`): acepta con un CDR ficticio y no llega a SUNAT. El proveedor real previsto es el **facturador externo**.
+   - **Cada sede necesita su propia serie** de boleta y de factura (p. ej. B001 en una y B002 en otra, marcada por defecto): una serie que ya usa otra sede se rechaza.
+   - Por defecto está en **modo simulado** (`eternium.sunat.stub=true`): acepta con un CDR ficticio y no llega a SUNAT. Con `ETERNIUM_SUNAT_STUB=false` emite de verdad por el **facturador**; cada cementerio registra su llave del facturador en Configuración General → Datos. Factiliza no emite: solo consulta el padrón RUC.
 6. **Cerrar la sesión** con arqueo; si hay descuadre, justificarlo. El cierre diario se genera a las 02:00.
 7. *(Después)*
    - **Conciliación Bancaria:** importar el extracto del banco.
-   - **Reportes Financieros:** el pago aparece tras el refresco nocturno (06:00–07:00), no al instante.
+   - **Reportes Financieros:** el pago aparece tras el refresco nocturno (06:00–07:00), no al instante. Ver §9.
 
 **Cobranza y Morosos** no requiere cargar nada. Se alimenta sola de las cuotas vencidas (job de las 06:00):
 
-- **Alertas escalonadas:** email el día 1, SMS el día 3, WhatsApp el día 7.
+- **Alertas escalonadas:** email el día 1, SMS el día 3 (apagado salvo que sistemas lo active) y WhatsApp el día 7 (necesita la cuenta de WhatsApp de Meta configurada en el servidor; sin ella el envío queda fallido). El aviso lleva el enlace a Pagos del portal.
 - **Bloqueo:** a los 60 días. Bloquea solicitudes del portal y transferencias, pero **no** servicios funerarios (ahí solo hay un aviso, por criterio humanitario).
 
 ---
@@ -247,8 +252,11 @@ ni pipeline. Es la forma más rápida de tener un contrato ACTIVE para probar la
 | 4 | → en el detalle de la solicitud, paso **«Aprobación» → Aprobar** (también Observar / Rechazar) | Solicitud APPROVED | Difunto CONFIRMED con certificado válido. Sin este paso **no** se puede crear la OS. Se **puede aprobar antes de cotizar**, pero la OS igual necesita una cotización aprobada. Si la solicitud se registró sin difunto, **«Vincular difunto»** en su detalle |
 | 5 | → **generar OS** desde la cotización → completar checklist (**subir** el documento de cada requisito) → **Emitir** | OS ISSUED | Eximir un requisito lo hace otro usuario. OS mayor a S/ 15 000: al emitir se elige al **segundo aprobador**, que recibe un aviso y **aprueba o rechaza desde su propia sesión**; hasta entonces la OS sigue pendiente (para probarlo necesitas dos usuarios) |
 | 6 | *(si hay sepelio)* otra solicitud + OS de tipo **CEREMONY** → **Agenda de Ceremonias → Sepelio → confirmar con sala** | Evento CONFIRMED | La sala debe existir en **Capillas y Salas** con horario |
-| 7 | **Inhumaciones y Exhumaciones → Ejecutar inhumación** (se elige la OS: trae difunto, espacio y fecha) | **Acta** con correlativo y hash (descargable en PDF desde su detalle); ocupación +1; difunto INTERRED; OS EXECUTED; evento en el historial; aviso al titular | Contrato ACTIVE en **ese** espacio, capacidad libre |
+| 7 | **Inhumaciones y Exhumaciones → Ejecutar inhumación** (se elige la OS: trae difunto, espacio y fecha) | **Acta** con correlativo y hash (descargable en PDF desde su detalle); ocupación +1; difunto INTERRED; OS EXECUTED; evento en el historial; aviso al titular | Contrato ACTIVE en **ese** espacio, capacidad libre y la misma sede que la OS (la lista solo ofrece esos espacios); fecha programada no anterior a la defunción; el difunto no debe estar ya inhumado (el panel de comprobaciones lo avisa) |
 | 8 | **Agenda → cerrar sepelio** (con acta y certificado) | Evento CLOSED | |
+
+Desde la Agenda, cada ceremonia se puede **agregar a Google Calendar** o descargar como **.ics** (Outlook, Apple,
+celular), en Próximos eventos y en su detalle; «Exportar datos» da el .ics de lo que se ve.
 
 **Otras rutas:**
 
@@ -265,7 +273,8 @@ ni pipeline. Es la forma más rápida de tener un contrato ACTIVE para probar la
   - El **externo** exige un **Permiso Municipal** en estado VALID. Hoy se valida en **modo MANUAL**; el modo API no está conectado.
   - Exige tres conformidades.
 
-> Nota: las actas son registros con hash; hoy no se renderizan como PDF desde una plantilla.
+> Nota: el acta legal es el registro del sistema (con hash); el PDF que se descarga desde su detalle es una copia
+> legible de formato fijo con su código de integridad, no sale de Plantillas de Documentos.
 
 ---
 
@@ -301,7 +310,7 @@ Orden: **Configuración → Programación → Tareas → Ejecución → Supervis
    - **Rechazar:** crea una tarea de retrabajo para el mismo operario.
    - **Alertas:** una tarea vencida sin operario solo genera «sin asignar»; las reprogramaciones por encima del umbral alertan al Capataz.
    - **Cumplimiento por pabellón:** tareas hechas a tiempo sobre las del mes ya vencidas o terminadas (las que aún no vencen no cuentan). Al hacer clic en un pabellón se ve el rendimiento de su cuadrilla.
-6. **Historial de Infraestructura:** intervenciones, órdenes correctivas e índice de conservación.
+6. **Historial de Infraestructura:** intervenciones, órdenes correctivas e índice de conservación. Para cerrar una orden correctiva hace falta responsable, al menos una evidencia y el **costo final**, que debe coincidir con la suma del desglose.
 
 ---
 
@@ -322,7 +331,7 @@ No aparece en el menú lateral porque es otra interfaz, para las familias.
 1. Un **titular** (o cotitular o beneficiario) con documento DNI, CE, pasaporte o RUC.
 2. **Un contacto EMAIL** en la ficha del titular. Sin correo, el portal responde "acércate a la oficina". Los beneficiarios que no son titulares no tienen correo, así que no pueden entrar.
 3. Un **contrato con espacio** en estado ACTIVE, PENDING_SIGNATURE o EXPIRED.
-4. **No hace falta crear la cuenta**: se crea sola la primera vez que la persona pide el código. Opcionalmente, **Cuentas del Portal → "Invitar titular"** le envía un correo; el correo no lleva enlace ni activa nada: solo avisa "entra con tu documento y el RUC".
+4. **No hace falta crear la cuenta**: se crea sola la primera vez que la persona pide el código. Opcionalmente, **Cuentas del Portal → "Invitar titular"** le envía un correo con el nombre del cementerio y un botón «Ir al portal»; no activa nada: solo avisa "entra con tu documento y el RUC". Los correos del portal salen en el idioma de la cuenta.
 
 **Cómo entra la familia:**
 
@@ -342,7 +351,7 @@ No aparece en el menú lateral porque es otra interfaz, para las familias.
 
 - **Ver sus espacios:** conservación, fotos de mantenimiento, inhumaciones.
 - **Pagar cuotas:** siempre las más antiguas primero, y **solo las que ya vencieron o vencen hoy** (las futuras se ven, pero no se cobran en línea). Usa la pasarela configurada; en dev es un simulador. Para probar el pago con un plan recién creado, pon la **primera cuota con fecha de hoy**.
-- **Descargar documentos:** los sensibles solo los ve el titular.
+- **Descargar documentos:** contratos, actas y los comprobantes (boleta o factura) de sus pagos en línea, en «Mis documentos»; los sensibles solo los ve el titular.
 - **Crear solicitudes.**
 
 El titular y su representante pueden pagar y solicitar; cotitulares y beneficiarios solo pueden consultar.
@@ -354,7 +363,7 @@ El titular y su representante pueden pagar y solicitar; cotitulares y beneficiar
 | **Atención al Titular** | Bandeja de solicitudes que llegan del portal: asignar, responder, resolver, cerrar (SLA vigilado cada 15 min) |
 | **Cuentas del Portal** | Ver cuentas (vacía hasta que alguien entra o se invita), vínculos, sesiones; bloquear; revocar acceso; **Invitar titular** |
 | **Tipos de Solicitud** | Catálogo con plazo (1–90 días hábiles) y costo; se siembra solo la primera vez. El «costo» es un **texto informativo** para la familia (p. ej. «S/ 50 en caja»): no genera ningún cobro |
-| **Pasarelas de Pago** | Una pasarela habilitada por empresa (Culqi o el simulador). Para Culqi la llave secreta **no se escribe en pantalla**: se escribe el **nombre** de una variable de entorno del servidor (p. ej. `CULQI_SECRET_KEY`) que **sistemas debe definir** con el valor real; la pantalla solo indica si esa variable existe. Para probar sin sistemas, usa el simulador |
+| **Pasarelas de Pago** | Una pasarela habilitada por empresa: **Izipay** o el simulador (Culqi y Yape/Plin están apagados salvo que sistemas los active). Las llaves **no se escriben en pantalla**: se escribe el **nombre** de cada variable de entorno del servidor (p. ej. `IZIPAY_TEST_PASSWORD`, `IZIPAY_PUBLIC_KEY_TEST`, `IZIPAY_HMAC_KEY_TEST`), que **sistemas debe definir** con el valor real; la pantalla solo indica si existen. Para probar sin sistemas, usa el simulador |
 | **Consentimientos** | Publicar la política; una versión nueva obliga a todos a re-aceptar |
 
 ---
@@ -364,6 +373,7 @@ El titular y su representante pueden pagar y solicitar; cotitulares y beneficiar
 | Pantalla | De dónde salen los datos |
 |---|---|
 | **Dashboard Ejecutivo** | Vistas materializadas refrescadas **cada 15 min**: en un entorno nuevo puede verse vacío un rato |
+| **Reportes Financieros** (en el menú **Pagos**) | Vistas que se refrescan cada noche (o con «Actualizar datos»). Ingresos (filtro por sede, tipo de servicio y pabellón), cartera en 4 estados (vigente, vencida, en mora, incobrable) con el detalle de cuentas de mayor a menor deuda y filtro de fechas, antigüedad, morosidad y proyección de cobro a 12 meses (acumulados a 1, 3, 6 y 12). El Excel y el PDF llevan el período consultado y quién lo pidió |
 | **Reportes** | Catálogo de reportes, generación en cola y envíos programados |
 | **Auditoría** | Bitácora de acciones, trazabilidad por contrato, cambios en datos de difuntos |
 
@@ -409,8 +419,8 @@ Sin segundo usuario: aprobar tarifas, publicar paquetes y plantillas, validar el
 | 07:10 | Plazo de las disputas de comisión |
 | Cada hora | Vence las solicitudes de pago del portal; envía el resumen ejecutivo a quien lo tenga a esa hora |
 | Cada 15 min | KPIs del dashboard, plazos de las solicitudes del portal |
-| Cada 10 min | Levanta los bloqueos de cobranza de cuentas ya pagadas |
-| Cada 5 min | Reintentos de facturación, alertas, tareas de mantenimiento vencidas, confirmación de ceremonias, índice de conservación |
+| Cada 10 min | Levanta los bloqueos de cobranza de cuentas ya pagadas; concilia con la pasarela los pagos en línea que siguen esperando confirmación |
+| Cada 5 min | Reintentos de facturación, resolución de bajas de comprobantes, alertas, tareas de mantenimiento vencidas, confirmación de ceremonias, índice de conservación |
 | Cada minuto | Vence reservas y bloqueos de espacio; lanza los reportes programados |
 
 ---
@@ -419,7 +429,14 @@ Sin segundo usuario: aprobar tarifas, publicar paquetes y plantillas, validar el
 
 | Error / síntoma | Causa | Dónde se arregla |
 |---|---|---|
-| `ETN_QUOTE_NO_PRICE` | Sin tarifa **aprobada** vigente ni precio en el espacio | Tarifas (aprobar) o Parámetros de sede (moneda) |
+| `ETN_QUOTE_NO_PRICE` | Sin tarifa **aprobada** vigente del tipo (el precio del espacio sale de ella) | Tarifas (aprobar) o Parámetros de sede (moneda) |
+| `ETN_QUOTE_ZERO_TOTAL` | Descuento del 100 %: la cotización quedaría en cero | Cotización (descuento menor al 100 %) |
+| `ETN_QUOTE_DOWN_TOTAL` | Plan simulado con inicial del 100 % (no queda saldo para cuotas) | Cotización (inicial menor al 100 %) |
+| `ETN_INV_SERIES_CODE_TAKEN` / `ETN_INV_SERIES_OVERLAP` | La serie de boleta o factura ya la usa otra sede de la empresa | Facturación → series: crear una propia en la sede (p. ej. B002) y marcarla por defecto |
+| `ETN_RUC_LOOKUP_UNAVAILABLE` | El padrón RUC no responde o falta el token | Configuración General → «Marcar como validado» |
+| `ETN_INTERMENT_SCHEDULED_BEFORE_DEATH` | Fecha programada de la inhumación anterior a la defunción | Inhumaciones (corregir la fecha) |
+| «La vigencia de esta tarifa ya empezó…» | Se intenta aprobar una tarifa cuya fecha de inicio ya pasó | Tarifas (fecha de inicio hoy o después) |
+| La orden correctiva no se cierra | Falta el costo final o no coincide con la suma del desglose | Historial de Infraestructura → cerrar orden |
 | `ETN_CONTRACT_NO_TEMPLATE` / `…TEMPLATE_AMBIGUOUS` | Cero o varias plantillas de contrato publicadas | Plantillas de Documentos |
 | `ETN_TPL_UNRESOLVED_VARS` | La plantilla usa un dato vacío (representante del cementerio, dirección del titular…) | Config. General (datos del cementerio). Los del titular los pide «Generar contrato» en «Completar datos del titular» |
 | `ETN_POWER_EXPIRED` | Titular persona jurídica sin representante con poder vigente | «Completar datos del titular» al generar el contrato, o Titulares → representantes |
