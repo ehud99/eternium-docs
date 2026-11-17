@@ -46,6 +46,9 @@ Errores que aparecieron en varios módulos. Antes de dar un módulo por bueno, p
 | P27 | **«Segundo aprobador» nominal**: el solicitante elige a otro y queda aprobado sin que esa persona actúe; el selector incluye al propio usuario. | Flujos de doble aprobación. | La aprobación queda pendiente hasta que el aprobador actúe en su sesión; excluir al solicitante (F5-06). Excepción: si el negocio acepta que lo apruebe la misma persona (cobranza, G-02/G-03), no se finge un segundo actor: se valida que el aprobador sea un usuario activo de la empresa y se dice así en la pantalla. |
 | P28 | **Plurales fijos** («{{n}} tareas» → «1 tareas»). | Buscar `{{n}} ` seguido de una palabra en plural. | Redacción neutra («Tareas: 1») mientras no haya plural ICU global (T-03). |
 | P29 | **«No existe» cuando sí existe pero un filtro lo excluye** (plantilla «CONTRATO DE COMPRA» guardada con tipo «Acta de exhumación»: enviar a firma decía «no hay ninguna plantilla»). | Toda búsqueda que filtra por tipo, sede, idioma, estado o vigencia y responde «no hay». | El error nombra los casi-candidatos y qué cambiar (tipo, sede, publicar) y la ruta real del menú; probar con datos cargados «fuera del flujo» de la guía (B 9d9f23e). |
+| P39 | **Cookie con `Path` armado sin el prefijo público del proxy** (`/api/eternium/portal` cuando la API se publica bajo `/api`): el navegador no la envía y todo lo que sigue al login responde 401, solo en los ambientes con proxy. | Buscar `ResponseCookie`/`Cookie(` y revisar de dónde sale el `path`. | Usar `app.cookie.path-prefix` como las cookies de partner-core; probar el login en UAT, no solo en local (INC-57, B 6c83474). |
+| P38 | **Configuración que el back usa pero que no tiene pantalla** (reglas de comisión: solo un `GET`; sin regla no se devenga nada y nadie podía crearla). El módulo «funciona», pero ninguna empresa puede producir el dato. | Por cada tabla de configuración que lee un servicio (`*Rule`, `*Config`, `*Settings`), ¿hay `POST`/pantalla para darla de alta? Revisar los vacíos que dependen de ella. | INC-48: CRUD de reglas en «Metas y tarifario» y devengo de lo que quedó pendiente (B 1f04914 · F 3302247). |
+| P37 | **Input de un modal que el padre nunca enlaza** (`branches` del modal de metas): el select muestra solo el placeholder y el campo obligatorio no se puede llenar. | Para cada `input<...[]>([])` de un modal, buscar en la plantilla del padre que se pase (`[branches]=`). Probar cada valor del selector que cambia el formulario (alcance Sede). | INC-50: cargar las sedes y pasarlas (F 64cff36); el back exige el dato según el alcance (B 521157c). |
 | P36 | **Texto armado fuera de una petición (job, hilo asíncrono) con `messages.get(clave)`**: sin `Accept-Language` sale en el idioma de la JVM (inglés en UAT), y las fechas con `String.valueOf(LocalDate)` salen en ISO (INC-43). | Buscar `messages.get("` en clases `@Scheduled`/`*Job` y en lo que llaman; buscar `String.valueOf(` sobre fechas en avisos. | Armar el texto por destinatario con `messages.get(locale, …)` y `RecipientLocaleResolver`; fechas con `ExportDates.format`. Pendientes con el mismo patrón: `ExceptionSlaJob`, escalamiento de ceremonias. |
 | P35 | **Endpoint que recibe o devuelve la entidad JPA** (`@Valid @RequestBody SpaceLegalRestriction`): la entidad no tiene anotaciones de validación, así que un campo vacío llega a la BD y el error es un 500; la respuesta expone columnas internas. | Buscar `@RequestBody` y `ResponseEntity<List<` con tipos de `domain.model`. | DTO de entrada con Bean Validation y mensajes por clave, DTO de salida; reglas de catálogo y de rango en el servicio (F2-12). |
 | P34 | **Clase de color de una paleta que el tema no define** (`text-info-600`): Tailwind 4 no genera CSS y el texto hereda el color, ilegible en modo oscuro. | Buscar prefijos de color usados en plantillas (`grep -oE "(text|bg|border)-\w+-[0-9]+"`) y comparar con los `--color-*` de `@theme` en `styles.css`. | Definir la paleta en `@theme` (alias de una existente) o usar la que ya existe. |
@@ -725,3 +728,43 @@ una API de consulta (p. ej. Factiliza).
 
 **Lección:** un mensaje de «sin permisos» que sale de una comparación de empresa confunde a QA y lleva a buscar el
 problema en los roles; cuando lo que falla es que el dato no corresponde, el mensaje tiene que decir eso.
+
+## 25. Incidencias QA 46–50 (sesión 2026-11-03)
+
+Commits: B 52c4601, 1f04914, 4e39694, 521157c · F 48658d1, 5223459, 3302247, 9eeaebc, 64cff36. Suite completa del back (`mvnw test`, sin clean): **1781 tests, 0 fallos, 0 errores, 6 omitidos** en 191 clases.
+`ngc --noEmit` sin errores; paridad de claves es/en/pt (back y front). Detalle en
+[`incidencias-qa.md`](incidencias-qa.md). La 41 (RENIEC) sigue fuera hasta tener una API de consulta.
+
+- INC-46: plan de pagos con inicial ≥ 100 % rechazado en el front y en el back (P11).
+- INC-47: filtro por vendedor del tablero; el back ya lo soportaba.
+- INC-48: reglas de comisión configurables desde la pantalla y devengo de las ventas asignadas sin comisión
+  (patrón nuevo P38).
+- INC-49: embudo de conversión entre etapas a partir del historial de etapas.
+- INC-50: el modal de metas no recibía las sedes (patrón nuevo P37); el back exige la sede o el vendedor según el
+  alcance.
+
+**Lección:** un mensaje vacío («Todavía no hay comisiones») puede ser correcto y aun así esconder una
+funcionalidad sin pantalla. Antes de dar por bueno un «no hay datos», revisar que el usuario tenga cómo producirlos.
+
+## 26. Incidencias QA 51–70 (sesión 2026-11-13)
+
+Commits en `fix/general`: B fa63801, 6c83474, f07cb53, 6bb2c2c, 07461cc, db9a53c, c03035b, 6f81f62, 475ad4d, e9d9fea,
+b7a5872, f3999c9, 63e1a62, d447f5a, 9eb62a2, 1aca182 · F 8d8c446, faab879, 32036b5, 317791f, 1a1e12d, e32a9a5, 304d2aa,
+bf51f93, c33ff69, 2029b3b, fd5a6e6, 2f479b4, 9083590, 205b635, 88aec27, bc08a6a. Antes (09/11): INC-18 reabierta
+(B e82707b · F a4b30f1). Detalle en [`incidencias-qa.md`](incidencias-qa.md).
+
+- Facturación: el único emisor real es el facturador; Factiliza queda solo para el padrón RUC (INC-53). Las series
+  son únicas por empresa: dos sedes ya no pueden compartir B001 (INC-60).
+- Caja: el recibo se envía al correo del titular al confirmar el pago (INC-55).
+- Portal: cookies con el prefijo público (patrón nuevo P39, INC-57), comprobantes en «Mis documentos» (INC-61),
+  correos en el idioma de la cuenta y con la marca del cementerio (INC-63).
+- Reportes financieros: cartera en cuatro estados con detalle por cuenta (INC-58, 68), proyección de 12 meses
+  (INC-69), filtro de ingresos por pabellón (INC-59), período y usuario en la exportación (INC-70).
+- Idioma: alertas ejecutivas, tipo de acta y estado del contrato en Auditoría (INC-64, 66, 67), mismo patrón P36.
+- Otras: agenda a Google Calendar o `.ics` (INC-52), aviso de difunto ya inhumado (INC-51), costo final al cerrar la
+  orden correctiva (INC-56), cotización con total cero (INC-46) y nombre del asesor (INC-47).
+- Sin código: INC-54 (no aplica), 62/72 (Yape/Plin) y 65 (reporte municipal) pospuestas; 71 abierta.
+
+**Lección:** cuatro de las veinte (53, 57, 61, 63) solo fallaban en UAT, por configuración del ambiente (proxy,
+emisor, idioma de la JVM). Antes de dar por buena una corrección probada en local, repetir el flujo en el ambiente
+desplegado.

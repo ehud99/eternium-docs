@@ -18,7 +18,7 @@
 | N.° | Título | Módulo | Prioridad | Registro | Estado | Commits |
 |---|---|---|---|---|---|---|
 | 16 | Plantillas prediseñadas no visibles en una empresa que ya tenía plantillas (reabierta) | Configuración / Plantillas de documentos | Alta | 28/09/2026 | Corregida — pendiente de validar en UAT | B ea92546 · F 86e562c |
-| 18 | RUC y teléfono de sedes (18-1); sedes «No operativa» en los filtros (18-2) | Configuración / Sedes | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B eed61f2 · F f80e513, 2d29460 |
+| 18 | RUC y teléfono de sedes (18-1); sedes «No operativa» en los filtros (18-2) | Configuración / Sedes | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B eed61f2, e82707b · F f80e513, 2d29460, a4b30f1 |
 | 19 | Licencias duplicadas del mismo tipo; el adjunto persiste en el modal | Configuración General / Licencias | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B bb297f7 · F 306cd6b |
 | 20 | Tarifa con vigencia retroactiva | Configuración / Tarifas | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B 8153a1f · F a999e63 |
 | 21 | Huecos superpuestos; desplegable que desborda; no se puede quitar el plano del pabellón | Configuración / Pabellones y sectores | Alta | 20/10/2026 | Corregida — pendiente de validar en UAT | B 2ed8a40 · F 7986215 |
@@ -45,9 +45,36 @@
 | 40 | Beneficiarios: la fecha de nacimiento no se valida contra «Es menor de edad» | Contratos / Titularidad | Media | 28/10/2026 | Corregida — pendiente de validar en UAT | B ffd1cc9 · F f03c274 |
 | 41 | RENIEC: Titulares valida cualquier DNI ficticio | Contratos / Titulares | Media | 28/10/2026 | Pendiente — falta decidir el comportamiento esperado | — |
 | 42 | La alerta de vencimiento no muestra un contrato que vence dentro de 90 días | Contratos / Renovaciones | Media | 29/10/2026 | Corregida — pendiente de validar en UAT | B 328d9ae · F 1b1cfc6 |
-| 43 | La notificación de vencimiento sale en inglés y con fecha ISO | Configuración / Notificaciones | Media | 30/10/2026 | Corregida — pendiente de validar en UAT | B 5df06f4 |
+| 43 | La notificación de vencimiento sale en inglés y con fecha ISO | Configuración / Notificaciones | Media | 30/10/2026 | Corregida — pendiente de validar en UAT | B 5df06f4, 6bb2c2c |
 | 44 | La renovación completada no genera evento en el historial del espacio | Espacios / Historial | Media | 30/10/2026 | Corregida — pendiente de validar en UAT | B b56fee3 · F 996544d |
 | 45 | «No tiene permisos sobre este registro» al vincular un documento en la transferencia | Contratos / Transferencias | Alta | 30/10/2026 | Corregida — pendiente de validar en UAT | B a1837ee · F 1aa3a0e |
+| 46 | El simulador de plan de pagos permite inicial 100 % con cuotas de S/ 0.00 | Ventas / Cotizaciones | Media | 02/11/2026 | Corregida — pendiente de validar en UAT | B 52c4601, 07461cc · F 48658d1, e32a9a5 |
+| 47 | El tablero del pipeline no tiene filtro por vendedor | Ventas / Pipeline comercial | Media | 03/11/2026 | Corregida — pendiente de validar en UAT | B f07cb53 · F 5223459, 1a1e12d |
+| 48 | Venta cobrada sin comisión; no hay dónde configurar la tasa de comisión | Ventas / Pipeline comercial | Media | 03/11/2026 | Corregida — pendiente de validar en UAT | B 1f04914 · F 3302247 |
+| 49 | No hay reporte del % de conversión entre etapas del pipeline | Ventas / Pipeline comercial | Media | 03/11/2026 | Corregida — pendiente de validar en UAT | B 4e39694 · F 9eeaebc |
+| 50 | «Nueva meta» con alcance Sede no lista ninguna sede | Ventas / Pipeline comercial | Media | 03/11/2026 | Corregida — pendiente de validar en UAT | B 521157c · F 64cff36 |
+| 51 | El modal de inhumación no avisa que el difunto ya está inhumado | Servicios funerarios / Inhumaciones | Media | 04/11/2026 | Corregida — pendiente de validar en UAT | F 8d8c446 |
+| 52 | No hay integración con Google Calendar en la agenda de ceremonias | Servicios funerarios / Agenda de ceremonias | Media | 11/11/2026 | Corregida — pendiente de validar en UAT | F 304d2aa |
+| 53 | El comprobante no llega a Aceptado vía OSE (queda en Contingencia) | Pagos / Facturación electrónica | Media | 11/11/2026 | Corregida — pendiente de validar en UAT | B db9a53c |
+| 54 | No existe el tipo «Recibo por honorarios» | Pagos / Facturación electrónica | Media | 11/11/2026 | No aplica — respondida a QA (el RH no lo emite la empresa) | — |
+| 55 | El recibo de pago no se envía al correo del titular | Pagos / Caja y pagos | Media | 12/11/2026 | Corregida — pendiente de validar en UAT | B fa63801 · F faab879 |
+| 56 | El botón de cierre de la orden correctiva no completa la acción | Mantenimiento / Historial de infraestructura | Media | 12/11/2026 | Corregida — pendiente de validar en UAT | F 32036b5 |
+| 57 | Error 401 después de verificar el código del Portal de Familias | Portal de familias / Acceso | Media | 12/11/2026 | Corregida — pendiente de validar en UAT | B 6c83474 · F 317791f |
+| 58 | La cartera no ordena por monto adeudado ni filtra por fechas | Pagos / Reportes financieros | Media | 13/11/2026 | Corregida — pendiente de validar en UAT | B d447f5a · F 205b635 |
+| 59 | El reporte de ingresos no filtra por tipo de servicio ni por pabellón | Pagos / Reportes financieros | Media | 13/11/2026 | Corregida — pendiente de validar en UAT | B 1aca182 · F bc08a6a |
+| 60 | Error 500 al emitir por series y correlativos solapados entre sedes | Pagos / Facturación electrónica | Media | 13/11/2026 | Corregida — pendiente de validar en UAT | B 6f81f62 · F c33ff69 |
+| 61 | El titular no puede descargar su comprobante de pago desde el portal | Portal de familias / Documentos | Media | 13/11/2026 | Corregida — pendiente de validar en UAT | B 475ad4d · F 2029b3b |
+| 62 | El portal solo permite pagar con tarjeta: faltan Yape y Plin | Portal de familias / Pagos en línea | Media | 13/11/2026 | Pospuesta — depende de la pasarela y de los medios contratados | — |
+| 63 | El correo de confirmación de pago llega en inglés, con variables sin reemplazar y marca PartnerCore | Portal de familias / Notificaciones | Media | 13/11/2026 | Corregida — pendiente de validar en UAT | B e9d9fea |
+| 64 | Las alertas ejecutivas se muestran en inglés | Análisis / Dashboard ejecutivo | Media | 13/11/2026 | Corregida — pendiente de validar en UAT | B b7a5872 · F fd5a6e6 |
+| 65 | Falta el reporte regulatorio para la municipalidad | Análisis / Reportes | Media | 13/11/2026 | Pospuesta — falta el formato que pide la municipalidad | — |
+| 66 | El reporte de inhumaciones y exhumaciones muestra «INTERNAL_TRANSFER» | Análisis / Reportes de auditoría | Media | 13/11/2026 | Corregida — pendiente de validar en UAT | B f3999c9 · F 2f479b4 |
+| 67 | La ficha del contrato en Auditoría muestra el estado «ACTIVE» | Análisis / Auditoría | Media | 13/11/2026 | Corregida — pendiente de validar en UAT | F 9083590 |
+| 68 | La cartera no muestra la clasificación de estados del requerimiento | Pagos / Reportes financieros | Media | 13/11/2026 | Corregida — pendiente de validar en UAT | B c03035b · F bf51f93 |
+| 69 | La proyección de ingresos no muestra todos los meses | Pagos / Reportes financieros | Media | 13/11/2026 | Corregida — pendiente de validar en UAT | B 9eb62a2 · F 88aec27 |
+| 70 | El Excel y el PDF no muestran el período consultado ni el usuario | Pagos / Reportes financieros | Media | 13/11/2026 | Corregida — pendiente de validar en UAT | B 63e1a62 |
+| 71 | La consulta de RUC muestra los estados en inglés (ACTIVE / FOUND) | Pagos / Facturación electrónica | Media | 16/11/2026 | Abierta | — |
+| 72 | No hay integración con Yape/Plin en el portal | Pagos / Integración bancos y pagos | Media | 16/11/2026 | Abierta (misma causa que la 62) | — |
 
 ### Descartadas por QA
 
@@ -685,3 +712,405 @@ la bitácora).
 **Para validar en UAT:** Contratos → Transferencias → Transferencia #6 → en un requisito sin cumplir, «Subir y
 vincular» → elegir un archivo: el requisito queda en verde con el documento. Con eso se puede seguir el flujo (y
 validar la INC-02 de notificaciones).
+
+---
+
+## INC-46 — El simulador de plan de pagos acepta inicial 100 % con cuotas de S/ 0.00
+
+Incidencia funcional · Media
+
+**Reporte:** en el detalle de la cotización, «Simular plan» con inicial 100 % generaba un plan con todas las cuotas
+en S/ 0.00.
+
+**Causa:** el front solo rechazaba una inicial **mayor** que 100 y el back solo controlaba el mínimo
+(`sales.min_down_payment_pct`). Con el 100 % no queda saldo que financiar: eso es una venta al contado, no un plan.
+
+**Corrección:**
+- B — `QuotationService.createPaymentPlan` y `simulateLateFee` rechazan una inicial ≥ 100 %
+  (`ETN_QUOTE_DOWN_TOTAL`, «Con una inicial del 100 % no queda saldo para cuotas…»). Tests: +2.
+- F — el campo «Inicial (%)» marca error desde 100 y la ayuda dice «Mínimo N % y menor a 100 %».
+
+**Para validar en UAT:** Cotizaciones → detalle → simulador: inicial 100 → el campo queda en rojo y no deja simular;
+con 99,99 sí genera cuotas.
+
+---
+
+## INC-47 — El tablero del pipeline no tiene filtro por vendedor
+
+Incidencia funcional · Media
+
+**Reporte:** el tablero muestra todas las oportunidades juntas y la barra superior no tiene filtro por vendedor.
+
+**Causa:** el back ya aceptaba `ownerUserId` en `GET /pipeline/board` (y en la exportación), pero la pantalla
+nunca lo enviaba.
+
+**Corrección:**
+- F — selector «Todos los vendedores / <vendedor>» en la barra superior (pestañas Tablero y Conversión) con los
+  miembros de la empresa. Filtra el tablero, la exportación de oportunidades y el embudo de la INC-49.
+
+**Para validar en UAT:** Pipeline comercial → elegir un vendedor en la barra: el tablero muestra solo sus
+oportunidades; «Exportar» desde el tablero exporta solo las suyas.
+
+---
+
+## INC-48 — Venta cobrada sin comisión; no hay dónde configurar la tasa
+
+Incidencia funcional · Media
+
+**Reporte:** la venta VEN5-0000001 (S/ 5,310.00) está cobrada, pero «Comisiones» dice «Todavía no hay comisiones
+devengadas», y en «Metas y tarifario» no hay forma de configurar la tasa de comisión.
+
+**Causa:** la comisión se devenga al **asignar definitivamente** la venta, con la regla vigente
+(`commission_rules`). Si no hay regla no se devenga nada, y es a propósito: la falta de parametrización no bloquea la
+venta. Pero las reglas solo tenían un `GET`: no existía pantalla ni endpoint para crearlas, así que ninguna empresa
+podía tener comisiones.
+
+**Corrección** (decisiones del usuario, 2026-11-03: regla por empresa con tipo de espacio opcional, sin dimensión
+por vendedor; devengo retroactivo):
+- B — `POST /pipeline/commission-rules` (nombre, % **o** monto fijo, tipo de espacio opcional, vigencia) y
+  `DELETE /pipeline/commission-rules/{id}` (retira: deja de aplicar y conserva lo devengado). Al crear una regla
+  que ya rige se devengan las ventas **asignadas** que no tenían comisión (`CommissionService.accruePending`, con
+  el snapshot de la regla). `SaleLookupPort.assignedSales`. Tests: +5.
+- F — «Metas y tarifario» → tarjeta «Reglas de comisión» (lista, «Nueva regla», «Retirar»). El vacío de
+  «Comisiones» explica que se devengan al asignar la venta si hay una regla vigente.
+
+**Ojo:** si VEN5-0000001 todavía no está en «Asignada» (cobrada pero sin «Asignar definitivamente»), la comisión
+saldrá al asignarla, no al crear la regla.
+
+**Para validar en UAT:** Metas y tarifario → «Nueva regla» (p. ej. 3 %, todos los tipos) → el aviso dice cuántas
+comisiones se devengaron → «Comisiones»: aparece VEN5-0000001 con base S/ 5,310.00 y su monto.
+
+---
+
+## INC-49 — No hay reporte del % de conversión entre etapas
+
+Incidencia funcional · Media
+
+**Reporte:** no hay reporte ni gráfica del % de conversión entre etapas (Prospección → Contacto → Cotización →
+Negociación → Reserva → Ganada).
+
+**Causa:** el pipeline solo tenía la conversión final por vendedor (ranking: ganadas / cerradas).
+
+**Corrección:**
+- B — `GET /pipeline/funnel` (`PipelineReportService.funnel`): para las oportunidades creadas en el periodo (y del
+  vendedor, si se filtra), cuántas llegaron a cada etapa abierta y a la Ganada, el % que pasó de la anterior y el %
+  sobre el total. Una oportunidad «llegó» a una etapa si pasó por ella o por una posterior según su historial
+  (saltarse una etapa la cuenta como pasada; una ganada pasó por todas; una perdida cuenta hasta la última etapa
+  abierta que alcanzó). Tests: +2.
+- F — pestaña «Conversión» con el embudo en barras, periodo (mes / año / todo) y el filtro de vendedor de la INC-47.
+
+**Para validar en UAT:** Pipeline comercial → «Conversión»: una barra por etapa con «N · %» y, entre etapas,
+«X % pasó de la etapa anterior».
+
+---
+
+## INC-50 — «Nueva meta» con alcance Sede no lista ninguna sede
+
+Incidencia funcional · Media
+
+**Reporte:** en Metas y tarifario → Nueva meta, con alcance «Sede», el campo obligatorio Sede solo muestra
+«— Id de la sede —».
+
+**Causa:** el modal declara el input `branches`, pero la pantalla del pipeline nunca se lo pasaba (patrón nuevo P37).
+Además el back guardaba una meta de alcance Sede sin sede si el cliente no la mandaba.
+
+**Corrección:**
+- F — la pestaña carga las sedes operativas y se las pasa al modal. La columna «Alcance» dice a qué vendedor o sede
+  apunta cada meta.
+- B — `PipelineAdminService.createTarget` exige la sede (y que sea de la empresa) en el alcance Sede, y el vendedor
+  en el alcance Vendedor. Tests: +4.
+
+**Para validar en UAT:** Metas y tarifario → Nueva meta → alcance «Sede»: el selector lista las sedes; la meta creada
+se ve como «Sede · <nombre>».
+
+---
+
+## Correcciones del 09/11 y 13/11 a incidencias ya registradas
+
+- **INC-18 (reabierta, 09/11):** las sedes «No operativa» se podían elegir en Series y Correlativos. B e82707b
+  impide crear, mover o reabrir una serie en una sede no operativa (RN-014, antes solo al emitir); F a4b30f1 las oculta
+  del filtro y del modal (al editar se conserva la sede de la propia serie). Está en UAT, a la espera de la nueva
+  prueba de QA.
+- **INC-43 (13/11):** el motor de alertas armaba título y detalle en el idioma de la JVM. B 6bb2c2c: la campana y el
+  correo salen en el idioma de cada destinatario, el evento en el de la empresa, R7 dice cuántos días faltan y el
+  umbral se muestra sin ceros de relleno.
+- **INC-46 (13/11):** con un descuento del 100 % la cotización quedaba en S/ 0.00 y se emitía con propuesta y PDF.
+  B 07461cc: crear, editar, clonar y emitir rechazan un total cero (`ETN_QUOTE_ZERO_TOTAL`); F e32a9a5: el descuento
+  se marca fuera de rango desde 100 mientras se escribe («El descuento debe ser de 0 a menos de 100 %…») y
+  «Siguiente» queda deshabilitado.
+- **INC-47 (13/11):** el detalle de la oportunidad mostraba `#id` cuando el asesor ya no era miembro activo.
+  B f07cb53: el historial devuelve el nombre de cada usuario; F 1a1e12d lo usa y el selector de reasignación dice
+  «Selecciona el nuevo asesor».
+
+---
+
+## INC-51 — El modal de inhumación no avisa que el difunto ya está inhumado
+
+Incidencia funcional · Media
+
+**Reporte:** al pulsar «Ejecutar inhumación» con un difunto que ya está inhumado, el modal se queda congelado y no
+muestra ningún mensaje.
+
+**Causa:** el back rechazaba la inhumación, pero el motivo solo salía en el aviso flotante y el panel de
+comprobaciones no revisaba si el difunto ya ocupaba un espacio.
+
+**Corrección:**
+- F — el panel de comprobaciones marca «El difunto ya está inhumado en un espacio: no puede estarlo en dos a la vez»
+  (y «El expediente no está confirmado») y bloquea la ejecución. Si el back rechaza, el motivo se ve dentro del modal.
+
+**Para validar en UAT:** Inhumaciones y Exhumaciones → Ejecutar inhumación con la OS de un difunto ya inhumado: la
+comprobación sale en rojo y el botón no se habilita.
+
+---
+
+## INC-52 — No hay integración con Google Calendar en la agenda
+
+Incidencia funcional · Media
+
+**Reporte:** el botón de calendario de «Próximos eventos» solo cambia a la pestaña «Agenda del día»: no abre Google
+Calendar ni descarga un `.ics`.
+
+**Corrección:**
+- F — botón «Agregar al calendario» en Próximos eventos y en el detalle del evento, con dos opciones: «Agregar a
+  Google Calendar» (abre el evento prellenado con difunto, responsable, OS y asistentes) y «Descargar archivo .ics
+  (Outlook, Apple, celular)». «Exportar datos» también ofrece el `.ics` de los eventos que se ven.
+
+**Para validar en UAT:** Agenda de Ceremonias → Próximos eventos → icono de calendario → Google Calendar abre el
+evento con fecha, hora y sala; el `.ics` se abre en Outlook o en el celular.
+
+---
+
+## INC-53 — El comprobante no llega a Aceptado vía OSE
+
+Incidencia funcional · Media
+
+**Reporte:** el comprobante queda en Contingencia y nunca pasa a Aceptado.
+
+**Causa:** con el modo simulado apagado, la emisión podía ir por Factiliza (`eternium.sunat.provider`), que no es el
+emisor contratado.
+
+**Corrección:**
+- B — con el stub apagado, el único emisor es el facturador (`FacturadorSunatAdapter`); se elimina
+  `eternium.sunat.provider`. Factiliza queda solo para consultar el padrón RUC (`FactilizaRucClient`, sin emisión).
+  Tests: +4.
+
+**Para validar en UAT:** emitir una boleta desde un pago: pasa a Aceptado con el CDR del facturador. Si queda en
+Contingencia, revisar las credenciales del facturador en el servidor.
+
+---
+
+## INC-54 — No existe el tipo «Recibo por honorarios»
+
+Respondida a QA sin cambios de código: el recibo por honorarios lo emite la persona natural que presta el servicio,
+no la empresa. Boletas y facturas ya están cubiertas.
+
+---
+
+## INC-55 — El recibo de pago no se envía al correo del titular
+
+Incidencia funcional · Media
+
+**Causa:** el recibo quedaba en `PENDING` y ningún proceso lo enviaba.
+
+**Corrección:**
+- B — el recibo sale al confirmar la transacción del pago, al correo escrito en Caja o, si se dejó vacío, al correo
+  principal del titular; queda `SENT` o `FAILED`. Tests: +5.
+- F — en Caja, la ayuda del campo de correo dice «Si lo dejas vacío, el recibo se envía al correo del titular».
+
+**Para validar en UAT:** Caja y Pagos → registrar un pago sin escribir correo → llega el recibo al correo del titular.
+
+---
+
+## INC-56 — El botón de cierre de la orden correctiva no completa la acción
+
+Incidencia funcional · Media
+
+**Causa:** el back exige `finalCost` (igual a la suma del desglose) y respondía 400; la pantalla no lo enviaba ni
+mostraba el error, así que la orden seguía «En ejecución».
+
+**Corrección:**
+- F — al cerrar se envía el costo final y, si el back rechaza, el motivo se ve en el panel de cierre.
+
+**Para validar en UAT:** Historial de Infraestructura → orden correctiva en ejecución → «Cerrar» con el desglose de
+costos → la orden pasa a Cerrada con el costo final.
+
+---
+
+## INC-57 — Error 401 después de verificar el código del portal
+
+Incidencia funcional · Media
+
+**Causa:** detrás del proxy la API se publica bajo `/api`, pero las cookies de sesión del portal (`pat`/`prt`)
+quedaban con `Path=/api/eternium/portal` sin el prefijo público: el navegador no las enviaba y `/me` y `refresh`
+respondían 401.
+
+**Corrección:**
+- B — las cookies usan `app.cookie.path-prefix`, igual que las de partner-core. Tests: +3.
+- F — si el código es correcto pero la sesión no se pudo iniciar, se dice así («El código es correcto, pero no se
+  pudo iniciar la sesión…») en vez de dejar al usuario en la pantalla del código.
+
+**Para validar en UAT:** entrar al portal con DNI y código: llega a Inicio sin 401.
+
+---
+
+## INC-58 — La cartera no ordena por monto adeudado ni filtra por fechas
+
+Incidencia funcional · Media
+
+**Corrección** (RF-017):
+- B — la cartera devuelve, junto a los cuatro estados, el detalle de cuentas (contrato, titular, estado, días de
+  atraso, vencimiento más antiguo, vencido, por vencer y total), de mayor a menor monto adeudado y acotado por el
+  vencimiento de la cuota pendiente más antigua. La exportación pasa a ser ese detalle. Tests: +2.
+- F — tabla «Detalle de cuentas» con filtro Desde/Hasta.
+
+**Ojo:** el filtro de fechas solo acota el detalle; los cuatro estados de arriba siguen siendo la foto completa al
+día (comentario DEV en la planilla).
+
+**Para validar en UAT:** Reportes Financieros → Cartera → la tabla está ordenada por total adeudado; con Desde/Hasta
+solo quedan las cuentas cuyo vencimiento más antiguo cae en el rango.
+
+---
+
+## INC-59 — El reporte de ingresos no filtra por tipo de servicio ni por pabellón
+
+Incidencia funcional · Media
+
+**Corrección:**
+- B — el reporte y su exportación aceptan `pavilionId` (de `mv_income_consolidated`) y lo guardan en el registro de
+  la descarga. El tipo de servicio es el **concepto del plan de pagos** (venta de espacio, servicio, mantenimiento
+  perpetuo, otro), que ya se filtraba. Tests: +1.
+- F — filtros «Tipo de servicio» y «Pabellón» en Ingresos.
+
+**Para validar en UAT:** Reportes Financieros → Ingresos → elegir un pabellón: los totales y el Excel solo cuentan
+lo de ese pabellón.
+
+---
+
+## INC-60 — Error 500 al emitir por series solapadas entre sedes
+
+Incidencia funcional · Media
+
+**Causa:** dos sedes con la misma serie (p. ej. B001) generaban el mismo número completo; la base lo rechazaba como
+duplicado y la emisión respondía 500.
+
+**Corrección:**
+- B — el número completo es único por empresa: crear una serie que ya usa otra sede se rechaza con una sugerencia
+  libre (`ETN_INV_SERIES_CODE_TAKEN`), y la emisión que chocaría con un número ya emitido devuelve un mensaje de
+  negocio (`ETN_INV_SERIES_OVERLAP`: crear en la sede una serie propia, marcarla por defecto y volver a emitir).
+  Tests: +3.
+- F — el modal de serie avisa «La serie {{codigo}} ya la usa otra sede…».
+
+**Para validar en UAT:** para que Chiclayo emita, crear su propia serie (p. ej. B002) y marcarla por defecto. Intentar
+crear B001 en Chiclayo muestra el aviso.
+
+---
+
+## INC-61 — El titular no puede descargar su comprobante desde el portal
+
+Incidencia funcional · Media
+
+**Causa:** si la emisión automática del pago en línea falló y el personal emitió el comprobante a mano en
+Facturación, la transacción seguía `FAILED` y el portal mostraba «Comprobante en emisión» sin descarga.
+
+**Corrección:**
+- B — al emitir el comprobante en Facturación se pone al día la transacción del portal. Tests: +1.
+- F — «Mis documentos» lista los comprobantes de pago («Comprobante de pago B001-…») para descargarlos.
+
+**Para validar en UAT:** Portal → Mis documentos → aparece el comprobante del pago y se descarga en PDF.
+
+---
+
+## INC-63 — El correo de confirmación de pago llega en inglés y con marca PartnerCore
+
+Incidencia funcional · Media
+
+**Causa:** el worker de notificaciones del portal usaba el idioma de la JVM, el aviso de pago no traía nombre ni fecha
+y se enviaba con la plantilla genérica de PartnerCore.
+
+**Corrección:**
+- B — el correo sale en el idioma de la cuenta del portal, completa nombre y fecha, borra los marcadores sin valor y
+  usa una plantilla propia con el nombre del cementerio y un botón al portal. Tests: +2.
+
+**Para validar en UAT:** pagar una cuota desde el portal → el correo llega en español, con el nombre del titular, la
+fecha y la marca del cementerio.
+
+---
+
+## INC-64 — Las alertas ejecutivas se muestran en inglés
+
+Incidencia funcional · Media
+
+**Causa:** las alertas disparadas antes de la corrección de idioma de la INC-43 conservaban título y detalle en
+inglés.
+
+**Corrección:**
+- B — V147 pasa al español los textos ya grabados.
+- F — título y detalle se arman en el idioma de quien mira, con el nombre traducido de la regla y «Valor actual … ·
+  umbral …»; el modal de detalle y el de reglas reconocen R6 y R7 como reglas sembradas.
+
+**Para validar en UAT:** Dashboard Ejecutivo → Alertas: todas en español; al cambiar el idioma del usuario cambian.
+
+---
+
+## INC-66 — El reporte de inhumaciones y exhumaciones muestra «INTERNAL_TRANSFER»
+
+**Corrección:** B f3999c9 traduce traslado interno y externo en el reporte exportado; F 2f479b4 muestra «Traslado
+interno» / «Traslado externo» en «Tipo de acta».
+
+---
+
+## INC-67 — La ficha del contrato en Auditoría muestra «ACTIVE»
+
+**Corrección:** F 9083590 traduce el estado del contrato en la trazabilidad («Activo», «Pendiente de firma»…).
+
+---
+
+## INC-68 — La cartera no muestra la clasificación de estados del requerimiento
+
+Incidencia funcional · Media
+
+**Causa:** la cartera vigente (planes activos sin cuotas vencidas) no entraba al reporte, porque la cuenta de
+cobranza solo se abre al vencer una cuota.
+
+**Corrección:**
+- B — V146 incluye la cartera vigente con su saldo por vencer y el reporte devuelve siempre los cuatro estados.
+  Tests: +2.
+- F — tarjetas **Vigente** (sin cuotas vencidas), **Vencida** (1–30 días), **En mora** (31–180) e **Incobrable**
+  (más de 180), con su saldo por vencer.
+
+**Para validar en UAT:** Reportes Financieros → Cartera → aparecen los cuatro estados aunque alguno esté en cero.
+
+---
+
+## INC-69 — La proyección de ingresos no muestra todos los meses
+
+Incidencia funcional · Media
+
+**Causa:** la proyección cubría solo el trimestre, cortaba el último mes en el día de hoy y omitía los meses sin
+cuotas.
+
+**Corrección** (RF-011):
+- B — la ventana llega al cierre del mes doce, lista todos los meses (en cero si no hay vencimientos) y devuelve los
+  acumulados a 1, 3, 6 y 12 meses. Tests: +1.
+- F — tarjetas «A N meses» y la tabla con los 12 meses.
+
+**Para validar en UAT:** Reportes Financieros → Proyección: 12 filas de mes y los cuatro acumulados.
+
+---
+
+## INC-70 — El Excel y el PDF no muestran el período ni el usuario
+
+**Corrección:** B 63e1a62 agrega el período consultado y «Solicitado por» en la línea de información de la
+exportación, junto a la fecha de generación (RN-008). Tests: +1.
+
+**Para validar en UAT:** Reportes Financieros → exportar a Excel y PDF: la cabecera muestra el período y el usuario.
+
+---
+
+## Pendientes
+
+- **INC-62 y 72 (Yape / Plin en el portal):** dependen de la pasarela que use la empresa y de que tenga esos medios
+  contratados. Pospuestas por decisión del usuario.
+- **INC-65 (reporte regulatorio para la municipalidad):** falta el formato que pide la municipalidad.
+- **INC-71 (consulta de RUC con estados en inglés):** registrada el 16/11, sin corregir.
+- **INC-41 (RENIEC):** sigue esperando la API de consulta.
